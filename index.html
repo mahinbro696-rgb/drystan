@@ -938,18 +938,30 @@ window.doLogin=async()=>{
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Signing in...';
   try{
     let email=null;
-    // Check by username first
-    const uSnap=await getDocs(query(Col('users'),where('username','==',u)));
-    if(!uSnap.empty){email=uSnap.docs[0].data().email;}
-    else if(u==='admin'){email='admin@drystan.app';}
-    else{throw new Error('Invalid username or password.');}
+    // If input is an email address, use directly
+    if(u.includes('@')){
+      email=u;
+    } else {
+      // Lookup by username in Firestore
+      const uSnap=await getDocs(query(Col('users'),where('username','==',u)));
+      if(!uSnap.empty){
+        email=uSnap.docs[0].data().email;
+      } else if(u==='admin'){
+        // Fallback: try admin@drystan.app
+        email='admin@drystan.app';
+      } else {
+        err.style.display='flex';err.textContent='❌ Invalid username or password.';
+        btn.disabled=false;btn.innerHTML='Sign In →';
+        return;
+      }
+    }
     await signInWithEmailAndPassword(auth,email,p);
   }catch(e){
     const msg=e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'||e.code==='auth/user-not-found'
       ?'Invalid username or password.'
       :e.code==='auth/too-many-requests'
       ?'Too many attempts. Please try later.'
-      :e.message.includes('Invalid username')?e.message:'Login failed. Check credentials.';
+      :'Login failed. Check credentials.';
     err.style.display='flex';err.textContent='❌ '+msg;
     btn.disabled=false;btn.innerHTML='Sign In →';
   }
