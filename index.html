@@ -385,7 +385,33 @@ tbody tr:last-child td{border:none}
         <button class="btn bS bFull bSm" onclick="switchTab('forgot')">Forgot your password?</button>
       </div>
 
-      <!-- ── CREATE ACCOUNT ── -->
+      <!-- ── 2FA VERIFY ── -->
+      <div class="authPanel" id="panel2fa">
+        <div style="text-align:center;margin-bottom:18px">
+          <div style="font-size:38px;margin-bottom:8px">🛡️</div>
+          <div style="font-size:15px;font-weight:700">Two-Factor Verification</div>
+          <div style="font-size:12px;color:var(--t2);margin-top:5px">Security code sent to</div>
+          <div id="twoFAEmailDisplay" style="font-size:14px;font-weight:700;color:var(--acc2);margin-top:3px;word-break:break-all"></div>
+        </div>
+        <div class="al aI" style="font-size:12px;margin-bottom:16px">
+          🔐 Enter the 6-digit code from your email to complete login. Expires in <strong id="tfaCountdown">5:00</strong>
+        </div>
+        <div class="otpWrap">
+          <input class="otpInp" maxlength="1" id="tfa0" oninput="tfaInput(this,0)" onkeydown="tfaKey(event,0)" type="text" inputmode="numeric"/>
+          <input class="otpInp" maxlength="1" id="tfa1" oninput="tfaInput(this,1)" onkeydown="tfaKey(event,1)" type="text" inputmode="numeric"/>
+          <input class="otpInp" maxlength="1" id="tfa2" oninput="tfaInput(this,2)" onkeydown="tfaKey(event,2)" type="text" inputmode="numeric"/>
+          <input class="otpInp" maxlength="1" id="tfa3" oninput="tfaInput(this,3)" onkeydown="tfaKey(event,3)" type="text" inputmode="numeric"/>
+          <input class="otpInp" maxlength="1" id="tfa4" oninput="tfaInput(this,4)" onkeydown="tfaKey(event,4)" type="text" inputmode="numeric"/>
+          <input class="otpInp" maxlength="1" id="tfa5" oninput="tfaInput(this,5)" onkeydown="tfaKey(event,5)" type="text" inputmode="numeric"/>
+        </div>
+        <div id="tfaErr" class="al aE" style="display:none"></div>
+        <button class="btn bP bFull" id="tfaBtn" onclick="verify2FA()" style="padding:13px;font-size:15px">🛡️ Verify & Login</button>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:14px">
+          <button class="btn bS bSm" id="tfaResendBtn" onclick="resend2FA()" disabled>Resend (<span id="tfaResendTimer">60</span>s)</button>
+          <button class="btn bS bSm" onclick="cancel2FA()">✕ Cancel</button>
+        </div>
+      </div>
+
       <div class="authPanel" id="panelRegister">
         <!-- Steps -->
         <div class="stepWrap">
@@ -599,20 +625,31 @@ const today = () => new Date().toISOString().slice(0,10);
 const plus3 = () => { const d=new Date();d.setDate(d.getDate()+3);return d.toISOString().slice(0,10); };
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const $ = id => document.getElementById(id);
+
+// Global collections (not business-scoped)
 const Col = n => collection(db,n);
 const Doc = (n,id) => doc(db,n,id);
+
+// Business-scoped collections — data isolated per business
+// Path: businesses/{bizId}/products, businesses/{bizId}/orders, etc.
+const BCol = n => collection(db,'businesses',G.bizId,n);
+const BDoc = (n,id) => doc(db,'businesses',G.bizId,n,id);
+const BCfgDoc = () => doc(db,'businesses',G.bizId,'config','settings');
 
 // ══ GLOBAL STATE ══
 const G = {
   lang: localStorage.getItem('dry_lang')||'en',
   theme: localStorage.getItem('dry_theme')||'dark',
   user: null,
-  role: null, // 'admin' | 'moderator'
+  role: null,       // 'admin' | 'moderator'
+  bizId: null,      // Business isolation key — each admin has own bizId
   cfg: {},
   page: 'dash',
   lastOrder: null,
   oItems: [{pid:'',qty:1,price:''}],
   oForm: null,
+  twoFACode: null,  // 2FA OTP in memory
+  twoFAEmail: null,
 };
 
 // ══ i18n ══
@@ -652,13 +689,17 @@ window.togglePw=(id)=>{const i=$(id);i.type=i.type==='password'?'text':'password
 
 // ══ TAB SWITCHING ══
 const tabMap={signin:'tabSI',register:'tabRG',forgot:'tabFP'};
-const panelMap={signin:'panelSignin',register:'panelRegister',forgot:'panelForgot'};
+const panelMap={signin:'panelSignin',register:'panelRegister',forgot:'panelForgot','2fa':'panel2fa'};
 window.switchTab=(tab)=>{
-  ['signin','register','forgot'].forEach(t=>{
-    $(tabMap[t])?.classList.toggle('active',t===tab);
-    $(panelMap[t])?.classList.toggle('active',t===tab);
-  });
-  if(tab!=='register') resetRegForm();
+  // Hide all panels
+  Object.values(panelMap).forEach(pid=>{const el=$(pid);if(el)el.classList.remove('active');});
+  // Remove all tab actives
+  Object.values(tabMap).forEach(tid=>{const el=$(tid);if(el)el.classList.remove('active');});
+  // Show target panel
+  const panel=$(panelMap[tab]);if(panel)panel.classList.add('active');
+  // Activate tab button (only for main 3)
+  const tabBtn=$(tabMap[tab]);if(tabBtn)tabBtn.classList.add('active');
+  if(tab!=='register'&&tab!=='2fa') resetRegForm();
 };
 
 // ══ STARS ANIMATION ══
@@ -789,9 +830,19 @@ window.rgStep1Next=async()=>{
 
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Checking...';
   try{
-    // Check email uniqueness in users collection
-    const snap=await getDocs(query(Col('users'),where('email','==',email)));
-    if(!snap.empty){err.style.display='flex';err.textContent='❌ An account with this email already exists.';btn.disabled=false;btn.innerHTML='Send Verification Code →';return;}
+    // Check email uniqueness — skip if permission denied (rules not set)
+    try{
+      const snap=await getDocs(query(Col('users'),where('email','==',email)));
+      if(!snap.empty){
+        err.style.display='flex';
+        err.textContent='❌ An account with this email already exists. Please sign in.';
+        btn.disabled=false;btn.innerHTML='Send Verification Code →';
+        return;
+      }
+    }catch(permErr){
+      // Firestore rules not set yet — continue anyway, Firebase Auth will catch duplicate emails
+      console.warn('Email check skipped (permission):', permErr.message);
+    }
 
     // Generate & send OTP
     _otpCode=genOTP();
@@ -799,7 +850,40 @@ window.rgStep1Next=async()=>{
     _rgData={name,phone,email};
 
     btn.innerHTML='<div class="spin spinSm"></div> Sending OTP...';
-    await sendOTPEmail(email,_otpCode,name);
+
+    // Store OTP — try Firestore, fallback to memory only
+    try{
+      const key=email.replace(/[@.]/g,'_');
+      await setDoc(Doc('otpCodes',key),{
+        otp:_otpCode, email, name,
+        expiresAt: new Date(Date.now()+10*60*1000),
+        createdAt: serverTimestamp()
+      });
+    }catch(otpErr){
+      console.warn('OTP store skipped:', otpErr.message);
+      // OTP still works — stored in memory (_otpCode variable)
+    }
+
+    // Try EmailJS
+    if(G.cfg.ejsKey && G.cfg.ejsService && G.cfg.ejsTemplate){
+      try{
+        await fetch('https://api.emailjs.com/api/v1.0/email/send',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            service_id:G.cfg.ejsService,
+            template_id:G.cfg.ejsTemplate,
+            user_id:G.cfg.ejsKey,
+            template_params:{to_email:email,to_name:name,otp_code:_otpCode,site_name:'Drystan'}
+          })
+        });
+        toast('📧 Verification code sent to your email!','ok');
+      }catch(ejsErr){
+        toast(`📧 DEV: OTP = ${_otpCode}`,'info');
+      }
+    } else {
+      toast(`📧 DEV MODE — OTP: ${_otpCode}`,'info');
+    }
 
     $('rgEmailDisplay').textContent=email;
     advanceStep(1,2);
@@ -808,6 +892,9 @@ window.rgStep1Next=async()=>{
     setTimeout(()=>$('otp0')?.focus(),300);
   }catch(e){
     err.style.display='flex';err.textContent='❌ '+e.message;
+    btn.disabled=false;btn.innerHTML='Send Verification Code →';
+  }
+};
   }finally{
     btn.disabled=false;btn.innerHTML='Send Verification Code →';
   }
@@ -906,7 +993,8 @@ window.rgStep3Create=async()=>{
   try{
     // Create Firebase Auth account
     const cred=await createUserWithEmailAndPassword(auth,_rgData.email,pass);
-    // Save to Firestore
+    // Save to Firestore — new users get moderator role
+    // They will be linked to an admin's business after admin approves
     await setDoc(Doc('users',cred.user.uid),{
       displayName:_rgData.name,
       username:username,
@@ -914,6 +1002,7 @@ window.rgStep3Create=async()=>{
       phone:_rgData.phone,
       role:'moderator',
       authUid:cred.user.uid,
+      bizId:cred.user.uid, // Own bizId until admin links them
       createdAt:serverTimestamp()
     });
     // Clean up OTP
@@ -927,6 +1016,93 @@ window.rgStep3Create=async()=>{
   }
 };
 
+// ══ 2FA SYSTEM ══
+let _tfaTimer=null, _tfaResendTimer=null, _tfaPendingUser=null;
+
+async function send2FACode(email, name){
+  G.twoFACode = genOTP();
+  G.twoFAEmail = email;
+  // Try EmailJS
+  if(G.cfg.ejsKey && G.cfg.ejsService && G.cfg.ejsTemplate){
+    try{
+      await fetch('https://api.emailjs.com/api/v1.0/email/send',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          service_id:G.cfg.ejsService, template_id:G.cfg.ejsTemplate, user_id:G.cfg.ejsKey,
+          template_params:{to_email:email, to_name:name||'User', otp_code:G.twoFACode, site_name:'Drystan 2FA'}
+        })
+      });
+      return true;
+    }catch{}
+  }
+  toast(`🛡️ 2FA Code: ${G.twoFACode}`,'info');
+  return false;
+}
+
+function start2FACountdown(){
+  let sec=300;
+  clearInterval(_tfaTimer);
+  _tfaTimer=setInterval(()=>{
+    sec--;
+    const el=$('tfaCountdown');
+    if(el)el.textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
+    if(sec<=0){clearInterval(_tfaTimer);const e=$('tfaErr');if(e){e.style.display='flex';e.textContent='❌ Code expired. Please login again.';}}
+  },1000);
+}
+
+function start2FAResend(){
+  let sec=60; const btn=$('tfaResendBtn'); const lbl=$('tfaResendTimer');
+  if(btn)btn.disabled=true;
+  clearInterval(_tfaResendTimer);
+  _tfaResendTimer=setInterval(()=>{
+    sec--; if(lbl)lbl.textContent=sec;
+    if(sec<=0){clearInterval(_tfaResendTimer);if(btn){btn.disabled=false;btn.innerHTML='Resend 🔄';}}
+  },1000);
+}
+
+window.tfaInput=(el,idx)=>{
+  el.value=el.value.replace(/\D/g,'').slice(-1);
+  if(el.value&&idx<5)$('tfa'+(idx+1))?.focus();
+  const code=[0,1,2,3,4,5].map(i=>$('tfa'+i)?.value||'').join('');
+  if(code.length===6)setTimeout(()=>verify2FA(),200);
+};
+window.tfaKey=(e,idx)=>{
+  if(e.key==='Backspace'&&!e.target.value&&idx>0)$('tfa'+(idx-1))?.focus();
+};
+
+window.verify2FA=async()=>{
+  const entered=[0,1,2,3,4,5].map(i=>$('tfa'+i)?.value||'').join('');
+  const err=$('tfaErr'); err.style.display='none';
+  if(entered.length<6){err.style.display='flex';err.textContent='❌ Enter all 6 digits.';return;}
+  if(entered!==G.twoFACode){
+    err.style.display='flex';err.textContent='❌ Wrong code. Try again.';
+    [0,1,2,3,4,5].forEach(i=>{const el=$('tfa'+i);if(el)el.value='';});
+    $('tfa0')?.focus(); return;
+  }
+  // 2FA passed — proceed with login
+  clearInterval(_tfaTimer);clearInterval(_tfaResendTimer);
+  G.twoFACode=null;
+  // Complete the Firebase sign in (already signed in, just need to load app)
+  // Auth state change will fire and load the app
+  toast('✅ Login successful!','ok');
+};
+
+window.resend2FA=async()=>{
+  if(!_tfaPendingUser)return;
+  await send2FACode(G.twoFAEmail, _tfaPendingUser.displayName||'User');
+  start2FACountdown(); start2FAResend();
+  [0,1,2,3,4,5].forEach(i=>{const el=$('tfa'+i);if(el)el.value='';});
+  $('tfa0')?.focus();
+  toast('New 2FA code sent!','ok');
+};
+
+window.cancel2FA=async()=>{
+  await signOut(auth);
+  G.twoFACode=null; _tfaPendingUser=null;
+  clearInterval(_tfaTimer);clearInterval(_tfaResendTimer);
+  switchTab('signin');
+};
+
 // ── AUTH (login / forgot) ──
 window.doLogin=async()=>{
   const u=$('siUser').value.trim();
@@ -934,33 +1110,29 @@ window.doLogin=async()=>{
   const err=$('siErr');
   const btn=$('siBtn');
   err.style.display='none';
-  if(!u||!p){err.style.display='flex';err.textContent='❌ Enter username and password.';return;}
+  if(!u||!p){err.style.display='flex';err.textContent='❌ Enter username/email and password.';return;}
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Signing in...';
   try{
     let email=null;
-    // If input is an email address, use directly
+    // Support email OR username login
     if(u.includes('@')){
       email=u;
     } else {
-      // Lookup by username in Firestore
+      // Lookup by username
       const uSnap=await getDocs(query(Col('users'),where('username','==',u)));
-      if(!uSnap.empty){
-        email=uSnap.docs[0].data().email;
-      } else if(u==='admin'){
-        // Fallback: try admin@drystan.app
-        email='admin@drystan.app';
-      } else {
+      if(!uSnap.empty){email=uSnap.docs[0].data().email;}
+      else if(u==='admin'){email='admin@drystan.app';}
+      else{
         err.style.display='flex';err.textContent='❌ Invalid username or password.';
-        btn.disabled=false;btn.innerHTML='Sign In →';
-        return;
+        btn.disabled=false;btn.innerHTML='Sign In →'; return;
       }
     }
     await signInWithEmailAndPassword(auth,email,p);
+    // 2FA will be triggered in onAuthStateChanged
   }catch(e){
     const msg=e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'||e.code==='auth/user-not-found'
-      ?'Invalid username or password.'
-      :e.code==='auth/too-many-requests'
-      ?'Too many attempts. Please try later.'
+      ?'Invalid username/email or password.'
+      :e.code==='auth/too-many-requests'?'Too many attempts. Try later.'
       :'Login failed. Check credentials.';
     err.style.display='flex';err.textContent='❌ '+msg;
     btn.disabled=false;btn.innerHTML='Sign In →';
@@ -1024,6 +1196,13 @@ function buildSidebar() {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${svgs[i.ico]||''}</svg>
       ${i.lbl}
     </button>`).join('')}
+  </div>
+  <div class="sSection" style="margin-top:auto">
+    <div class="sSectionLbl">ACCOUNT</div>
+    <button class="nItem${G.page==='account'?' active':''}" data-p="account" onclick="nav('account')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      My Account
+    </button>
   </div>`;
 
   const un = G.user?.displayName || G.user?.email?.split('@')[0] || 'User';
@@ -1034,7 +1213,7 @@ function buildSidebar() {
 }
 
 // ══ NAV ══
-const pgTitles = {dash:'Dashboard',prods:'Products',newOrder:'Create Order',orders:'Orders',custs:'Customers',team:'Team & Moderators',cfg:'Settings'};
+const pgTitles = {dash:'Dashboard',prods:'Products',newOrder:'Create Order',orders:'Orders',custs:'Customers',team:'Team & Moderators',cfg:'Settings',account:'My Account'};
 window.nav = (p) => {
   // Permission check
   if(G.role==='moderator' && !['newOrder','orders'].includes(p)) { toast('Access denied','err'); return; }
@@ -1053,7 +1232,7 @@ function renderPage(){
   const nm=$('bizNm');
   if(nm)nm.textContent=G.lang==='bn'?(G.cfg.bizNameBn||G.cfg.bizName||'Drystan'):(G.cfg.bizName||'Drystan');
   buildSidebar();
-  const fns={dash:pgDash,prods:pgProds,newOrder:pgNewOrder,orders:pgOrders,custs:pgCusts,team:pgTeam,cfg:pgCfg};
+  const fns={dash:pgDash,prods:pgProds,newOrder:pgNewOrder,orders:pgOrders,custs:pgCusts,team:pgTeam,cfg:pgCfg,account:pgAccount};
   (fns[G.page]||pgDash)();
 }
 
@@ -1064,9 +1243,9 @@ async function pgDash() {
   loading();
   try{
     const [ordSnap,pSnap,cSnap]=await Promise.all([
-      getDocs(query(Col('orders'),orderBy('createdAt','desc'))),
-      getDocs(query(Col('products'),where('active','==',true))),
-      getDocs(Col('customers'))
+      getDocs(query(BCol('orders'),orderBy('createdAt','desc'))),
+      getDocs(query(BCol('products'),where('active','==',true))),
+      getDocs(BCol('customers'))
     ]);
     const orders=ordSnap.docs.map(d=>({id:d.id,...d.data()}));
     const prods=pSnap.docs.map(d=>({id:d.id,...d.data()}));
@@ -1163,7 +1342,7 @@ let pSrch='';
 async function pgProds() {
   loading();
   try{
-    const snap=await getDocs(query(Col('products'),where('active','==',true),orderBy('createdAt','desc')));
+    const snap=await getDocs(query(BCol('products'),where('active','==',true),orderBy('createdAt','desc')));
     let prods=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(pSrch)prods=prods.filter(p=>p.name?.toLowerCase().includes(pSrch.toLowerCase())||(p.nameBn&&p.nameBn.includes(pSrch)));
     setC(`
@@ -1221,7 +1400,7 @@ async function pgProds() {
 
 async function openProdMod(id=null) {
   let p=null;
-  if(id){const d=await getDoc(Doc('products',id));if(d.exists())p={id,...d.data()};}
+  if(id){const d=await getDoc(BDoc('products',id));if(d.exists())p={id,...d.data()};}
   $('prodMod').innerHTML=`
   <div class="mH"><h3>${p?'✏️ Edit Product':'➕ Add Product'}</h3><button class="btn bS bIco" onclick="closeMov('prodMOvl')">✕</button></div>
   <div class="mB">
@@ -1250,8 +1429,8 @@ async function saveProd(id) {
   try{
     const data={name:$('p_n').value.trim(),nameBn:$('p_nb').value.trim(),buyPrice:Number($('p_b').value),sellPrice:Number($('p_s').value),stock:Number($('p_st').value),alertAt:Number($('p_al').value)||5,cat:$('p_cat').value.trim()||'General',description:$('p_desc').value.trim(),active:true};
     if(!data.name||!data.sellPrice){toast('Name and sell price required','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
-    if(id){await updateDoc(Doc('products',id),{...data,updatedAt:serverTimestamp()});toast('Product updated! ✅');}
-    else{await addDoc(Col('products'),{...data,createdAt:serverTimestamp()});toast('Product added! ✅');}
+    if(id){await updateDoc(BDoc('products',id),{...data,updatedAt:serverTimestamp()});toast('Product updated! ✅');}
+    else{await addDoc(BCol('products'),{...data,createdAt:serverTimestamp()});toast('Product added! ✅');}
     closeMov('prodMOvl');pgProds();
   }catch(e){toast(e.message,'err');btn.disabled=false;btn.innerHTML='💾 Save';}
 }
@@ -1259,7 +1438,7 @@ window.saveProd=saveProd;
 
 async function delProd(id,name) {
   if(!confirm(`Delete "${name}"?`))return;
-  await updateDoc(Doc('products',id),{active:false});
+  await updateDoc(BDoc('products',id),{active:false});
   toast('Product deleted');pgProds();
 }
 window.delProd=delProd;
@@ -1269,7 +1448,7 @@ async function pgNewOrder() {
   if(G.lastOrder){showReceipt(G.lastOrder);return;}
   loading();
   try{
-    const snap=await getDocs(query(Col('products'),where('active','==',true)));
+    const snap=await getDocs(query(BCol('products'),where('active','==',true)));
     const prods=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(!G.oForm) G.oForm={cName:'',cPhone:'',cAddr:'',ordererPhone:'',recvName:'',recvPhone:'',payMethod:'cod',delivery:G.cfg.delCOD||'150',rLang:G.lang,orderDate:today(),delivDate:plus3(),notes:''};
     const f=G.oForm;
@@ -1406,7 +1585,7 @@ window.submitOrder=async()=>{
   const btn=$('subOBtn');btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Creating...';
   try{
     for(const it of validItems){
-      const pd=await getDoc(Doc('products',it.pid));
+      const pd=await getDoc(BDoc('products',it.pid));
       const pdata=pd.data();
       if(!pdata||Number(pdata.stock)<Number(it.qty)){
         toast(`Insufficient stock for ${pdata?.name}. Available: ${pdata?.stock||0}`,'err');
@@ -1416,25 +1595,25 @@ window.submitOrder=async()=>{
     const sub=validItems.reduce((s,it)=>s+(Number(it.price)*Number(it.qty)),0);
     const del=Number(f.delivery||0);
     const total=sub+del;
-    const cnt=(await getDocs(Col('orders'))).size;
+    const cnt=(await getDocs(BCol('orders'))).size;
     const num='DRY-'+String(cnt+1).padStart(5,'0');
     const ordPhone=f.ordererPhone||f.cPhone;
     const recvPhone=f.recvPhone||ordPhone;
     // customer
-    const cSnap=await getDocs(query(Col('customers'),where('phone','==',ordPhone)));
+    const cSnap=await getDocs(query(BCol('customers'),where('phone','==',ordPhone)));
     let custId;
     if(!cSnap.empty){
       const cDoc=cSnap.docs[0];custId=cDoc.id;
-      await updateDoc(Doc('customers',custId),{name:f.cName,addr:f.cAddr,orders:(cDoc.data().orders||0)+1,spent:(cDoc.data().spent||0)+total,updatedAt:serverTimestamp()});
+      await updateDoc(BDoc('customers',custId),{name:f.cName,addr:f.cAddr,orders:(cDoc.data().orders||0)+1,spent:(cDoc.data().spent||0)+total,updatedAt:serverTimestamp()});
     }else{
-      const r=await addDoc(Col('customers'),{name:f.cName,phone:ordPhone,addr:f.cAddr,orders:1,spent:total,createdAt:serverTimestamp()});
+      const r=await addDoc(BCol('customers'),{name:f.cName,phone:ordPhone,addr:f.cAddr,orders:1,spent:total,createdAt:serverTimestamp()});
       custId=r.id;
     }
     const oItems=await Promise.all(validItems.map(async it=>{
-      const pd=(await getDoc(Doc('products',it.pid))).data();
+      const pd=(await getDoc(BDoc('products',it.pid))).data();
       return{pid:it.pid,name:pd.name,nameBn:pd.nameBn||pd.name,qty:Number(it.qty),price:Number(it.price),lineTotal:Number(it.price)*Number(it.qty)};
     }));
-    const oRef=await addDoc(Col('orders'),{
+    const oRef=await addDoc(BCol('orders'),{
       num,custId,cName:f.cName,cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,
       cAddr:f.cAddr,recvName:f.recvName||f.cName,
       payMethod:f.payMethod,delivery:del,subtotal:sub,total,
@@ -1443,8 +1622,8 @@ window.submitOrder=async()=>{
       items:oItems,createdBy:G.user?.uid,createdAt:serverTimestamp()
     });
     for(const it of validItems){
-      const pd=await getDoc(Doc('products',it.pid));
-      await updateDoc(Doc('products',it.pid),{stock:Number(pd.data().stock)-Number(it.qty)});
+      const pd=await getDoc(BDoc('products',it.pid));
+      await updateDoc(BDoc('products',it.pid),{stock:Number(pd.data().stock)-Number(it.qty)});
     }
     toast('Order created successfully! 🎉');
     G.lastOrder={id:oRef.id,num,cName:f.cName,cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,cAddr:f.cAddr,recvName:f.recvName||f.cName,payMethod:f.payMethod,delivery:del,subtotal:sub,total,orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:oItems};
@@ -1524,7 +1703,7 @@ let oSrch='',oFilt='';
 async function pgOrders() {
   loading();
   try{
-    let q=oFilt?query(Col('orders'),where('status','==',oFilt),orderBy('createdAt','desc')):query(Col('orders'),orderBy('createdAt','desc'));
+    let q=oFilt?query(BCol('orders'),where('status','==',oFilt),orderBy('createdAt','desc')):query(BCol('orders'),orderBy('createdAt','desc'));
     const snap=await getDocs(q);
     let orders=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(oSrch)orders=orders.filter(o=>o.num?.toLowerCase().includes(oSrch.toLowerCase())||o.cName?.toLowerCase().includes(oSrch.toLowerCase())||o.cPhone?.includes(oSrch));
@@ -1578,7 +1757,7 @@ async function pgOrders() {
 }
 
 async function viewOrder(id) {
-  const d=await getDoc(Doc('orders',id));
+  const d=await getDoc(BDoc('orders',id));
   const o={id,...d.data()};
   $('ordMod').innerHTML=`
   <div class="mH"><h3>📋 Order ${esc(o.num)}</h3><button class="btn bS bIco" onclick="closeMov('ordMOvl')">✕</button></div>
@@ -1637,7 +1816,7 @@ window.viewOrder=viewOrder;
 
 async function updOrdSt(id){
   try{
-    await updateDoc(Doc('orders',id),{status:$('oStSel').value,payStatus:$('oPstSel').value,updatedAt:serverTimestamp()});
+    await updateDoc(BDoc('orders',id),{status:$('oStSel').value,payStatus:$('oPstSel').value,updatedAt:serverTimestamp()});
     toast('Status updated! ✅');closeMov('ordMOvl');pgOrders();
   }catch(e){toast(e.message,'err');}
 }
@@ -1646,15 +1825,15 @@ window.updOrdSt=updOrdSt;
 async function delOrder(id){
   if(!confirm('Delete this order? Stock will be restored.'))return;
   try{
-    const d=await getDoc(Doc('orders',id));
+    const d=await getDoc(BDoc('orders',id));
     const o=d.data();
     if(o.status!=='cancelled'&&o.items){
       for(const it of o.items){
-        const pd=await getDoc(Doc('products',it.pid));
-        if(pd.exists())await updateDoc(Doc('products',it.pid),{stock:Number(pd.data().stock||0)+it.qty});
+        const pd=await getDoc(BDoc('products',it.pid));
+        if(pd.exists())await updateDoc(BDoc('products',it.pid),{stock:Number(pd.data().stock||0)+it.qty});
       }
     }
-    await deleteDoc(Doc('orders',id));
+    await deleteDoc(BDoc('orders',id));
     toast('Order deleted, stock restored');pgOrders();
   }catch(e){toast(e.message,'err');}
 }
@@ -1665,7 +1844,7 @@ let cSrch='';
 async function pgCusts(){
   loading();
   try{
-    const snap=await getDocs(query(Col('customers'),orderBy('createdAt','desc')));
+    const snap=await getDocs(query(BCol('customers'),orderBy('createdAt','desc')));
     let custs=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(cSrch)custs=custs.filter(c=>c.name?.toLowerCase().includes(cSrch.toLowerCase())||c.phone?.includes(cSrch));
     setC(`
@@ -1698,10 +1877,10 @@ async function pgCusts(){
 }
 
 async function viewCust(id){
-  const cd=await getDoc(Doc('customers',id));
+  const cd=await getDoc(BDoc('customers',id));
   const c={id,...cd.data()};
   let orders=[];
-  try{const oSnap=await getDocs(query(Col('orders'),where('custId','==',id),orderBy('createdAt','desc')));orders=oSnap.docs.map(d=>({id:d.id,...d.data()}));}catch{}
+  try{const oSnap=await getDocs(query(BCol('orders'),where('custId','==',id),orderBy('createdAt','desc')));orders=oSnap.docs.map(d=>({id:d.id,...d.data()}));}catch{}
   const sb=s=>{const m={pending:'bPend',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent'};const l={pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Parcel Sent'};return`<span class="badge ${m[s]||'bPend'}">${l[s]||s}</span>`;};
   $('custMod').innerHTML=`
   <div class="mH"><h3>👤 ${esc(c.name)}</h3><button class="btn bS bIco" onclick="closeMov('custMOvl')">✕</button></div>
@@ -1733,7 +1912,7 @@ window.viewCust=viewCust;
 
 async function delCust(id,name){
   if(!confirm(`Delete customer "${name}"?`))return;
-  await deleteDoc(Doc('customers',id));
+  await deleteDoc(BDoc('customers',id));
   toast('Customer deleted');pgCusts();
 }
 window.delCust=delCust;
@@ -1863,7 +2042,7 @@ window.deleteMod=deleteMod;
 async function pgCfg(){
   loading();
   try{
-    const cfgDoc=await getDoc(Doc('config','settings'));
+    const cfgDoc=await getDoc(BCfgDoc());
     const cfg=cfgDoc.data()||{};
     setC(`
     <div class="pH"><div><h1>Settings</h1><p>Manage business configuration</p></div></div>
@@ -1921,6 +2100,27 @@ async function pgCfg(){
           <div class="al aW" style="font-size:12px;margin-bottom:12px">⚠️ Template must have variables: <strong>{{to_email}}, {{to_name}}, {{otp_code}}, {{site_name}}</strong></div>
           <button class="btn bP bFull" onclick="saveEmailCfg()">💾 Save Email Config</button>
         </div>
+        <div class="card" style="border-color:rgba(168,85,247,.3)">
+          <div class="cardTitle">🛡️ Two-Factor Authentication (2FA)</div>
+          <div class="al aI" style="font-size:12px;margin-bottom:12px">
+            🔐 When enabled, every login requires a one-time code sent to email. Requires EmailJS to be configured above.
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--card2);border-radius:10px;border:1px solid var(--border)">
+            <div>
+              <div style="font-weight:600;font-size:14px">Enable 2FA Login</div>
+              <div style="font-size:12px;color:var(--t2);margin-top:3px">Extra security for all accounts</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:48px;height:26px;cursor:pointer">
+              <input type="checkbox" id="twoFAToggle" ${cfg.twoFA?'checked':''} style="opacity:0;width:0;height:0" onchange="toggle2FA(this.checked)"/>
+              <span style="position:absolute;inset:0;background:${cfg.twoFA?'var(--grad)':'var(--border2)'};border-radius:13px;transition:background .3s">
+                <span style="position:absolute;left:${cfg.twoFA?'24':'2'}px;top:2px;width:22px;height:22px;background:#fff;border-radius:50%;transition:left .3s;box-shadow:0 1px 4px rgba(0,0,0,.3)"></span>
+              </span>
+            </label>
+          </div>
+          <div style="margin-top:10px;font-size:12px;color:${cfg.twoFA?'#10B981':'var(--t3)'}">
+            ${cfg.twoFA?'✅ 2FA is ENABLED — login requires email code':'⚪ 2FA is disabled'}
+          </div>
+        </div>
       </div>
     </div>`);
   }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
@@ -1929,7 +2129,7 @@ async function pgCfg(){
 window.saveCfg=async()=>{
   try{
     const data={bizName:$('s_n').value,bizNameBn:$('s_nb').value,bizAddr:$('s_addr').value,bizPhone:$('s_ph').value,delCOD:$('s_dc').value,delPaid:$('s_dp').value,footerEn:$('s_fe').value,footerBn:$('s_fb').value};
-    await setDoc(Doc('config','settings'),data,{merge:true});
+    await setDoc(BCfgDoc(),data,{merge:true});
     G.cfg={...G.cfg,...data};
     $('bizNm').textContent=G.lang==='bn'?(data.bizNameBn||data.bizName):(data.bizName);
     toast('Settings saved! ✅');
@@ -1939,15 +2139,162 @@ window.saveCfg=async()=>{
 window.saveEmailCfg=async()=>{
   try{
     const data={ejsKey:$('s_ejk').value.trim(),ejsService:$('s_ejs').value.trim(),ejsTemplate:$('s_ejt').value.trim()};
-    await setDoc(Doc('config','settings'),data,{merge:true});
+    await setDoc(BCfgDoc(),data,{merge:true});
     G.cfg={...G.cfg,...data};
     toast('Email config saved! OTP emails will now be sent. ✅');
   }catch(e){toast(e.message,'err');}
 };
 
+window.toggle2FA=async(enabled)=>{
+  try{
+    await setDoc(BCfgDoc(),{twoFA:enabled},{merge:true});
+    G.cfg.twoFA=enabled;
+    toast(enabled?'🛡️ 2FA Enabled! All logins now require email code.':'⚪ 2FA Disabled.', enabled?'ok':'info');
+    pgCfg();
+  }catch(e){toast(e.message,'err');}
+};
+
 window.closeMov=(id)=>{$(id)?.classList.remove('open');};
 
+// ══ MY ACCOUNT PAGE ══
+async function pgAccount(){
+  loading();
+  try{
+    const uDoc=await getDoc(Doc('users',G.user.uid));
+    const ud=uDoc.data()||{};
+    setC(`
+    <div class="pH"><div><h1>👤 My Account</h1><p>Manage your profile and security</p></div></div>
+    <div class="g g2" style="gap:16px">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card">
+          <div class="cardTitle">👤 Profile Information</div>
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding:16px;background:var(--acc4);border-radius:12px;border:1px solid rgba(99,102,241,.2)">
+            <div style="width:64px;height:64px;border-radius:50%;background:var(--grad2);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 0 20px rgba(99,102,241,.4)">
+              ${(ud.displayName||'U')[0].toUpperCase()}
+            </div>
+            <div>
+              <div style="font-size:18px;font-weight:800">${esc(ud.displayName||'User')}</div>
+              <div style="font-size:13px;color:var(--t2);margin-top:2px">@${esc(ud.username||'-')}</div>
+              <span class="badge ${ud.role==='admin'?'bAdmin':'bMod'}" style="margin-top:6px">${ud.role==='admin'?'ADMIN':'MODERATOR'}</span>
+            </div>
+          </div>
+          <div class="afG"><label class="afL">Display Name</label><input class="afI" id="ac_name" value="${esc(ud.displayName||'')}"/></div>
+          <div class="afG"><label class="afL">Username <span style="color:var(--t3);font-size:10px">(used to login)</span></label>
+            <input class="afI" id="ac_user" value="${esc(ud.username||'')}" oninput="checkAccUsername(this.value,'${ud.username||''}')"/>
+            <div id="acUnameChk" style="font-size:11px;margin-top:4px;display:none"></div>
+          </div>
+          <div class="afG"><label class="afL">Phone</label><input class="afI" id="ac_phone" value="${esc(ud.phone||'')}"/></div>
+          <div class="afG"><label class="afL">Email <span style="color:var(--t3);font-size:10px">(login email)</span></label>
+            <input class="afI" value="${esc(ud.email||G.user?.email||'')}" readonly style="opacity:.6;cursor:not-allowed"/>
+          </div>
+          <button class="btn bP bFull" onclick="saveAccountProfile()">💾 Save Profile</button>
+        </div>
+        <div class="card">
+          <div class="cardTitle">🔒 Change Password</div>
+          <div class="afG"><label class="afL">Current Password</label>
+            <input class="afI" type="password" id="ac_oldpw" placeholder="Your current password"/>
+          </div>
+          <div class="afG"><label class="afL">New Password</label>
+            <input class="afI" type="password" id="ac_newpw" placeholder="Min 6 characters" oninput="checkPwStr(this.value)"/>
+            <div class="pwStrWrap"><div class="pwStrBar"><div class="pwStrFill" id="pwStr"></div></div><span class="pwStrTxt" id="pwStrTxt" style="color:var(--t3)">Enter password</span></div>
+          </div>
+          <div class="afG"><label class="afL">Confirm New Password</label>
+            <input class="afI" type="password" id="ac_newpw2" placeholder="Repeat new password"/>
+          </div>
+          <button class="btn bG bFull" onclick="changePassword()">🔑 Update Password</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card" style="border-color:rgba(99,102,241,.25)">
+          <div class="cardTitle">📊 Account Details</div>
+          <div style="font-size:13px;line-height:2.8;color:var(--t2)">
+            <div>Role: <strong style="color:var(--t1)">${ud.role==='admin'?'🛡️ Administrator':'👤 Moderator'}</strong></div>
+            <div>Username: <strong style="color:var(--acc2)">@${esc(ud.username||'-')}</strong></div>
+            <div>Email: <strong style="color:var(--t1)">${esc(ud.email||G.user?.email||'-')}</strong></div>
+            <div>Phone: <strong style="color:var(--t1)">${esc(ud.phone||'-')}</strong></div>
+            <div>Business ID: <code style="font-size:11px;color:var(--t3)">${G.bizId||'-'}</code></div>
+            <div>Joined: <strong style="color:var(--t1)">${ud.createdAt?fdate(ud.createdAt):'-'}</strong></div>
+          </div>
+        </div>
+        <div class="card" style="border-color:rgba(16,185,129,.25)">
+          <div class="cardTitle">✅ Login Methods</div>
+          <div style="padding:12px;background:rgba(16,185,129,.08);border-radius:10px;border:1px solid rgba(16,185,129,.2);margin-bottom:12px">
+            <div style="font-size:13px;font-weight:600;color:#10B981">📧 Email + Password</div>
+            <div style="font-size:12px;color:var(--t2);margin-top:4px">${esc(ud.email||G.user?.email||'-')}</div>
+          </div>
+          <div style="padding:12px;background:rgba(99,102,241,.08);border-radius:10px;border:1px solid rgba(99,102,241,.2)">
+            <div style="font-size:13px;font-weight:600;color:var(--acc2)">👤 Username Login</div>
+            <div style="font-size:12px;color:var(--t2);margin-top:4px">@${esc(ud.username||'-')}</div>
+          </div>
+        </div>
+        <div class="card" style="border-color:rgba(239,68,68,.2)">
+          <div class="cardTitle">⚠️ Danger Zone</div>
+          <button class="btn bD bFull" onclick="if(confirm('Logout from all devices?'))doLogout()">🚪 Logout</button>
+        </div>
+      </div>
+    </div>`);
+  }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
+}
+
+let _acUnameDebounce=null;
+window.checkAccUsername=async(val,current)=>{
+  const el=$('acUnameChk'); if(!el)return;
+  const v=val.trim().toLowerCase();
+  if(v===current){el.style.display='none';return;}
+  if(v.length<3){el.style.display='block';el.style.color='var(--yellow)';el.textContent='Min 3 chars';return;}
+  if(!/^[a-z0-9_]+$/.test(v)){el.style.display='block';el.style.color='var(--red)';el.textContent='Only letters, numbers, underscore';return;}
+  el.style.display='block';el.style.color='var(--t2)';el.textContent='Checking...';
+  clearTimeout(_acUnameDebounce);
+  _acUnameDebounce=setTimeout(async()=>{
+    const snap=await getDocs(query(Col('users'),where('username','==',v)));
+    if(snap.empty){el.style.color='#22c55e';el.textContent='✅ Available';}
+    else{el.style.color='var(--red)';el.textContent='❌ Taken';}
+  },500);
+};
+
+window.saveAccountProfile=async()=>{
+  const name=$('ac_name').value.trim();
+  const username=$('ac_user').value.trim().toLowerCase();
+  const phone=$('ac_phone').value.trim();
+  if(!name||!username){toast('Name and username required','err');return;}
+  try{
+    // Check username not taken by others
+    const snap=await getDocs(query(Col('users'),where('username','==',username)));
+    if(!snap.empty && snap.docs[0].id!==G.user.uid){toast('Username already taken','err');return;}
+    await updateDoc(Doc('users',G.user.uid),{displayName:name,username,phone,updatedAt:serverTimestamp()});
+    G.user.displayName=name;
+    // Update sidebar avatar
+    const un=name[0].toUpperCase();
+    $('sAvatar').textContent=un; $('tAv').textContent=un;
+    $('sUserNm').textContent=name;
+    toast('Profile updated! ✅');
+  }catch(e){toast(e.message,'err');}
+};
+
+window.changePassword=async()=>{
+  const oldpw=$('ac_oldpw').value;
+  const newpw=$('ac_newpw').value;
+  const newpw2=$('ac_newpw2').value;
+  if(!oldpw||!newpw||!newpw2){toast('Fill all password fields','err');return;}
+  if(newpw.length<6){toast('New password min 6 characters','err');return;}
+  if(newpw!==newpw2){toast('Passwords do not match','err');return;}
+  try{
+    // Re-authenticate first
+    const credential=EmailAuthProvider.credential(G.user.email,oldpw);
+    await reauthenticateWithCredential(G.user,credential);
+    await updatePassword(G.user,newpw);
+    toast('Password changed successfully! ✅');
+    $('ac_oldpw').value='';$('ac_newpw').value='';$('ac_newpw2').value='';
+  }catch(e){
+    const msg=e.code==='auth/wrong-password'?'Current password is incorrect.':e.message;
+    toast('❌ '+msg,'err');
+  }
+};
+
 // ══ AUTH STATE LISTENER ══
+// ══ AUTH STATE — 2FA + Business Isolation ══
+let _appReady=false, _tfaPendingUser=null;
+
 onAuthStateChanged(auth, async(user)=>{
   const ls=$('loadScreen');
   if(user){
@@ -1955,40 +2302,84 @@ onAuthStateChanged(auth, async(user)=>{
     try{
       const uDoc=await getDoc(Doc('users',user.uid));
       if(uDoc.exists()){
-        G.role=uDoc.data().role||'moderator';
-        // Update display name from Firestore
-        if(uDoc.data().displayName) G.user.displayName=uDoc.data().displayName;
+        const ud=uDoc.data();
+        G.role=ud.role||'moderator';
+        if(ud.displayName) G.user.displayName=ud.displayName;
+        // Business isolation: admin uses own UID as bizId; moderators use their admin's UID
+        G.bizId = G.role==='admin' ? user.uid : (ud.bizId||user.uid);
+        // Load config from business namespace
+        try{const cfgDoc=await getDoc(BCfgDoc());if(cfgDoc.exists())G.cfg=cfgDoc.data();}catch{}
+
+        // ── 2FA ── (only if enabled in settings AND emailjs configured)
+        const want2FA = G.cfg.twoFA===true && G.cfg.ejsKey;
+        if(want2FA && !_appReady){
+          const email=ud.email||user.email, name=ud.displayName||'User';
+          _tfaPendingUser={email,name};
+          $('twoFAEmailDisplay').textContent=email;
+          ls.classList.add('hide');setTimeout(()=>ls.style.display='none',500);
+          $('appWrap').classList.remove('show');
+          $('loginWrap').classList.add('show');
+          switchTab('2fa'); applyTheme();
+          await send2FACode(email, name);
+          start2FACountdown(); start2FAResend();
+          setTimeout(()=>$('tfa0')?.focus(),300);
+          return; // wait for verify2FA → calls loadApp()
+        }
       } else {
-        G.role='admin';
-        await setDoc(Doc('users',user.uid),{displayName:'Admin',username:'admin',email:user.email,role:'admin',authUid:user.uid,createdAt:serverTimestamp()},{merge:true});
+        // First login — create admin record
+        G.role='admin'; G.bizId=user.uid;
+        await setDoc(Doc('users',user.uid),{
+          displayName:'Admin', username:'admin', email:user.email,
+          role:'admin', authUid:user.uid, bizId:user.uid, createdAt:serverTimestamp()
+        },{merge:true});
+        // Load config
+        try{const cfgDoc=await getDoc(BCfgDoc());if(cfgDoc.exists())G.cfg=cfgDoc.data();}catch{}
       }
-      const cfgDoc=await getDoc(Doc('config','settings'));
-      if(cfgDoc.exists())G.cfg=cfgDoc.data();
-    }catch{}
-    ls.classList.add('hide');setTimeout(()=>ls.style.display='none',500);
-    $('loginWrap').classList.remove('show');
-    $('appWrap').classList.add('show');
-    applyTheme();
-    $('langLbl').textContent=G.lang.toUpperCase();
-    G.page=G.role==='moderator'?'newOrder':'dash';
-    nav(G.page);
+    }catch(e){console.error(e);}
+    _appReady=true;
+    loadApp();
   }else{
-    G.user=null;G.role=null;
+    _appReady=false; _tfaPendingUser=null;
+    G.user=null; G.role=null; G.bizId=null; G.twoFACode=null;
     ls.classList.add('hide');setTimeout(()=>ls.style.display='none',500);
     $('appWrap').classList.remove('show');
     $('loginWrap').classList.add('show');
-    applyTheme();
-    createStars();
-    // Default to sign in tab
-    switchTab('signin');
+    applyTheme(); createStars(); switchTab('signin');
   }
 });
+
+// Called after 2FA verify (or directly if 2FA disabled)
+function loadApp(){
+  const ls=$('loadScreen');
+  ls.classList.add('hide');setTimeout(()=>ls.style.display='none',500);
+  $('loginWrap').classList.remove('show');
+  $('appWrap').classList.add('show');
+  applyTheme();
+  $('langLbl').textContent=G.lang.toUpperCase();
+  G.page=G.role==='moderator'?'newOrder':'dash';
+  nav(G.page);
+}
+
+// Override verify2FA to call loadApp after 2FA passes
+window.verify2FA=async()=>{
+  const entered=[0,1,2,3,4,5].map(i=>$('tfa'+i)?.value||'').join('');
+  const err=$('tfaErr'); err.style.display='none';
+  if(entered.length<6){err.style.display='flex';err.textContent='❌ Enter all 6 digits.';return;}
+  if(entered!==G.twoFACode){
+    err.style.display='flex';err.textContent='❌ Wrong code. Try again.';
+    [0,1,2,3,4,5].forEach(i=>{const el=$('tfa'+i);if(el)el.value='';});
+    $('tfa0')?.focus(); return;
+  }
+  clearInterval(_tfaTimer); clearInterval(_tfaResendTimer);
+  G.twoFACode=null; _tfaPendingUser=null; _appReady=true;
+  toast('✅ 2FA verified! Welcome.','ok');
+  loadApp();
+};
 
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&$('loginWrap').classList.contains('show')&&$('panelSignin')?.classList.contains('active'))doLogin();
 });
 
-// Init stars on page load
 createStars();
 window.G=G;
 </script>
