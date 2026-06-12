@@ -26,23 +26,52 @@
   --border:rgba(99,102,241,.12);--border2:rgba(99,102,241,.22);
   --t1:#0F172A;--t2:#475569;--t3:#64748B;
 }
-/* Light mode fixes */
-[data-theme=light] .modal{background:#fff;color:#0F172A}
-[data-theme=light] .afI{background:#fff;border-color:rgba(99,102,241,.2);color:#0F172A}
-[data-theme=light] .afI::placeholder{color:#94A3B8}
-[data-theme=light] .card{background:rgba(99,102,241,.04)}
-[data-theme=light] .mOvl{background:rgba(0,0,0,.5)}
-[data-theme=light] .al{color:inherit}
-[data-theme=light] .aE{color:#DC2626}
-[data-theme=light] .aI{color:#4F46E5}
-[data-theme=light] .aW{color:#D97706}
-[data-theme=light] .aO{color:#059669}
-[data-theme=light] td{color:#0F172A}
-[data-theme=light] th{color:#475569}
-[data-theme=light] .nItem{color:#475569}
-[data-theme=light] .nItem:hover{color:#0F172A;background:rgba(99,102,241,.08)}
-[data-theme=light] .nItem.active{color:#4F46E5;background:rgba(99,102,241,.1)}
-[data-theme=light] .ownerCard{background:rgba(249,115,22,.05)}
+/* ══ COMPREHENSIVE LIGHT MODE FIXES ══ */
+[data-theme=light] .modal{background:#fff!important;color:#0F172A!important}
+[data-theme=light] .mH{background:#fff;border-bottom-color:rgba(99,102,241,.15)}
+[data-theme=light] .mH h3{color:#0F172A}
+[data-theme=light] .mB{background:#fff;color:#0F172A}
+[data-theme=light] .mF{background:#fff;border-top-color:rgba(99,102,241,.15)}
+[data-theme=light] .afI{background:#fff!important;border-color:rgba(99,102,241,.25)!important;color:#0F172A!important}
+[data-theme=light] .afI::placeholder{color:#94A3B8!important}
+[data-theme=light] .afI option{background:#fff;color:#0F172A}
+[data-theme=light] .afL{color:#475569!important}
+[data-theme=light] .fI{background:#fff!important;border-color:rgba(99,102,241,.2)!important;color:#0F172A!important}
+[data-theme=light] .fI::placeholder{color:#94A3B8!important}
+[data-theme=light] .fL{color:#475569!important}
+[data-theme=light] .card{background:rgba(255,255,255,.9)!important;border-color:rgba(99,102,241,.12)!important;color:#0F172A}
+[data-theme=light] .cardTitle{color:#0F172A}
+[data-theme=light] .statCard{background:#fff!important;border-color:rgba(99,102,241,.12)!important}
+[data-theme=light] .statLbl,.statSub{color:#475569}
+[data-theme=light] .mOvl{background:rgba(0,0,0,.55)!important}
+[data-theme=light] .al{color:inherit!important}
+[data-theme=light] .aE{color:#DC2626!important;background:rgba(239,68,68,.06)!important}
+[data-theme=light] .aI{color:#4F46E5!important;background:rgba(99,102,241,.06)!important}
+[data-theme=light] .aW{color:#D97706!important;background:rgba(245,158,11,.06)!important}
+[data-theme=light] .aO{color:#059669!important;background:rgba(16,185,129,.06)!important}
+[data-theme=light] td{color:#0F172A!important}
+[data-theme=light] th{color:#475569!important}
+[data-theme=light] tbody tr:hover td{background:rgba(99,102,241,.06)!important}
+[data-theme=light] .nItem{color:#475569!important}
+[data-theme=light] .nItem:hover{color:#0F172A!important;background:rgba(99,102,241,.08)!important}
+[data-theme=light] .nItem.active{color:#4F46E5!important;background:rgba(99,102,241,.1)!important}
+[data-theme=light] .pgTitle{color:#0F172A}
+[data-theme=light] .tBtn{color:#475569!important;background:#fff!important;border-color:rgba(99,102,241,.15)!important}
+[data-theme=light] .tBtn:hover{color:#0F172A!important}
+[data-theme=light] .sBar{background:#fff!important;border-color:rgba(99,102,241,.15)!important}
+[data-theme=light] .sBar input{color:#0F172A!important}
+[data-theme=light] .sBar input::placeholder{color:#94A3B8!important}
+[data-theme=light] .badge{opacity:.9}
+[data-theme=light] .sUserCard{background:rgba(99,102,241,.05)!important}
+[data-theme=light] .sUserCard:hover{background:rgba(99,102,241,.1)!important}
+[data-theme=light] .sUserNm{color:#0F172A!important}
+[data-theme=light] code{color:#4F46E5!important}
+[data-theme=light] .ownerCard{background:#fff!important;border-color:rgba(249,115,22,.3)!important}
+[data-theme=light] .lLogoSub{color:#475569}
+[data-theme=light] .lCard{background:rgba(255,255,255,.97)!important;border-color:rgba(99,102,241,.2)!important;box-shadow:0 32px 80px rgba(99,102,241,.15)!important}
+[data-theme=light] .divTxt{color:#94A3B8}
+[data-theme=light] .divTxt::before,[data-theme=light] .divTxt::after{background:rgba(99,102,241,.15)}
+[data-theme=light] .lLogoName{background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);overflow-x:hidden}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(99,102,241,.25);border-radius:3px}
 
@@ -319,6 +348,9 @@ tbody tr:last-child td{border:none}
       <div style="font-size:48px;margin-bottom:10px">🔥</div>
       <div style="font-size:22px;font-weight:900;color:var(--orange)">Drystan Owner Panel</div>
       <div style="font-size:13px;color:var(--t2);margin-top:6px">Super Admin — Only visible to website owner</div>
+      <button onclick="toggleTheme()" style="margin-top:10px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.2);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--orange);cursor:pointer;font-family:inherit">
+        🌙 / ☀️ Toggle Theme
+      </button>
     </div>
     <div id="ownerContent">
       <div class="afG"><label class="afL">🔑 Owner Password</label>
@@ -587,7 +619,17 @@ tbody tr:last-child td{border:none}
         <button class="btn bS bFull bSm" onclick="switchTab('signin')">← Back to Sign In</button>
       </div>
     </div>
-    <p style="text-align:center;margin-top:14px;font-size:12px;color:rgba(255,255,255,.2)">Drystan v4.0</p>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px">
+      <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px">
+        <p style="font-size:12px;color:rgba(255,255,255,.25)">Drystan v5.0</p>
+        <button onclick="toggleTheme()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:11px;color:rgba(255,255,255,.5);cursor:pointer;font-family:inherit;transition:all .2s">
+          ☀️ / 🌙
+        </button>
+      </div>
+      <button onclick="toggleTheme()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 12px;font-size:11px;color:rgba(255,255,255,.5);cursor:pointer;font-family:inherit;transition:all .2s">
+        <span id="loginThemeIco">☀️</span> Light / Dark
+      </button>
+    </div>
   </div>
 </div>
 
@@ -700,7 +742,11 @@ function applyTheme(){
   const ic=$('thIco');if(!ic)return;
   ic.innerHTML=G.theme==='dark'?'<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>':'<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
 }
-window.toggleTheme=()=>{G.theme=G.theme==='dark'?'light':'dark';localStorage.setItem('dry_theme',G.theme);applyTheme();};
+window.toggleTheme=()=>{
+  G.theme=G.theme==='dark'?'light':'dark';
+  localStorage.setItem('dry_theme',G.theme);
+  applyTheme();
+};
 window.toggleLang=()=>{G.lang=G.lang==='en'?'bn':'en';localStorage.setItem('dry_lang',G.lang);$('langLbl').textContent=G.lang.toUpperCase();renderPage();};
 window.toggleSB=()=>{$('sidebar').classList.toggle('open');$('sOverlay').classList.toggle('open');};
 window.closeSB=()=>{$('sidebar').classList.remove('open');$('sOverlay').classList.remove('open');};
@@ -824,9 +870,16 @@ window.ownerResetPw=async(uid,email,name)=>{
 };
 
 window.ownerDelUser=async(uid,name)=>{
-  if(!confirm(`Delete user "${name}"? This removes their account record (NOT their Firebase Auth — contact Firebase Console for full deletion).`))return;
-  try{await deleteDoc(Doc('users',uid));toast('User record deleted');loadOwnerUsers();}
-  catch(e){toast(e.message,'err');}
+  if(!confirm(`Delete user "${name}"?\n\nThis removes their Firestore record.`))return;
+  try{
+    await deleteDoc(Doc('users',uid));
+    toast('✅ User deleted');
+    loadOwnerUsers();
+  }catch(e){
+    if(e.message.includes('permission')||e.message.includes('insufficient')){
+      toast('❌ Firestore Rules এ users collection এ delete permission নেই। Rules আপডেট করুন।','err');
+    }else{toast('❌ '+e.message,'err');}
+  }
 };
 
 window.ownerClearBiz=async(bizId,name)=>{
@@ -1142,9 +1195,11 @@ onAuthStateChanged(auth,async user=>{
         const ud=uDoc.data();
         G.role=ud.role||'moderator';
         if(ud.displayName)G.user.displayName=ud.displayName;
-        G.bizId=G.role==='admin'?user.uid:(ud.bizId||user.uid);
+        // bizId: admin uses own UID, moderator uses their admin's bizId
+        G.bizId=G.role==='admin'?user.uid:(ud.bizId||ud.adminUid||user.uid);
         // Load moderator permissions
         if(G.role==='moderator'){G.modPerms=ud.permissions||{orders:true};}
+        // Load business config (using admin's bizId)
         try{const cd=await getDoc(BCfg());if(cd.exists())G.cfg=cd.data();}catch{}
         try{const gd=await getDoc(GCfg());if(gd.exists())G.gcfg=gd.data();}catch{}
         // 2FA check — only for admins, only if force2FA set in global config
@@ -2020,20 +2075,25 @@ window.saveMod=async()=>{
   const ex=await getDocs(query(Col('users'),where('username','==',username)));
   if(!ex.empty){err.style.display='flex';err.textContent='❌ Username already taken.';return;}
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Creating...';
-  // Auto-generate a unique email for Firebase Auth (not visible to moderator)
-  const autoEmail=`mod.${username}.${G.bizId.slice(0,8)}@drystan.internal`;
+  const autoEmail=`mod.${username}.${G.bizId.slice(0,8)}@drystan.app`;
   const perms={orders:true,products:!!$('perm_products')?.checked,customers:!!$('perm_customers')?.checked,reports:!!$('perm_reports')?.checked};
   try{
-    const cred=await createUserWithEmailAndPassword(auth,autoEmail,pass);
+    // Use secondary Firebase app to avoid signing out current admin
+    const {initializeApp:initApp2,getApp} = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+    const {getAuth:getAuth2,createUserWithEmailAndPassword:createUser2,signOut:signOut2} = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+    let secondaryApp;
+    try{secondaryApp=getApp('secondary');}catch{secondaryApp=initApp2(FC,'secondary');}
+    const auth2=getAuth2(secondaryApp);
+    const cred=await createUser2(auth2,autoEmail,pass);
+    await signOut2(auth2);
     await setDoc(Doc('users',cred.user.uid),{
       displayName:name,username,email:autoEmail,
       role:'moderator',authUid:cred.user.uid,
       bizId:G.bizId,adminUid:G.bizId,
       permissions:perms,createdAt:serverTimestamp()
     });
-    toast('✅ Moderator created! Re-logging in...','ok');
-    // Re-login as admin
-    await signOut(auth);
+    toast(`✅ Moderator "@${username}" created! Admin stays logged in.`,'ok');
+    closeMov('modMOvl');pgTeam();
   }catch(e){
     err.style.display='flex';err.textContent='❌ '+e.message;
     btn.disabled=false;btn.innerHTML='➕ Create Moderator';
