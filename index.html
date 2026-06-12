@@ -631,7 +631,6 @@ tbody tr:last-child td{border:none}
           <button class="btn bP bFull" id="rgS3Btn" onclick="rgStep3Create()" style="padding:13px">🎉 Create Business Account</button>
         </div>
       </div>
-      </div>
 
       <!-- FORGOT -->
       <div class="authPanel" id="panelForgot">
@@ -789,6 +788,9 @@ window.closeMov=id=>{$(id)?.classList.remove('open');};
 window.addEventListener('hashchange',checkOwnerHash);
 function checkOwnerHash(){
   if(location.hash==='#'+OWNER_SECRET){
+    // Hide everything else, show only owner panel
+    $('loginWrap').classList.remove('show');
+    $('appWrap').classList.remove('show');
     $('ownerWrap').classList.add('show');
     loadOwnerData();
   }
