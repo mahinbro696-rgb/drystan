@@ -552,6 +552,7 @@ tbody tr:last-child td{border:none}
       </div>
 
       <!-- REGISTER (Admin = Business Owner) -->
+      <div class="authPanel" id="panelRegister">
         <div class="stepWrap">
           <div class="step active" id="st1">1</div><div class="stepLine" id="sl1"></div>
           <div class="step" id="st2">2</div><div class="stepLine" id="sl2"></div>
@@ -629,6 +630,7 @@ tbody tr:last-child td{border:none}
           <div id="rgS3Err" class="al aE" style="display:none"></div>
           <button class="btn bP bFull" id="rgS3Btn" onclick="rgStep3Create()" style="padding:13px">🎉 Create Business Account</button>
         </div>
+      </div>
       </div>
 
       <!-- FORGOT -->
@@ -1299,35 +1301,18 @@ onAuthStateChanged(auth,async user=>{
         // Load business config (using admin's bizId)
         try{const cd=await getDoc(BCfg());if(cd.exists())G.cfg=cd.data();}catch{}
         try{const gd=await getDoc(GCfg());if(gd.exists())G.gcfg=gd.data();}catch{}
-        // 2FA check — only for admins, only if force2FA set in global config
-        const need2FA=(G.gcfg.force2FA===true)&&G.role==='admin'&&!_appReady&&G.gcfg.ejsKey;
-        // Check TOTP first (overrides email 2FA)
+        // TOTP check (Google Authenticator) — only if admin has it enabled
         if(ud.totpEnabled&&ud.totpSecret&&!_appReady){
           _totpPendingUser={totpSecret:ud.totpSecret,displayName:ud.displayName};
           ls.classList.add('hide');setTimeout(()=>ls.style.display='none',500);
           $('appWrap').classList.remove('show');$('loginWrap').classList.add('show');
           switchTab('totp');applyTheme();
-          // Load otpauth library
           if(!window.OTPAuth){
-            const script=document.createElement('script');
-            script.src='https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.3.6/otpauth.umd.min.js';
-            document.head.appendChild(script);
+            const s=document.createElement('script');
+            s.src='https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.3.6/otpauth.umd.min.js';
+            document.head.appendChild(s);
           }
           setTimeout(()=>$('totp0')?.focus(),300);
-          return;
-        }
-        if(need2FA && !_tfaSent){
-          _tfaSent=true;
-          _tfaCode=genOTP();_tfaPending={email:ud.email||user.email,name:ud.displayName||'Admin'};
-          $('twoFAEmailDisplay').textContent=_tfaPending.email;
-          ls.classList.add('hide');setTimeout(()=>ls.style.display='none',500);
-          $('appWrap').classList.remove('show');$('loginWrap').classList.add('show');
-          switchTab('2fa');applyTheme();
-          await sendEmail(_tfaPending.email,_tfaPending.name,_tfaCode,'2fa');
-          clearInterval(_tfaTimer);clearInterval(_tfaResendTimer);
-          _tfaTimer=startCountdown('tfaCountdown',300);
-          _tfaResendTimer=startResend('tfaResendBtn','tfaResendTimer',60);
-          setTimeout(()=>$('tfa0')?.focus(),300);
           return;
         }
       }else{
