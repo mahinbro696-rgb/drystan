@@ -1013,7 +1013,7 @@ window.rgStep3Create=async()=>{
 };
 
 // ══ 2FA SYSTEM ══
-let _tfaTimer=null, _tfaResendTimer=null, _tfaPendingUser=null;
+let _tfaTimer=null, _tfaResendTimer=null, _tfaPendingUser=null, _appReady=false;
 
 async function send2FACode(email, name){
   G.twoFACode = genOTP();
