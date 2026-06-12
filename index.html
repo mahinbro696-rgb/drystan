@@ -895,10 +895,6 @@ window.rgStep1Next=async()=>{
     btn.disabled=false;btn.innerHTML='Send Verification Code →';
   }
 };
-  }finally{
-    btn.disabled=false;btn.innerHTML='Send Verification Code →';
-  }
-};
 
 window.rgGoBack=()=>{
   $('rgStep2').style.display='none';
@@ -2293,7 +2289,6 @@ window.changePassword=async()=>{
 
 // ══ AUTH STATE LISTENER ══
 // ══ AUTH STATE — 2FA + Business Isolation ══
-let _appReady=false, _tfaPendingUser=null;
 
 onAuthStateChanged(auth, async(user)=>{
   const ls=$('loadScreen');
