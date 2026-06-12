@@ -788,13 +788,16 @@ window.closeMov=id=>{$(id)?.classList.remove('open');};
 window.addEventListener('hashchange',checkOwnerHash);
 function checkOwnerHash(){
   if(location.hash==='#'+OWNER_SECRET){
-    // Hide everything else, show only owner panel
+    // Always show owner panel — hide everything else
     $('loginWrap').classList.remove('show');
     $('appWrap').classList.remove('show');
+    $('loadScreen').classList.add('hide');
     $('ownerWrap').classList.add('show');
     loadOwnerData();
   }
 }
+// Also check on page load
+window.addEventListener('load',()=>{setTimeout(checkOwnerHash,800);});
 async function loadOwnerData(){
   try{
     const d=await getDoc(GCfg());
@@ -947,6 +950,13 @@ window.exitOwner=()=>{
   $('ownerContent').style.display='block';
   $('ownerDash').style.display='none';
   $('ownerPw').value='';
+  // Go back to app or login
+  if(G.user&&G.role){
+    $('appWrap').classList.add('show');
+  } else {
+    $('loginWrap').classList.add('show');
+    createStars();
+  }
 };
 
 // ══ TAB SWITCH ══
@@ -1323,7 +1333,16 @@ onAuthStateChanged(auth,async user=>{
         try{const gd=await getDoc(GCfg());if(gd.exists())G.gcfg=gd.data();}catch{}
       }
     }catch(e){console.error(e);}
-    _appReady=true;loadApp();
+    _appReady=true;
+    // Don't load app if owner panel is open
+    if(location.hash==='#'+OWNER_SECRET){
+      $('loadScreen').classList.add('hide');
+      setTimeout(()=>$('loadScreen').style.display='none',500);
+      $('ownerWrap').classList.add('show');
+      loadOwnerData();
+      return;
+    }
+    loadApp();
   }else{
     _appReady=false;_tfaPending=null;_tfaCode='';_tfaSent=false;
     G.user=null;G.role=null;G.bizId=null;G.cfg={};
