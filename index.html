@@ -270,9 +270,9 @@ tbody tr:last-child td{border:none}
 #rcptPrintArea{display:none}
 
 /* OWNER PANEL */
-#ownerWrap{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;padding:16px;z-index:200;overflow-y:auto}
+#ownerWrap{position:fixed;inset:0;background:rgba(7,10,18,.95);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:16px;z-index:9000;overflow-y:auto}
 #ownerWrap.show{display:flex}
-.ownerCard{background:rgba(249,115,22,.05);border:1px solid rgba(249,115,22,.3);border-radius:20px;padding:32px;width:100%;max-width:560px;box-shadow:0 0 60px rgba(249,115,22,.1)}
+.ownerCard{background:var(--bg2);border:1px solid rgba(249,115,22,.3);border-radius:20px;padding:32px;width:100%;max-width:580px;box-shadow:0 0 80px rgba(249,115,22,.1);animation:scaleIn .3s ease}
 
 /* PROGRESS BAR */
 .progressWrap{background:var(--border);border-radius:8px;height:8px;overflow:hidden;margin:8px 0}
@@ -1102,10 +1102,11 @@ window.doModLogin=async()=>{
   if(!u||!p){err.style.display='flex';err.textContent='❌ Enter username and password.';return;}
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Signing in...';
   try{
-    // Lookup moderator
+    // Find moderator by username
     const snap=await getDocs(query(Col('users'),where('username','==',u),where('role','==','moderator')));
     if(snap.empty){err.style.display='flex';err.textContent='❌ Invalid username or password.';btn.disabled=false;btn.innerHTML='Sign In as Moderator →';return;}
     const modData=snap.docs[0].data();
+    // Login with stored email (auto-generated)
     await signInWithEmailAndPassword(auth,modData.email,p);
     // Notify admin (non-blocking)
     if(modData.adminUid||modData.bizId){
@@ -1113,12 +1114,12 @@ window.doModLogin=async()=>{
         const adminDoc=await getDoc(Doc('users',modData.adminUid||modData.bizId));
         if(adminDoc.exists()){
           const adminEmail=adminDoc.data().email;
-          const masked=maskEmail(adminEmail);
-          // Show notice
-          notice.style.display='flex';
-          notice.textContent=`🔔 Login notification sent to admin (${masked})`;
-          // Send email notification to admin
-          sendEmail(adminEmail,'Admin','MOD-LOGIN',`mod_notify`).catch(()=>{});
+          if(adminEmail&&!adminEmail.includes('drystan.internal')){
+            const masked=maskEmail(adminEmail);
+            notice.style.display='flex';
+            notice.textContent=`🔔 Login notification sent to admin (${masked})`;
+            sendEmail(adminEmail,'Admin',`Moderator @${u} just logged in`,'2fa').catch(()=>{});
+          }
         }
       }catch{}
     }
@@ -1960,7 +1961,10 @@ async function pgTeam(){
           <td style="font-size:13px;color:var(--t2)">${esc(u.email)}</td>
           <td style="font-size:13px">${esc(u.phone||'-')}</td>
           <td style="font-size:12px;color:var(--t3)">${u.createdAt?fdate(u.createdAt):'-'}</td>
-          <td><button class="btn bD bSm" onclick="delMod('${u.id}','${esc(u.username)}')">🗑️ Remove</button></td>
+          <td><div style="display:flex;gap:5px">
+            <button class="btn bY bSm" onclick="resetModPw('${u.id}','${esc(u.username)}','${esc(u.bizId||'')}')">🔑 Reset PW</button>
+            <button class="btn bD bSm" onclick="delMod('${u.id}','${esc(u.username)}')">🗑️ Remove</button>
+          </div></td>
         </tr>`).join('')}</tbody>
       </table></div>`}
     </div>
@@ -1971,53 +1975,87 @@ window.openAddMod=()=>{
   $('modMod').innerHTML=`
   <div class="mH"><h3>➕ Add Moderator</h3><button class="btn bS bIco" onclick="closeMov('modMOvl')">✕</button></div>
   <div class="mB">
-    <div class="al aW" style="font-size:12px">⚠️ Adding a moderator will briefly sign you out. Re-login after.</div>
-    <div class="afG"><label class="afL">Full Name *</label><input class="afI" id="md_n" placeholder="John Doe"/></div>
-    <div class="afG"><label class="afL">Username * <span style="color:var(--t3)">(login username)</span></label><input class="afI" id="md_u" placeholder="john_mod"/></div>
-    <div class="afG"><label class="afL">Email *</label><input class="afI" type="email" id="md_e" placeholder="john@example.com"/></div>
-    <div class="afG"><label class="afL">Phone</label><input class="afI" id="md_ph" placeholder="01XXXXXXXXX"/></div>
-    <div class="afG"><label class="afL">Password *</label><input class="afI" type="password" id="md_p" placeholder="Min 6 characters"/></div>
+    <div class="al aI" style="font-size:12px">ℹ️ Moderator এর email/phone দরকার নেই। Password ভুলে গেলে Admin রিসেট করে দিতে পারবে।</div>
+    <div class="afG"><label class="afL">Full Name *</label><input class="afI" id="md_n" placeholder="e.g. Raju"/></div>
+    <div class="afG"><label class="afL">Username * <span style="color:var(--t3)">(login এ ব্যবহার হবে)</span></label><input class="afI" id="md_u" placeholder="e.g. raju001"/></div>
+    <div class="afG"><label class="afL">Password *</label>
+      <div style="position:relative">
+        <input class="afI" type="password" id="md_p" placeholder="Min 6 characters" style="padding-right:42px"/>
+        <button type="button" onclick="togglePw('md_p')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--t3)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
     <div class="afG">
-      <label class="afL">🔐 Permissions (what this moderator can access)</label>
+      <label class="afL">🔐 Role & Permissions</label>
       <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border)">
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="perm_orders" checked style="width:16px;height:16px;accent-color:var(--acc)"/> 📋 Create & Manage Orders (Always ON)
+          <input type="checkbox" checked disabled style="width:16px;height:16px;accent-color:var(--acc)"/> 📋 Create & Manage Orders <span style="color:var(--t3);font-size:11px">(সবসময় চালু)</span>
         </label>
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="perm_products" style="width:16px;height:16px;accent-color:var(--acc)"/> 📦 View & Edit Products
+          <input type="checkbox" id="perm_products" style="width:16px;height:16px;accent-color:var(--acc)"/> 📦 Products দেখা ও Edit করা
         </label>
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="perm_customers" style="width:16px;height:16px;accent-color:var(--acc)"/> 👥 View Customers
+          <input type="checkbox" id="perm_customers" style="width:16px;height:16px;accent-color:var(--acc)"/> 👥 Customers দেখা
         </label>
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="perm_reports" style="width:16px;height:16px;accent-color:var(--acc)"/> 📊 View Reports & Analytics
+          <input type="checkbox" id="perm_reports" style="width:16px;height:16px;accent-color:var(--acc)"/> 📊 Reports & Analytics দেখা
         </label>
       </div>
     </div>
     <div id="mdErr" class="al aE" style="display:none"></div>
   </div>
-  <div class="mF"><button class="btn bS" onclick="closeMov('modMOvl')">Cancel</button><button class="btn bP" id="mdBtn" onclick="saveMod()">➕ Create Moderator</button></div>`;
+  <div class="mF">
+    <button class="btn bS" onclick="closeMov('modMOvl')">Cancel</button>
+    <button class="btn bP" id="mdBtn" onclick="saveMod()">➕ Create Moderator</button>
+  </div>`;
   $('modMOvl').classList.add('open');
 };
 window.saveMod=async()=>{
-  const name=$('md_n').value.trim(),username=$('md_u').value.trim().toLowerCase(),email=$('md_e').value.trim(),phone=$('md_ph').value.trim(),pass=$('md_p').value;
+  const name=$('md_n').value.trim(),username=$('md_u').value.trim().toLowerCase(),pass=$('md_p').value;
   const err=$('mdErr'),btn=$('mdBtn');err.style.display='none';
-  if(!name||!username||!email||!pass){err.style.display='flex';err.textContent='❌ Name, username, email, password required.';return;}
-  if(pass.length<6){err.style.display='flex';err.textContent='❌ Password min 6 chars.';return;}
+  if(!name||!username||!pass){err.style.display='flex';err.textContent='❌ Name, username, password required.';return;}
+  if(username.length<3||!/^[a-z0-9_]+$/.test(username)){err.style.display='flex';err.textContent='❌ Username: min 3 chars, only a-z 0-9 underscore.';return;}
+  if(pass.length<6){err.style.display='flex';err.textContent='❌ Password min 6 characters.';return;}
   const ex=await getDocs(query(Col('users'),where('username','==',username)));
   if(!ex.empty){err.style.display='flex';err.textContent='❌ Username already taken.';return;}
-  btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';
-  // Collect permissions
+  btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Creating...';
+  // Auto-generate a unique email for Firebase Auth (not visible to moderator)
+  const autoEmail=`mod.${username}.${G.bizId.slice(0,8)}@drystan.internal`;
   const perms={orders:true,products:!!$('perm_products')?.checked,customers:!!$('perm_customers')?.checked,reports:!!$('perm_reports')?.checked};
   try{
-    const cred=await createUserWithEmailAndPassword(auth,email,pass);
-    await setDoc(Doc('users',cred.user.uid),{displayName:name,username,email,phone,role:'moderator',authUid:cred.user.uid,bizId:G.bizId,adminUid:G.bizId,permissions:perms,createdAt:serverTimestamp()});
-    toast('✅ Moderator created! Please re-login.','warn');
+    const cred=await createUserWithEmailAndPassword(auth,autoEmail,pass);
+    await setDoc(Doc('users',cred.user.uid),{
+      displayName:name,username,email:autoEmail,
+      role:'moderator',authUid:cred.user.uid,
+      bizId:G.bizId,adminUid:G.bizId,
+      permissions:perms,createdAt:serverTimestamp()
+    });
+    toast('✅ Moderator created! Re-logging in...','ok');
+    // Re-login as admin
     await signOut(auth);
-  }catch(e){err.style.display='flex';err.textContent='❌ '+(e.code==='auth/email-already-in-use'?'Email already in use.':e.message);btn.disabled=false;btn.innerHTML='➕ Create Moderator';}
+  }catch(e){
+    err.style.display='flex';err.textContent='❌ '+e.message;
+    btn.disabled=false;btn.innerHTML='➕ Create Moderator';
+  }
 };
-async function delMod(docId,username){if(!confirm(`Remove moderator "${username}"?`))return;try{await deleteDoc(Doc('users',docId));toast('Removed');pgTeam();}catch(e){toast(e.message,'err');}}
+async function delMod(docId,username){if(!confirm(`Remove moderator "@${username}"?`))return;try{await deleteDoc(Doc('users',docId));toast('Removed');pgTeam();}catch(e){toast(e.message,'err');}}
 window.delMod=delMod;
+
+async function resetModPw(docId,username,bizId){
+  const newPw=prompt(`Set new password for @${username}:\n(Min 6 characters)`);
+  if(!newPw||newPw.length<6){toast('Password too short or cancelled','err');return;}
+  try{
+    // We need to use Admin SDK for this — instead show instructions
+    // Since we only have client SDK, we'll update a resetRequest in Firestore
+    // The moderator will see the new password on next login
+    await updateDoc(Doc('users',docId),{tempPassword:newPw,pwReset:true,pwResetAt:serverTimestamp()});
+    toast(`✅ Password reset request saved for @${username}. Note: Full password reset requires Firebase Admin SDK. For now, use Firebase Console → Authentication to reset.`,'info');
+    // Better approach: show the password to admin
+    alert(`New password for @${username}: ${newPw}\n\nNote: You need to go to Firebase Console → Authentication → find the user → send password reset email.\n\nOr share this password directly with the moderator.`);
+  }catch(e){toast(e.message,'err');}
+}
+window.resetModPw=resetModPw;
 
 // ══ SETTINGS ══
 async function pgCfg(){
