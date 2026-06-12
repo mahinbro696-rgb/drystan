@@ -26,6 +26,23 @@
   --border:rgba(99,102,241,.12);--border2:rgba(99,102,241,.22);
   --t1:#0F172A;--t2:#475569;--t3:#64748B;
 }
+/* Light mode fixes */
+[data-theme=light] .modal{background:#fff;color:#0F172A}
+[data-theme=light] .afI{background:#fff;border-color:rgba(99,102,241,.2);color:#0F172A}
+[data-theme=light] .afI::placeholder{color:#94A3B8}
+[data-theme=light] .card{background:rgba(99,102,241,.04)}
+[data-theme=light] .mOvl{background:rgba(0,0,0,.5)}
+[data-theme=light] .al{color:inherit}
+[data-theme=light] .aE{color:#DC2626}
+[data-theme=light] .aI{color:#4F46E5}
+[data-theme=light] .aW{color:#D97706}
+[data-theme=light] .aO{color:#059669}
+[data-theme=light] td{color:#0F172A}
+[data-theme=light] th{color:#475569}
+[data-theme=light] .nItem{color:#475569}
+[data-theme=light] .nItem:hover{color:#0F172A;background:rgba(99,102,241,.08)}
+[data-theme=light] .nItem.active{color:#4F46E5;background:rgba(99,102,241,.1)}
+[data-theme=light] .ownerCard{background:rgba(249,115,22,.05)}
 html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);overflow-x:hidden}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(99,102,241,.25);border-radius:3px}
 
@@ -315,36 +332,62 @@ tbody tr:last-child td{border:none}
         <div style="font-weight:700;color:var(--orange);margin-bottom:4px">⚠️ Owner Access Active</div>
         <div style="font-size:12px;color:var(--t2)">Changes here affect all users globally</div>
       </div>
-      <div class="afG"><label class="afL">🎨 Site Theme Color</label>
-        <select class="afI" id="ow_theme" onchange="ownerApplyTheme(this.value)">
-          <option value="indigo">Indigo (Default)</option>
-          <option value="purple">Purple</option>
-          <option value="blue">Blue</option>
-          <option value="green">Green</option>
-          <option value="orange">Orange</option>
-        </select>
+
+      <!-- Tabs inside owner panel -->
+      <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn bSm" id="owTab1" style="background:linear-gradient(135deg,#F97316,#EA580C);color:#fff" onclick="ownerTab(1)">⚙️ Settings</button>
+        <button class="btn bS bSm" id="owTab2" onclick="ownerTab(2)">👥 Users</button>
+        <button class="btn bS bSm" id="owTab3" onclick="ownerTab(3)">📊 Storage</button>
       </div>
-      <div class="afG"><label class="afL">🏷️ Site Name</label>
-        <input class="afI" id="ow_sitename" placeholder="Drystan" value="Drystan"/>
+
+      <!-- Settings Tab -->
+      <div id="owSection1">
+        <div class="afG"><label class="afL">🎨 Site Theme Color</label>
+          <select class="afI" id="ow_theme" onchange="ownerApplyTheme(this.value)">
+            <option value="indigo">Indigo (Default)</option>
+            <option value="purple">Purple</option>
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+            <option value="orange">Orange</option>
+          </select>
+        </div>
+        <div class="afG"><label class="afL">🏷️ Site Name</label>
+          <input class="afI" id="ow_sitename" placeholder="Drystan" value="Drystan"/>
+        </div>
+        <div class="afG"><label class="afL">📧 EmailJS Public Key</label>
+          <input class="afI" id="ow_ejk" placeholder="user_XXXXXXXXXXXX"/>
+        </div>
+        <div class="afG"><label class="afL">📧 EmailJS Service ID</label>
+          <input class="afI" id="ow_ejs" placeholder="service_XXXXXXX"/>
+        </div>
+        <div class="afG"><label class="afL">📧 EmailJS Template ID</label>
+          <input class="afI" id="ow_ejt" placeholder="template_XXXXXXX"/>
+        </div>
+        <div class="afG">
+          <label class="afL">🛡️ Force 2FA for all Admins</label>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border-radius:10px">
+            <label class="toggle"><input type="checkbox" id="ow_2fa"/><span class="toggleSlider"></span></label>
+            <span style="font-size:13px;color:var(--t2)">When ON — all admin logins require OTP</span>
+          </div>
+        </div>
+        <button class="btn bFull" style="background:linear-gradient(135deg,#F97316,#EA580C);color:#fff;padding:13px;margin-bottom:12px" onclick="ownerSave()">💾 Save Global Settings</button>
       </div>
-      <div class="afG"><label class="afL">📧 EmailJS Public Key</label>
-        <input class="afI" id="ow_ejk" placeholder="user_XXXXXXXXXXXX"/>
-      </div>
-      <div class="afG"><label class="afL">📧 EmailJS Service ID</label>
-        <input class="afI" id="ow_ejs" placeholder="service_XXXXXXX"/>
-      </div>
-      <div class="afG"><label class="afL">📧 EmailJS Template ID</label>
-        <input class="afI" id="ow_ejt" placeholder="template_XXXXXXX"/>
-      </div>
-      <div class="afG">
-        <label class="afL">🛡️ Force 2FA for all Admins</label>
-        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border-radius:10px">
-          <label class="toggle"><input type="checkbox" id="ow_2fa"/><span class="toggleSlider"></span></label>
-          <span style="font-size:13px;color:var(--t2)">When ON — all admin logins require OTP</span>
+
+      <!-- Users Tab -->
+      <div id="owSection2" style="display:none">
+        <div id="owUsersList" style="margin-bottom:12px">
+          <div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div>
         </div>
       </div>
-      <button class="btn bFull" style="background:linear-gradient(135deg,#F97316,#EA580C);color:#fff;padding:13px;margin-bottom:12px" onclick="ownerSave()">💾 Save Global Settings</button>
-      <button class="btn bS bFull bSm" onclick="exitOwner()">← Exit Owner Panel</button>
+
+      <!-- Storage Tab -->
+      <div id="owSection3" style="display:none">
+        <div id="owStorageInfo">
+          <div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div>
+        </div>
+      </div>
+
+      <button class="btn bS bFull bSm" style="margin-top:8px" onclick="exitOwner()">← Exit Owner Panel</button>
     </div>
   </div>
 </div>
@@ -364,13 +407,17 @@ tbody tr:last-child td{border:none}
     </div>
     <div class="lCard">
       <div class="authTabs">
-        <button class="authTab active" id="tabSI" onclick="switchTab('signin')">🔐 Sign In</button>
+        <button class="authTab active" id="tabSI" onclick="switchTab('signin')">🔐 Admin</button>
+        <button class="authTab" id="tabMOD" onclick="switchTab('modlogin')">👤 Moderator</button>
         <button class="authTab" id="tabRG" onclick="switchTab('register')">✨ New Business</button>
         <button class="authTab" id="tabFP" onclick="switchTab('forgot')">🔑 Reset</button>
       </div>
 
-      <!-- SIGN IN -->
+      <!-- SIGN IN (Admin) -->
       <div class="authPanel active" id="panelSignin">
+        <div style="text-align:center;margin-bottom:14px">
+          <span class="badge bAdmin" style="font-size:12px;padding:5px 14px">🛡️ Admin / Business Owner Login</span>
+        </div>
         <div class="fG"><label class="fL">Username or Email</label>
           <div class="inpWrap">
             <svg class="inpIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -388,6 +435,32 @@ tbody tr:last-child td{border:none}
         <button class="btn bP bFull" id="siBtn" onclick="doLogin()" style="padding:13px;font-size:15px">Sign In →</button>
         <div class="divTxt">or</div>
         <button class="btn bS bFull bSm" onclick="switchTab('forgot')">Forgot password?</button>
+      </div>
+
+      <!-- MODERATOR LOGIN -->
+      <div class="authPanel" id="panelModlogin">
+        <div style="text-align:center;margin-bottom:14px">
+          <span class="badge bMod" style="font-size:12px;padding:5px 14px">👤 Moderator Login</span>
+        </div>
+        <div class="al aI" style="font-size:12px;margin-bottom:14px">
+          ℹ️ Moderator accounts are created by Admin. Contact your admin for credentials.
+        </div>
+        <div class="fG"><label class="fL">Username</label>
+          <div class="inpWrap">
+            <svg class="inpIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input class="fI" id="modUser" placeholder="Your username" onkeydown="if(event.key==='Enter')doModLogin()"/>
+          </div>
+        </div>
+        <div class="fG"><label class="fL">Password</label>
+          <div class="inpWrap">
+            <svg class="inpIco" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            <input class="fI" id="modPass" type="password" placeholder="••••••••" style="padding-right:42px" onkeydown="if(event.key==='Enter')doModLogin()"/>
+            <button class="eyeBtn" onclick="togglePw('modPass')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+        <div id="modErr" class="al aE" style="display:none"></div>
+        <div id="modOtpNotice" class="al aI" style="display:none;font-size:12px"></div>
+        <button class="btn bP bFull" id="modBtn" onclick="doModLogin()" style="padding:13px;font-size:15px;background:var(--grad3)">Sign In as Moderator →</button>
       </div>
 
       <!-- 2FA -->
@@ -661,6 +734,114 @@ window.ownerLogin=()=>{
   $('ownerContent').style.display='none';
   $('ownerDash').style.display='block';
   loadOwnerData();
+  ownerTab(1);
+};
+
+window.ownerTab=async(n)=>{
+  [1,2,3].forEach(i=>{
+    const s=$(('owSection'+i));if(s)s.style.display=i===n?'block':'none';
+    const t=$('owTab'+i);if(t){t.style.background=i===n?'linear-gradient(135deg,#F97316,#EA580C)':'';t.style.color=i===n?'#fff':'';}
+  });
+  if(n===2)loadOwnerUsers();
+  if(n===3)loadOwnerStorage();
+};
+
+async function loadOwnerUsers(){
+  const el=$('owUsersList');if(!el)return;
+  el.innerHTML='<div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div>';
+  try{
+    const snap=await getDocs(Col('users'));
+    const users=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const admins=users.filter(u=>u.role==='admin');
+    const mods=users.filter(u=>u.role==='moderator');
+    el.innerHTML=`
+    <div style="font-size:13px;color:var(--t2);margin-bottom:12px">Total: <strong style="color:var(--t1)">${users.length}</strong> users (${admins.length} admins, ${mods.length} moderators)</div>
+    ${users.map(u=>`
+    <div style="padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div>
+          <div style="font-weight:600;font-size:13px">${esc(u.displayName||'?')} <span class="badge ${u.role==='admin'?'bAdmin':'bMod'}" style="font-size:10px">${u.role.toUpperCase()}</span></div>
+          <div style="font-size:11px;color:var(--t2)">@${esc(u.username||'-')} · ${esc(u.email||'-')}</div>
+          <div style="font-size:11px;color:var(--t3)">BizID: ${u.bizId?.slice(0,12)||'-'}... · Joined: ${u.createdAt?fdate(u.createdAt):'-'}</div>
+        </div>
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          <button class="btn bY bSm" style="font-size:11px" onclick="ownerResetPw('${u.id}','${esc(u.email||'')}','${esc(u.displayName||'')}')">🔑 Reset PW</button>
+          <button class="btn bD bSm" style="font-size:11px" onclick="ownerDelUser('${u.id}','${esc(u.displayName||'')}')">🗑️</button>
+        </div>
+      </div>
+    </div>`).join('')}`;
+  }catch(e){el.innerHTML=`<div class="al aE">❌ ${e.message}</div>`;}
+}
+
+async function loadOwnerStorage(){
+  const el=$('owStorageInfo');if(!el)return;
+  el.innerHTML='<div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div>';
+  try{
+    const userSnap=await getDocs(Col('users'));
+    const gcfgSnap=await getDoc(GCfg());
+    const users=userSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const adminUsers=users.filter(u=>u.role==='admin');
+    // Estimate storage per business
+    let storageHtml='';
+    for(const u of adminUsers){
+      const bizId=u.bizId||u.id;
+      let ordCount=0,prodCount=0,custCount=0;
+      try{ordCount=(await getDocs(BCol('orders'))).size;}catch{}
+      // Override BCol temporarily
+      try{
+        const pc=await getDocs(collection(db,'businesses',bizId,'products'));
+        const oc=await getDocs(collection(db,'businesses',bizId,'orders'));
+        const cc=await getDocs(collection(db,'businesses',bizId,'customers'));
+        prodCount=pc.size;ordCount=oc.size;custCount=cc.size;
+      }catch{}
+      const estDocs=prodCount+ordCount+custCount;
+      storageHtml+=`
+      <div style="padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div><strong>${esc(u.displayName)}</strong> <span style="font-size:11px;color:var(--t2)">@${esc(u.username)}</span></div>
+          <button class="btn bD bSm" style="font-size:11px" onclick="ownerClearBiz('${bizId}','${esc(u.displayName)}')">🗑️ Clear Data</button>
+        </div>
+        <div style="font-size:12px;color:var(--t2);display:flex;gap:14px">
+          <span>📦 ${prodCount} products</span><span>🛒 ${ordCount} orders</span><span>👤 ${custCount} customers</span>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-top:4px">Est. ~${estDocs} documents</div>
+      </div>`;
+    }
+    el.innerHTML=`
+    <div style="padding:12px;background:rgba(99,102,241,.08);border-radius:10px;border:1px solid rgba(99,102,241,.2);margin-bottom:12px;font-size:13px">
+      <strong>Firestore Free Tier:</strong> 1 GB storage · 50K reads/day · 20K writes/day
+    </div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px">Business Storage Usage:</div>
+    ${storageHtml||'<p style="color:var(--t2)">No admin businesses found</p>'}`;
+  }catch(e){el.innerHTML=`<div class="al aE">❌ ${e.message}</div>`;}
+}
+
+window.ownerResetPw=async(uid,email,name)=>{
+  if(!email){toast('No email for this user','err');return;}
+  if(!confirm(`Send password reset email to ${email}?`))return;
+  try{await sendPasswordResetEmail(auth,email);toast(`✅ Reset email sent to ${email}`);}
+  catch(e){toast('❌ '+e.message,'err');}
+};
+
+window.ownerDelUser=async(uid,name)=>{
+  if(!confirm(`Delete user "${name}"? This removes their account record (NOT their Firebase Auth — contact Firebase Console for full deletion).`))return;
+  try{await deleteDoc(Doc('users',uid));toast('User record deleted');loadOwnerUsers();}
+  catch(e){toast(e.message,'err');}
+};
+
+window.ownerClearBiz=async(bizId,name)=>{
+  if(!confirm(`⚠️ CLEAR ALL DATA for "${name}"?\n\nThis deletes all their products, orders, and customers permanently!\n\nType "DELETE" to confirm.`))return;
+  const conf=prompt('Type DELETE to confirm:');
+  if(conf!=='DELETE'){toast('Cancelled','info');return;}
+  try{
+    const cols=['products','orders','customers'];
+    for(const c of cols){
+      const snap=await getDocs(collection(db,'businesses',bizId,c));
+      for(const d of snap.docs)await deleteDoc(d.ref);
+    }
+    toast(`✅ All data cleared for ${name}`,'ok');
+    loadOwnerStorage();
+  }catch(e){toast(e.message,'err');}
 };
 window.ownerApplyTheme=val=>{
   const themes={indigo:'#6366F1',purple:'#A855F7',blue:'#3B82F6',green:'#10B981',orange:'#F97316'};
@@ -682,8 +863,8 @@ window.exitOwner=()=>{
 };
 
 // ══ TAB SWITCH ══
-const TAB_MAP={signin:'tabSI',register:'tabRG',forgot:'tabFP'};
-const PANEL_MAP={signin:'panelSignin',register:'panelRegister',forgot:'panelForgot','2fa':'panel2fa'};
+const TAB_MAP={signin:'tabSI',modlogin:'tabMOD',register:'tabRG',forgot:'tabFP'};
+const PANEL_MAP={signin:'panelSignin',modlogin:'panelModlogin',register:'panelRegister',forgot:'panelForgot','2fa':'panel2fa'};
 window.switchTab=tab=>{
   Object.values(TAB_MAP).forEach(id=>$(id)?.classList.remove('active'));
   Object.values(PANEL_MAP).forEach(id=>$(id)?.classList.remove('active'));
@@ -905,6 +1086,48 @@ window.doForgot=async()=>{
   try{await sendPasswordResetEmail(auth,email);ok.style.display='flex';ok.textContent='✅ Reset link sent! Check inbox.';btn.innerHTML='✅ Sent!';}
   catch(e){err.style.display='flex';err.textContent='❌ '+(e.code==='auth/user-not-found'?'No account with this email.':e.message);btn.disabled=false;btn.innerHTML='📧 Send Reset Link';}
 };
+
+// Mask email: testforti98@gmail.com → te*******8@gmail.com
+function maskEmail(email){
+  const[local,domain]=email.split('@');
+  if(local.length<=3)return local[0]+'***@'+domain;
+  return local.slice(0,2)+'*'.repeat(local.length-3)+local.slice(-1)+'@'+domain;
+}
+
+// MODERATOR LOGIN — notifies admin via OTP to admin email
+window.doModLogin=async()=>{
+  const u=$('modUser').value.trim(),p=$('modPass').value;
+  const err=$('modErr'),btn=$('modBtn'),notice=$('modOtpNotice');
+  err.style.display='none';notice.style.display='none';
+  if(!u||!p){err.style.display='flex';err.textContent='❌ Enter username and password.';return;}
+  btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Signing in...';
+  try{
+    // Lookup moderator
+    const snap=await getDocs(query(Col('users'),where('username','==',u),where('role','==','moderator')));
+    if(snap.empty){err.style.display='flex';err.textContent='❌ Invalid username or password.';btn.disabled=false;btn.innerHTML='Sign In as Moderator →';return;}
+    const modData=snap.docs[0].data();
+    await signInWithEmailAndPassword(auth,modData.email,p);
+    // Notify admin (non-blocking)
+    if(modData.adminUid||modData.bizId){
+      try{
+        const adminDoc=await getDoc(Doc('users',modData.adminUid||modData.bizId));
+        if(adminDoc.exists()){
+          const adminEmail=adminDoc.data().email;
+          const masked=maskEmail(adminEmail);
+          // Show notice
+          notice.style.display='flex';
+          notice.textContent=`🔔 Login notification sent to admin (${masked})`;
+          // Send email notification to admin
+          sendEmail(adminEmail,'Admin','MOD-LOGIN',`mod_notify`).catch(()=>{});
+        }
+      }catch{}
+    }
+  }catch(e){
+    const msg=e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'?'Invalid username or password.':e.message;
+    err.style.display='flex';err.textContent='❌ '+msg;
+    btn.disabled=false;btn.innerHTML='Sign In as Moderator →';
+  }
+};
 window.doLogout=async()=>{await signOut(auth);};
 
 // ══ AUTH STATE ══
@@ -919,6 +1142,8 @@ onAuthStateChanged(auth,async user=>{
         G.role=ud.role||'moderator';
         if(ud.displayName)G.user.displayName=ud.displayName;
         G.bizId=G.role==='admin'?user.uid:(ud.bizId||user.uid);
+        // Load moderator permissions
+        if(G.role==='moderator'){G.modPerms=ud.permissions||{orders:true};}
         try{const cd=await getDoc(BCfg());if(cd.exists())G.cfg=cd.data();}catch{}
         try{const gd=await getDoc(GCfg());if(gd.exists())G.gcfg=gd.data();}catch{}
         // 2FA check — only for admins, only if force2FA set in global config
@@ -967,7 +1192,14 @@ function loadApp(){
 // ══ NAVIGATION ══
 const pgTitles={dash:'Dashboard',prods:'Products',newOrder:'Create Order',orders:'Orders',custs:'Customers',team:'Team',reports:'Reports',account:'My Account',cfg:'Settings'};
 window.nav=p=>{
-  if(G.role==='moderator'&&!['newOrder','orders','account'].includes(p)){toast('Access denied','err');return;}
+  if(G.role==='moderator'){
+    const perms=G.modPerms||{orders:true};
+    const allowed=['newOrder','orders','account'];
+    if(perms.products)allowed.push('prods');
+    if(perms.customers)allowed.push('custs');
+    if(perms.reports)allowed.push('reports');
+    if(!allowed.includes(p)){toast('Access denied — ask admin for permission','err');return;}
+  }
   G.page=p;closeSB();
   document.querySelectorAll('.nItem').forEach(n=>n.classList.toggle('active',n.dataset.p===p));
   $('pgTitle').textContent=pgTitles[p]||p;
@@ -1010,6 +1242,9 @@ function buildSidebar(){
   const modNav=[
     {p:'newOrder',ico:'plus',lbl:'Create Order'},
     {p:'orders',ico:'cart',lbl:'Orders'},
+    ...(G.modPerms?.products?[{p:'prods',ico:'box',lbl:'Products'}]:[]),
+    ...(G.modPerms?.customers?[{p:'custs',ico:'users',lbl:'Customers'}]:[]),
+    ...(G.modPerms?.reports?[{p:'reports',ico:'chart',lbl:'Reports'}]:[]),
   ];
   const items=isAdmin?adminNav:modNav;
 
@@ -1296,6 +1531,9 @@ window.setOI=(i,field,val)=>{G.oItems[i][field]=val;if(field==='pid'&&val){const
 window.submitOrder=async()=>{
   const f=G.oForm;const ordPhone=f.ordererPhone;const recvPhone=f.recvPhone||ordPhone;
   if(!f.cName||!ordPhone||!f.cAddr){toast('Fill name, phone, address','err');return;}
+  // Validate phone (11 digits Bangladesh)
+  if(!/^01[3-9]\d{8}$/.test(ordPhone)){toast('Orderer phone must be valid 11-digit BD number (e.g. 01XXXXXXXXX)','err');return;}
+  if(f.recvPhone&&!/^01[3-9]\d{8}$/.test(f.recvPhone)){toast('Receiver phone must be valid 11-digit BD number','err');return;}
   const validItems=G.oItems.filter(it=>it.pid&&it.price);
   if(!validItems.length){toast('Add at least one product','err');return;}
   const btn=$('subOBtn');btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Creating...';
@@ -1318,63 +1556,101 @@ window.submitOrder=async()=>{
 };
 
 function showReceipt(o){
-  const cfg=G.cfg;const isEn=o.rLang!=='bn';const bname=isEn?(cfg.bizName||'Drystan'):(cfg.bizNameBn||cfg.bizName||'Drystan');
-  const rHtml=`<div class="rcptBox${!isEn?' rcptBn':''}">
-    <div style="text-align:center;border-bottom:2px solid #111;padding-bottom:14px;margin-bottom:14px">
-      <div style="font-size:26px;font-weight:900">${esc(bname)}</div>
-      ${cfg.bizAddr?`<div style="font-size:12px;color:#666">📍 ${esc(cfg.bizAddr)}</div>`:''}
-      ${cfg.bizPhone?`<div style="font-size:12px;color:#666">📞 ${esc(cfg.bizPhone)}</div>`:''}
-      <div style="font-size:14px;font-weight:700;margin-top:8px;letter-spacing:3px;color:#333">${isEn?'— RECEIPT —':'— রশিদ —'}</div>
+  const cfg=G.cfg;const isEn=o.rLang!=='bn';
+  const bname=isEn?(cfg.bizName||'Drystan'):(cfg.bizNameBn||cfg.bizName||'Drystan');
+  const bphone=cfg.bizPhone||'';const baddr=cfg.bizAddr||'';
+  const rHtml=`<div class="rcptBox${!isEn?' rcptBn':''}" id="rcptContent">
+    <div style="text-align:center;padding-bottom:14px;margin-bottom:14px;border-bottom:2px solid #111">
+      <div style="font-size:26px;font-weight:900;letter-spacing:-.5px">${esc(bname)}</div>
+      ${bphone?`<div style="font-size:13px;color:#555;margin-top:3px">📞 ${esc(bphone)}</div>`:''}
+      ${baddr?`<div style="font-size:12px;color:#666;margin-top:2px">📍 ${esc(baddr)}</div>`:''}
+      <div style="font-size:13px;font-weight:700;margin-top:10px;letter-spacing:3px;color:#333;border-top:1px dashed #ccc;border-bottom:1px dashed #ccc;padding:5px 0">${isEn?'— RECEIPT —':'— রশিদ —'}</div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;font-size:13px;line-height:2">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:14px;font-size:13px;line-height:2.1">
       <div><strong>${isEn?'Order #:':'অর্ডার:'}</strong> <span style="color:#6366F1;font-weight:700">${esc(o.num)}</span></div>
       <div><strong>${isEn?'Date:':'তারিখ:'}</strong> ${o.orderDate}</div>
-      <div><strong>${isEn?'Customer:':'গ্রাহক:'}</strong> ${esc(o.cName)}</div>
-      <div><strong>${isEn?'Orderer Ph:':'অর্ডারকারী:'}</strong> ${esc(o.ordererPhone||o.cPhone)}</div>
-      ${o.recvPhone&&o.recvPhone!==o.ordererPhone?`<div><strong>${isEn?'Receiver Ph:':'রিসিভার:'}</strong> ${esc(o.recvPhone)}</div>`:''}
-      ${o.recvName&&o.recvName!==o.cName?`<div><strong>${isEn?'Recipient:':'প্রাপক:'}</strong> ${esc(o.recvName)}</div>`:''}
+      <div><strong>${isEn?'Customer:':'গ্রাহক:'}</strong> ${esc(o.recvName||o.cName)}</div>
+      <div><strong>${isEn?'Phone:':'ফোন:'}</strong> ${esc(o.recvPhone||o.cPhone)}</div>
       <div style="grid-column:1/-1"><strong>${isEn?'Address:':'ঠিকানা:'}</strong> ${esc(o.cAddr)}</div>
       <div><strong>${isEn?'Delivery By:':'ডেলিভারি:'}</strong> ${o.delivDate}</div>
-      <div><strong>${isEn?'Payment:':'পেমেন্ট:'}</strong> <span style="font-weight:700;color:${o.payMethod==='paid'?'#10B981':'#F59E0B'}">${o.payMethod==='paid'?(isEn?'Paid ✅':'পেইড ✅'):(isEn?'Cash on Delivery':'ক্যাশ অন ডেলিভারি')}</span></div>
+      <div><strong>${isEn?'Payment:':'পেমেন্ট:'}</strong> <span style="font-weight:700;color:${o.payMethod==='paid'?'#10B981':o.payMethod==='partial'?'#F97316':'#F59E0B'}">${o.payMethod==='paid'?(isEn?'Paid ✅':'পেইড ✅'):o.payMethod==='partial'?(isEn?'Partial':'আংশিক'):(isEn?'Cash on Delivery':'ক্যাশ অন ডেলিভারি')}</span></div>
     </div>
     <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:13px">
-      <thead><tr style="background:#f0f0f0;border-top:2px solid #111;border-bottom:1px solid #ddd">
-        <th style="text-align:left;padding:8px">${isEn?'Product':'পণ্য'}</th>
-        <th style="text-align:center;padding:8px">${isEn?'Qty':'পরিমাণ'}</th>
-        <th style="text-align:right;padding:8px">${isEn?'Price':'মূল্য'}</th>
-        <th style="text-align:right;padding:8px">${isEn?'Total':'মোট'}</th>
+      <thead><tr style="background:#f0f0ff;border-top:2px solid #111;border-bottom:1px solid #ccc">
+        <th style="text-align:left;padding:9px 8px">${isEn?'Product':'পণ্য'}</th>
+        <th style="text-align:center;padding:9px 8px">${isEn?'Qty':'পরিমাণ'}</th>
+        <th style="text-align:right;padding:9px 8px">${isEn?'Price':'মূল্য'}</th>
+        <th style="text-align:right;padding:9px 8px">${isEn?'Total':'মোট'}</th>
       </tr></thead>
       <tbody>${(o.items||[]).map(it=>`<tr style="border-bottom:1px solid #eee">
-        <td style="padding:8px;font-weight:500">${esc(!isEn&&it.nameBn?it.nameBn:it.name)}</td>
-        <td style="text-align:center;padding:8px">${it.qty}</td>
-        <td style="text-align:right;padding:8px">${cur(it.price)}</td>
-        <td style="text-align:right;padding:8px;font-weight:700">${cur(it.lineTotal)}</td>
+        <td style="padding:9px 8px;font-weight:500">${esc(!isEn&&it.nameBn?it.nameBn:it.name)}</td>
+        <td style="text-align:center;padding:9px 8px">${it.qty}</td>
+        <td style="text-align:right;padding:9px 8px">${cur(it.price)}</td>
+        <td style="text-align:right;padding:9px 8px;font-weight:700">${cur(it.lineTotal)}</td>
       </tr>`).join('')}</tbody>
     </table>
     <div style="border-top:2px solid #ddd;padding-top:10px">
       <div style="display:flex;justify-content:space-between;font-size:13px;color:#555;margin-bottom:5px"><span>${isEn?'Subtotal':'উপমোট'}</span><span>${cur(o.subtotal)}</span></div>
+      ${o.discount?`<div style="display:flex;justify-content:space-between;font-size:13px;color:#10B981;margin-bottom:5px"><span>${isEn?'Discount':'ছাড়'}</span><span>- ${cur(o.discount)}</span></div>`:''}
       <div style="display:flex;justify-content:space-between;font-size:13px;color:#555;margin-bottom:8px"><span>${isEn?'Delivery':'ডেলিভারি'}</span><span>${cur(o.delivery)}</span></div>
       <div style="display:flex;justify-content:space-between;background:#111;color:#fff;padding:12px 14px;border-radius:8px;font-weight:900;font-size:18px">
         <span>${isEn?'GRAND TOTAL':'সর্বমোট'}</span><span>${cur(o.total)}</span>
       </div>
     </div>
-    <div style="text-align:center;margin-top:20px;padding-top:14px;border-top:1px dashed #ccc;font-size:12px;color:#666">
+    ${o.notes?`<div style="margin-top:10px;padding:8px 12px;background:#f8f8f8;border-radius:6px;font-size:12px;color:#666"><strong>Note:</strong> ${esc(o.notes)}</div>`:''}
+    <div style="text-align:center;margin-top:16px;padding-top:12px;border-top:1px dashed #ccc;font-size:12px;color:#888">
       <p style="font-weight:600;margin-bottom:3px">${esc(isEn?(cfg.footerEn||'Thank you!'):(cfg.footerBn||'ধন্যবাদ!'))}</p>
     </div>
   </div>`;
   $('rcptPrintArea').innerHTML=rHtml;
   setC(`
   <div class="pH">
-    <div><h1 style="color:var(--green)">✅ Order Created!</h1><p>Order <strong>${esc(o.num)}</strong> saved</p></div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn bP" onclick="printRcpt()">🖨️ Print Receipt</button>
-      <button class="btn bS" onclick="nav('orders')">📋 All Orders</button>
-      <button class="btn bS" onclick="G.lastOrder=null;nav('newOrder')">➕ New Order</button>
+    <div><h1 style="color:var(--green)">✅ Order Created!</h1><p>Order <strong>${esc(o.num)}</strong> — Orderer: ${esc(o.ordererPhone)} | Receiver: ${esc(o.recvName||o.cName)} (${esc(o.recvPhone||o.cPhone)})</p></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn bP" onclick="printRcpt()">🖨️ Print</button>
+      <button class="btn bS" onclick="downloadRcptPDF()">📄 Save PDF</button>
+      <button class="btn bS" onclick="downloadRcptImg()">🖼️ Save Image</button>
+      <button class="btn bS" onclick="nav('orders')">📋 Orders</button>
+      <button class="btn bG" onclick="G.lastOrder=null;nav('newOrder')">➕ New Order</button>
     </div>
+  </div>
+  <div class="al aI" style="margin-bottom:12px;font-size:12px">
+    📌 Receipt shows <strong>Receiver</strong> info only. Orderer info (${esc(o.ordererPhone)}) is saved in your dashboard Orders section.
   </div>
   <div class="card" style="display:flex;justify-content:center;padding:24px">${rHtml}</div>`);
 }
-window.printRcpt=()=>{const html=$('rcptPrintArea').innerHTML;const pw=window.open('','_blank','width=620,height=850');pw.document.write(`<!DOCTYPE html><html><head><title>Receipt</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet"><style>body{margin:0;padding:24px;font-family:'Inter',sans-serif;background:#fff}</style></head><body>${html}<script>window.onload=()=>window.print()<\/script></body></html>`);pw.document.close();};
+window.printRcpt=()=>{
+  const html=$('rcptPrintArea').innerHTML;
+  const pw=window.open('','_blank','width=620,height=850');
+  pw.document.write(`<!DOCTYPE html><html><head><title>Receipt</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet"><style>body{margin:0;padding:24px;font-family:'Inter',sans-serif;background:#fff}@media print{body{padding:8px}}</style></head><body>${html}<script>window.onload=()=>window.print()<\/script></body></html>`);
+  pw.document.close();
+};
+window.downloadRcptPDF=()=>{
+  const html=$('rcptPrintArea').innerHTML;
+  const pw=window.open('','_blank','width=620,height=850');
+  pw.document.write(`<!DOCTYPE html><html><head><title>Receipt PDF</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet"><style>body{margin:0;padding:24px;font-family:'Inter',sans-serif;background:#fff}@media print{body{padding:8px}}</style></head><body>${html}<script>window.onload=()=>{window.print();}<\/script></body></html>`);
+  pw.document.close();
+  toast('Browser এ "Save as PDF" সিলেক্ট করুন','info');
+};
+window.downloadRcptImg=()=>{
+  toast('Image তৈরি হচ্ছে...','info');
+  const el=document.getElementById('rcptContent');
+  if(!el){toast('Receipt not found','err');return;}
+  const script=document.createElement('script');
+  script.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  script.onload=async()=>{
+    try{
+      const canvas=await window.html2canvas(el,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false});
+      const link=document.createElement('a');
+      link.download=`receipt-${G.lastOrder?.num||'drystan'}.png`;
+      link.href=canvas.toDataURL('image/png');
+      link.click();
+      toast('✅ Image downloaded!','ok');
+    }catch(e){toast('❌ '+e.message,'err');}
+  };
+  script.onerror=()=>toast('Failed to load image library','err');
+  document.head.appendChild(script);
+};
 
 // ══ ORDERS ══
 let oSrch='',oFilt='';
@@ -1503,7 +1779,10 @@ async function pgCusts(){
           <td><span class="badge bCat">${c.orders||0} orders</span></td>
           <td style="font-weight:700;color:var(--green)">${cur(c.spent)}</td>
           <td style="color:var(--t2)">${cur((c.spent||0)/(c.orders||1))}</td>
-          <td><button class="btn bS bSm bIco" onclick="viewCust('${c.id}')">👁️</button></td>
+          <td><div style="display:flex;gap:5px">
+            <button class="btn bS bSm bIco" onclick="viewCust('${c.id}')">👁️</button>
+            <button class="btn bD bSm bIco" onclick="delCust('${c.id}','${esc(c.name)}')">🗑️</button>
+          </div></td>
         </tr>`).join('')}</tbody>
       </table></div>`}
     </div>
@@ -1534,6 +1813,12 @@ async function viewCust(id){
   $('custMOvl').classList.add('open');
 }
 window.viewCust=viewCust;
+async function delCust(id,name){
+  if(!confirm(`Delete customer "${name}"?\n\nThis removes the customer record but keeps their orders.`))return;
+  try{await deleteDoc(BDoc('customers',id));toast('Customer deleted');pgCusts();}
+  catch(e){toast(e.message,'err');}
+}
+window.delCust=delCust;
 
 // ══ REPORTS & ANALYTICS ══
 async function pgReports(){
@@ -1686,12 +1971,29 @@ window.openAddMod=()=>{
   $('modMod').innerHTML=`
   <div class="mH"><h3>➕ Add Moderator</h3><button class="btn bS bIco" onclick="closeMov('modMOvl')">✕</button></div>
   <div class="mB">
-    <div class="al aW" style="font-size:12px">⚠️ Adding a moderator will briefly sign you out. You'll need to login again. This is a Firebase limitation.</div>
+    <div class="al aW" style="font-size:12px">⚠️ Adding a moderator will briefly sign you out. Re-login after.</div>
     <div class="afG"><label class="afL">Full Name *</label><input class="afI" id="md_n" placeholder="John Doe"/></div>
     <div class="afG"><label class="afL">Username * <span style="color:var(--t3)">(login username)</span></label><input class="afI" id="md_u" placeholder="john_mod"/></div>
     <div class="afG"><label class="afL">Email *</label><input class="afI" type="email" id="md_e" placeholder="john@example.com"/></div>
     <div class="afG"><label class="afL">Phone</label><input class="afI" id="md_ph" placeholder="01XXXXXXXXX"/></div>
     <div class="afG"><label class="afL">Password *</label><input class="afI" type="password" id="md_p" placeholder="Min 6 characters"/></div>
+    <div class="afG">
+      <label class="afL">🔐 Permissions (what this moderator can access)</label>
+      <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border)">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="perm_orders" checked style="width:16px;height:16px;accent-color:var(--acc)"/> 📋 Create & Manage Orders (Always ON)
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="perm_products" style="width:16px;height:16px;accent-color:var(--acc)"/> 📦 View & Edit Products
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="perm_customers" style="width:16px;height:16px;accent-color:var(--acc)"/> 👥 View Customers
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="perm_reports" style="width:16px;height:16px;accent-color:var(--acc)"/> 📊 View Reports & Analytics
+        </label>
+      </div>
+    </div>
     <div id="mdErr" class="al aE" style="display:none"></div>
   </div>
   <div class="mF"><button class="btn bS" onclick="closeMov('modMOvl')">Cancel</button><button class="btn bP" id="mdBtn" onclick="saveMod()">➕ Create Moderator</button></div>`;
@@ -1705,9 +2007,11 @@ window.saveMod=async()=>{
   const ex=await getDocs(query(Col('users'),where('username','==',username)));
   if(!ex.empty){err.style.display='flex';err.textContent='❌ Username already taken.';return;}
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';
+  // Collect permissions
+  const perms={orders:true,products:!!$('perm_products')?.checked,customers:!!$('perm_customers')?.checked,reports:!!$('perm_reports')?.checked};
   try{
     const cred=await createUserWithEmailAndPassword(auth,email,pass);
-    await setDoc(Doc('users',cred.user.uid),{displayName:name,username,email,phone,role:'moderator',authUid:cred.user.uid,bizId:G.bizId,adminUid:G.bizId,createdAt:serverTimestamp()});
+    await setDoc(Doc('users',cred.user.uid),{displayName:name,username,email,phone,role:'moderator',authUid:cred.user.uid,bizId:G.bizId,adminUid:G.bizId,permissions:perms,createdAt:serverTimestamp()});
     toast('✅ Moderator created! Please re-login.','warn');
     await signOut(auth);
   }catch(e){err.style.display='flex';err.textContent='❌ '+(e.code==='auth/email-already-in-use'?'Email already in use.':e.message);btn.disabled=false;btn.innerHTML='➕ Create Moderator';}
@@ -1799,7 +2103,20 @@ async function pgAccount(){
             <input class="afI" id="ac_user" value="${esc(ud.username||'')}" oninput="checkAccUname(this.value,'${esc(ud.username||'')}')"/>
             <div id="acUnChk" style="font-size:11px;margin-top:3px;display:none"></div>
           </div>
-          <div class="afG"><label class="afL">Phone</label><input class="afI" id="ac_ph" value="${esc(ud.phone||'')}"/></div>
+          <div class="afG"><label class="afL">Phone</label>
+            <div style="display:flex;gap:8px">
+              <select class="afI" id="ac_cc" style="width:110px;flex-shrink:0">
+                <option value="+880" ${(ud.countryCode||'+880')==='+880'?'selected':''}>🇧🇩 +880</option>
+                <option value="+1" ${ud.countryCode==='+1'?'selected':''}>🇺🇸 +1</option>
+                <option value="+44" ${ud.countryCode==='+44'?'selected':''}>🇬🇧 +44</option>
+                <option value="+91" ${ud.countryCode==='+91'?'selected':''}>🇮🇳 +91</option>
+                <option value="+92" ${ud.countryCode==='+92'?'selected':''}>🇵🇰 +92</option>
+                <option value="+966" ${ud.countryCode==='+966'?'selected':''}>🇸🇦 +966</option>
+                <option value="+971" ${ud.countryCode==='+971'?'selected':''}>🇦🇪 +971</option>
+              </select>
+              <input class="afI" id="ac_ph" value="${esc(ud.phone||'')}" placeholder="01XXXXXXXXX"/>
+            </div>
+          </div>
           <div class="afG"><label class="afL">Email <span style="color:var(--t3);font-size:10px">(cannot change)</span></label><input class="afI" value="${esc(ud.email||G.user?.email||'')}" readonly style="opacity:.5;cursor:not-allowed"/></div>
           <button class="btn bP bFull" onclick="saveProfile()">💾 Update Profile</button>
         </div>
@@ -1855,7 +2172,7 @@ window.saveProfile=async()=>{
   const name=$('ac_name').value.trim(),username=$('ac_user').value.trim().toLowerCase(),phone=$('ac_ph').value.trim();
   if(!name||!username){toast('Name and username required','err');return;}
   try{const s=await getDocs(query(Col('users'),where('username','==',username)));if(!s.empty&&s.docs[0].id!==G.user.uid){toast('Username taken','err');return;}
-  await updateDoc(Doc('users',G.user.uid),{displayName:name,username,phone,updatedAt:serverTimestamp()});
+  await updateDoc(Doc('users',G.user.uid),{displayName:name,username,phone:$('ac_ph').value.trim(),countryCode:$('ac_cc').value,updatedAt:serverTimestamp()});
   G.user.displayName=name;const ico=name[0].toUpperCase();$('sAvatar').textContent=ico;$('tAv').textContent=ico;$('sUserNm').textContent=name;
   toast('Profile updated! ✅');}catch(e){toast(e.message,'err');}
 };
