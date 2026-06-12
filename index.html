@@ -195,16 +195,24 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:
 .sLogoIco:hover{transform:scale(1.08) rotate(-5deg)}
 .sLogoTxt{font-weight:800;font-size:16px;background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .sNav{flex:1;padding:10px 0;overflow-y:auto}
-.sSectionLbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3);padding:10px 18px 4px}
-.nItem{display:flex;align-items:center;gap:11px;padding:10px 14px;margin:2px 10px;border-radius:10px;cursor:pointer;color:var(--t2);font-size:13.5px;font-weight:500;border:none;background:none;width:calc(100% - 20px);text-align:left;font-family:inherit;transition:all .2s;position:relative}
-.nItem:hover{color:var(--t1);background:var(--card2);transform:translateX(2px)}
-.nItem.active{background:var(--acc4);color:var(--acc2);border:1px solid rgba(99,102,241,.2)}
+.sSectionLbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--t2);padding:10px 18px 4px}
+.nItem{display:flex;align-items:center;gap:11px;padding:10px 14px;margin:2px 10px;border-radius:10px;cursor:pointer;color:var(--t1);font-size:13.5px;font-weight:600;border:none;background:none;width:calc(100% - 20px);text-align:left;font-family:inherit;transition:all .2s;position:relative;opacity:.8}
+.nItem:hover{color:var(--t1);background:var(--card2);transform:translateX(2px);opacity:1}
+.nItem.active{background:var(--acc4);color:var(--acc2);border:1px solid rgba(99,102,241,.2);opacity:1}
 .nItem svg{width:17px;height:17px;flex-shrink:0}
 .nBadge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center}
 .sFtr{padding:12px;border-top:1px solid var(--border)}
 .sUserCard{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--card);margin-bottom:8px;cursor:pointer;transition:background .2s}
 .sUserCard:hover{background:var(--card2)}
 .sAv{width:34px;height:34px;border-radius:50%;background:var(--grad2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+/* Light mode sidebar text fix */
+[data-theme=light] .nItem{color:#1e293b;opacity:1}
+[data-theme=light] .nItem:hover{color:#0F172A;background:rgba(99,102,241,.08)}
+[data-theme=light] .nItem.active{color:#4F46E5;background:rgba(99,102,241,.1)}
+[data-theme=light] .sSectionLbl{color:#475569}
+[data-theme=light] #sidebar{background:#fff;border-right:1px solid rgba(99,102,241,.15)}
+[data-theme=light] .sUserCard span,[data-theme=light] #sUserNm{color:#0F172A!important}
+[data-theme=light] #sUserRole{color:#475569!important}
 
 /* TOPBAR */
 .tLeft,.tRight{display:flex;align-items:center;gap:10px}
@@ -520,8 +528,30 @@ tbody tr:last-child td{border:none}
         </div>
       </div>
 
+
+      <!-- TOTP Google Authenticator Panel -->
+      <div class="authPanel" id="panelTotp">
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="font-size:48px;margin-bottom:10px">📱</div>
+          <div style="font-size:16px;font-weight:700">Google Authenticator</div>
+          <div style="font-size:12px;color:var(--t2);margin-top:5px">Open your authenticator app and enter the 6-digit code</div>
+        </div>
+        <div class="otpWrap">
+          <input class="otpInp" maxlength="1" id="totp0" oninput="totpLoginInput(this,0)" onkeydown="totpKey(event,0)" type="text" inputmode="numeric"/>
+          <input class="otpInp" maxlength="1" id="totp1" oninput="totpLoginInput(this,1)" onkeydown="totpKey(event,1)" type="text" inputmode="numeric"/>
+          <input class="otpInp" maxlength="1" id="totp2" oninput="totpLoginInput(this,2)" onkeydown="totpKey(event,2)" type="text" inputmode="numeric"/>
+          <input class="otpInp" maxlength="1" id="totp3" oninput="totpLoginInput(this,3)" onkeydown="totpKey(event,3)" type="text" inputmode="numeric"/>
+          <input class="otpInp" maxlength="1" id="totp4" oninput="totpLoginInput(this,4)" onkeydown="totpKey(event,4)" type="text" inputmode="numeric"/>
+          <input class="otpInp" maxlength="1" id="totp5" oninput="totpLoginInput(this,5)" onkeydown="totpKey(event,5)" type="text" inputmode="numeric"/>
+        </div>
+        <div id="totpLoginErr" class="al aE" style="display:none"></div>
+        <button class="btn bP bFull" onclick="verifyTOTPLogin()" style="padding:13px;font-size:15px;background:linear-gradient(135deg,#A855F7,#7C3AED)">📱 Verify Code</button>
+        <div style="text-align:center;margin-top:12px">
+          <button class="btn bS bSm" onclick="cancelTOTPLogin()">✕ Cancel</button>
+        </div>
+      </div>
+
       <!-- REGISTER (Admin = Business Owner) -->
-      <div class="authPanel" id="panelRegister">
         <div class="stepWrap">
           <div class="step active" id="st1">1</div><div class="stepLine" id="sl1"></div>
           <div class="step" id="st2">2</div><div class="stepLine" id="sl2"></div>
@@ -685,7 +715,7 @@ tbody tr:last-child td{border:none}
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,createUserWithEmailAndPassword,updatePassword,reauthenticateWithCredential,EmailAuthProvider}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import{getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,query,where,orderBy,serverTimestamp,limit}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import{getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,query,where,orderBy,serverTimestamp,limit,onSnapshot}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const FC={apiKey:"AIzaSyDtoVVHuMKUiIbyQEOmEPyspzBNT5zxGC4",authDomain:"drystan-cfe3b.firebaseapp.com",projectId:"drystan-cfe3b",storageBucket:"drystan-cfe3b.firebasestorage.app",messagingSenderId:"419259525007",appId:"1:419259525007:web:25c283364579b356d74dfa"};
 const app=initializeApp(FC);
@@ -917,7 +947,7 @@ window.exitOwner=()=>{
 
 // ══ TAB SWITCH ══
 const TAB_MAP={signin:'tabSI',modlogin:'tabMOD',register:'tabRG',forgot:'tabFP'};
-const PANEL_MAP={signin:'panelSignin',modlogin:'panelModlogin',register:'panelRegister',forgot:'panelForgot','2fa':'panel2fa'};
+const PANEL_MAP={signin:'panelSignin',modlogin:'panelModlogin',register:'panelRegister',forgot:'panelForgot','2fa':'panel2fa',totp:'panelTotp'};
 window.switchTab=tab=>{
   Object.values(TAB_MAP).forEach(id=>$(id)?.classList.remove('active'));
   Object.values(PANEL_MAP).forEach(id=>$(id)?.classList.remove('active'));
@@ -928,7 +958,7 @@ window.switchTab=tab=>{
 
 // ══ OTP HELPERS ══
 let _otpCode='',_otpEmail='',_otpTimer=null,_resendTimer=null,_rgData={};
-let _tfaTimer=null,_tfaResendTimer=null,_tfaPending=null,_appReady=false,_tfaCode='';
+let _tfaTimer=null,_tfaResendTimer=null,_tfaPending=null,_appReady=false,_tfaCode='',_tfaSent=false;
 
 function genOTP(){return String(Math.floor(100000+Math.random()*900000));}
 
@@ -1090,7 +1120,7 @@ window.verify2FA=async()=>{
   if(entered.length<6){err.style.display='flex';err.textContent='❌ Enter all 6 digits.';return;}
   if(entered!==_tfaCode){err.style.display='flex';err.textContent='❌ Wrong code. Try again.';[0,1,2,3,4,5].forEach(i=>{const el=$('tfa'+i);if(el)el.value='';});$('tfa0')?.focus();return;}
   clearInterval(_tfaTimer);clearInterval(_tfaResendTimer);
-  _tfaCode='';_tfaPending=null;_appReady=true;
+  _tfaCode='';_tfaPending=null;_appReady=true;_tfaSent=false;
   toast('✅ 2FA Verified! Welcome.','ok');
   loadApp();
 };
@@ -1117,12 +1147,23 @@ window.doLogin=async()=>{
   if(!u||!p){err.style.display='flex';err.textContent='❌ Enter username/email and password.';return;}
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Signing in...';
   try{
-    let email=null;
-    if(u.includes('@')){email=u;}
-    else{
-      try{const s=await getDocs(query(Col('users'),where('username','==',u)));if(!s.empty)email=s.docs[0].data().email;}catch{}
-      if(!email&&u==='admin')email='admin@drystan.app';
-      if(!email)throw new Error('Invalid username or password.');
+    let email=null,userDoc=null;
+    if(u.includes('@')){
+      email=u;
+      // Verify this email belongs to an admin
+      const snap=await getDocs(query(Col('users'),where('email','==',u)));
+      if(!snap.empty){userDoc=snap.docs[0].data();}
+    } else {
+      const snap=await getDocs(query(Col('users'),where('username','==',u)));
+      if(!snap.empty){userDoc=snap.docs[0].data();email=userDoc.email;}
+      else if(u==='admin'){email='admin@drystan.app';}
+      else{err.style.display='flex';err.textContent='❌ Invalid username or password.';btn.disabled=false;btn.innerHTML='Sign In →';return;}
+    }
+    // BLOCK moderators from admin portal
+    if(userDoc&&userDoc.role==='moderator'){
+      err.style.display='flex';
+      err.innerHTML='❌ This is the <strong>Admin Portal</strong>. Moderators must use the <strong>👤 Moderator</strong> tab.';
+      btn.disabled=false;btn.innerHTML='Sign In →';return;
     }
     await signInWithEmailAndPassword(auth,email,p);
   }catch(e){
@@ -1148,6 +1189,9 @@ function maskEmail(email){
 }
 
 // MODERATOR LOGIN — notifies admin via OTP to admin email
+// ══ MODERATOR LOGIN WITH ADMIN APPROVAL ══
+let _pendingModLogin={email:null,uid:null,username:null,bizId:null};
+
 window.doModLogin=async()=>{
   const u=$('modUser').value.trim(),p=$('modPass').value;
   const err=$('modErr'),btn=$('modBtn'),notice=$('modOtpNotice');
@@ -1155,33 +1199,86 @@ window.doModLogin=async()=>{
   if(!u||!p){err.style.display='flex';err.textContent='❌ Enter username and password.';return;}
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Signing in...';
   try{
-    // Find moderator by username
-    const snap=await getDocs(query(Col('users'),where('username','==',u),where('role','==','moderator')));
+    // Find user by username
+    const snap=await getDocs(query(Col('users'),where('username','==',u)));
     if(snap.empty){err.style.display='flex';err.textContent='❌ Invalid username or password.';btn.disabled=false;btn.innerHTML='Sign In as Moderator →';return;}
-    const modData=snap.docs[0].data();
-    // Login with stored email (auto-generated)
-    await signInWithEmailAndPassword(auth,modData.email,p);
-    // Notify admin (non-blocking)
-    if(modData.adminUid||modData.bizId){
-      try{
-        const adminDoc=await getDoc(Doc('users',modData.adminUid||modData.bizId));
-        if(adminDoc.exists()){
-          const adminEmail=adminDoc.data().email;
-          if(adminEmail&&!adminEmail.includes('drystan.internal')){
-            const masked=maskEmail(adminEmail);
-            notice.style.display='flex';
-            notice.textContent=`🔔 Login notification sent to admin (${masked})`;
-            sendEmail(adminEmail,'Admin',`Moderator @${u} just logged in`,'2fa').catch(()=>{});
-          }
-        }
-      }catch{}
+    const ud=snap.docs[0].data();const docId=snap.docs[0].id;
+    // BLOCK admins from moderator portal
+    if(ud.role==='admin'||ud.role==='owner'){
+      err.style.display='flex';
+      err.innerHTML='❌ This is the <strong>Moderator Portal</strong>. Admins must use the <strong>🔐 Admin</strong> tab.';
+      btn.disabled=false;btn.innerHTML='Sign In as Moderator →';return;
     }
+    if(ud.role!=='moderator'){err.style.display='flex';err.textContent='❌ Invalid username or password.';btn.disabled=false;btn.innerHTML='Sign In as Moderator →';return;}
+    // Verify password first by attempting sign in
+    try{await signInWithEmailAndPassword(auth,ud.email,p);}
+    catch(e){
+      const msg=e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'?'Invalid username or password.':e.message;
+      err.style.display='flex';err.textContent='❌ '+msg;btn.disabled=false;btn.innerHTML='Sign In as Moderator →';return;
+    }
+    // Password correct — now sign out and request admin approval
+    await signOut(auth);
+    _pendingModLogin={email:ud.email,uid:docId,username:u,bizId:ud.bizId||ud.adminUid,name:ud.displayName,pass:p};
+    // Send approval request to Firestore
+    await setDoc(Doc('modLoginRequests',docId),{
+      uid:docId,username:u,displayName:ud.displayName||u,
+      bizId:ud.bizId||ud.adminUid,
+      status:'pending',requestedAt:serverTimestamp(),
+      expiresAt:new Date(Date.now()+5*60*1000)
+    });
+    // Show waiting screen
+    btn.innerHTML='⏳ Waiting for Admin...';
+    notice.style.display='flex';
+    notice.innerHTML=`📨 Login request sent to admin. Waiting for approval... <strong id="modApprovalTimer">5:00</strong>`;
+    // Start approval polling
+    startModApprovalWait(docId,ud.email,p);
   }catch(e){
-    const msg=e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'?'Invalid username or password.':e.message;
-    err.style.display='flex';err.textContent='❌ '+msg;
+    err.style.display='flex';err.textContent='❌ '+e.message;
     btn.disabled=false;btn.innerHTML='Sign In as Moderator →';
   }
 };
+
+let _modApprovalInterval=null,_modApprovalTimeout=null;
+async function startModApprovalWait(docId,email,pass){
+  let secs=300;
+  const btn=$('modBtn');
+  // Countdown
+  const timer=setInterval(()=>{
+    secs--;const el=$('modApprovalTimer');
+    if(el)el.textContent=`${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}`;
+    if(secs<=0){clearInterval(timer);cancelModRequest(docId,'expired');}
+  },1000);
+  // Poll for approval every 3 seconds
+  _modApprovalInterval=setInterval(async()=>{
+    try{
+      const d=await getDoc(Doc('modLoginRequests',docId));
+      if(!d.exists())return;
+      const status=d.data().status;
+      if(status==='approved'){
+        clearInterval(_modApprovalInterval);clearInterval(timer);
+        toast('✅ Approved! Logging in...','ok');
+        await deleteDoc(Doc('modLoginRequests',docId));
+        await signInWithEmailAndPassword(auth,email,pass);
+      }else if(status==='rejected'){
+        clearInterval(_modApprovalInterval);clearInterval(timer);
+        await deleteDoc(Doc('modLoginRequests',docId));
+        const err=$('modErr');if(err){err.style.display='flex';err.textContent='❌ Admin rejected your login request.';}
+        if(btn){btn.disabled=false;btn.innerHTML='Sign In as Moderator →';}
+        const notice=$('modOtpNotice');if(notice)notice.style.display='none';
+        toast('❌ Login rejected by admin','err');
+      }
+    }catch{}
+  },3000);
+}
+
+async function cancelModRequest(docId,reason){
+  clearInterval(_modApprovalInterval);
+  try{await deleteDoc(Doc('modLoginRequests',docId));}catch{}
+  const btn=$('modBtn');if(btn){btn.disabled=false;btn.innerHTML='Sign In as Moderator →';}
+  const notice=$('modOtpNotice');if(notice)notice.style.display='none';
+  const err=$('modErr');
+  if(err){err.style.display='flex';err.textContent=reason==='expired'?'❌ Request expired. Try again.':'❌ Cancelled.';}
+}
 window.doLogout=async()=>{await signOut(auth);};
 
 // ══ AUTH STATE ══
@@ -1204,7 +1301,23 @@ onAuthStateChanged(auth,async user=>{
         try{const gd=await getDoc(GCfg());if(gd.exists())G.gcfg=gd.data();}catch{}
         // 2FA check — only for admins, only if force2FA set in global config
         const need2FA=(G.gcfg.force2FA===true)&&G.role==='admin'&&!_appReady&&G.gcfg.ejsKey;
-        if(need2FA){
+        // Check TOTP first (overrides email 2FA)
+        if(ud.totpEnabled&&ud.totpSecret&&!_appReady){
+          _totpPendingUser={totpSecret:ud.totpSecret,displayName:ud.displayName};
+          ls.classList.add('hide');setTimeout(()=>ls.style.display='none',500);
+          $('appWrap').classList.remove('show');$('loginWrap').classList.add('show');
+          switchTab('totp');applyTheme();
+          // Load otpauth library
+          if(!window.OTPAuth){
+            const script=document.createElement('script');
+            script.src='https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.3.6/otpauth.umd.min.js';
+            document.head.appendChild(script);
+          }
+          setTimeout(()=>$('totp0')?.focus(),300);
+          return;
+        }
+        if(need2FA && !_tfaSent){
+          _tfaSent=true;
           _tfaCode=genOTP();_tfaPending={email:ud.email||user.email,name:ud.displayName||'Admin'};
           $('twoFAEmailDisplay').textContent=_tfaPending.email;
           ls.classList.add('hide');setTimeout(()=>ls.style.display='none',500);
@@ -1225,7 +1338,7 @@ onAuthStateChanged(auth,async user=>{
     }catch(e){console.error(e);}
     _appReady=true;loadApp();
   }else{
-    _appReady=false;_tfaPending=null;_tfaCode='';
+    _appReady=false;_tfaPending=null;_tfaCode='';_tfaSent=false;
     G.user=null;G.role=null;G.bizId=null;G.cfg={};
     ls.classList.add('hide');setTimeout(()=>ls.style.display='none',500);
     $('appWrap').classList.remove('show');$('loginWrap').classList.add('show');
@@ -1238,12 +1351,62 @@ function loadApp(){
   ls.classList.add('hide');setTimeout(()=>ls.style.display='none',500);
   $('loginWrap').classList.remove('show');$('appWrap').classList.add('show');
   applyTheme();$('langLbl').textContent=G.lang.toUpperCase();
-  // Apply site name from global config
   const sn=G.gcfg.siteName||'Drystan';
   const nm=$('mainLogoName');if(nm)nm.textContent=sn;
   G.page=G.role==='moderator'?'newOrder':'dash';
   nav(G.page);
+  // Start moderator login approval listener (admin only)
+  if(G.role==='admin'){setTimeout(startModLoginListener,1000);}
 }
+
+// ══ MODERATOR LOGIN APPROVAL ══
+let _modListenerUnsub=null;
+function startModLoginListener(){
+  if(_modListenerUnsub){try{_modListenerUnsub();}catch{}}
+  try{
+    const qRef=query(Col('modLoginRequests'),where('bizId','==',G.bizId),where('status','==','pending'));
+    _modListenerUnsub=onSnapshot(qRef,(snap)=>{
+      snap.docChanges().forEach(change=>{
+        if(change.type==='added'){showModApprovalNotif(change.doc.id,change.doc.data());}
+      });
+    },(err)=>{console.warn('Listener error:',err);});
+  }catch(e){console.warn('startModLoginListener error:',e);}
+}
+
+function showModApprovalNotif(docId,req){
+  $('modApprovalNotif')?.remove();
+  const el=document.createElement('div');
+  el.id='modApprovalNotif';
+  el.style.cssText='position:fixed;bottom:24px;right:24px;z-index:9000;width:320px;background:var(--bg2);border:2px solid var(--acc);border-radius:16px;padding:20px;box-shadow:0 16px 48px rgba(0,0,0,.4);animation:slideR .35s ease';
+  let secs=300;
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--grad2);display:flex;align-items:center;justify-content:center;font-size:18px">👤</div>
+      <div>
+        <div style="font-weight:700;font-size:14px;color:var(--t1)">🔔 Moderator Login Request</div>
+        <div style="font-size:12px;color:var(--t2);margin-top:2px"><strong>@${esc(req.username)}</strong> — ${esc(req.displayName||req.username)}</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--t2);margin-bottom:14px;padding:8px;background:var(--card);border-radius:8px">
+      ⏰ Expires in <strong id="modReqTimer">5:00</strong>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn bG" style="flex:1;padding:10px;font-size:14px" onclick="approveModLogin('${docId}',true)">✅ Approve</button>
+      <button class="btn bD" style="flex:1;padding:10px;font-size:14px" onclick="approveModLogin('${docId}',false)">❌ Reject</button>
+    </div>`;
+  document.body.appendChild(el);
+  const timerEl=el.querySelector('#modReqTimer');
+  const t=setInterval(()=>{secs--;if(timerEl)timerEl.textContent=`${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')}`;if(secs<=0){clearInterval(t);el.remove();}},1000);
+  setTimeout(()=>{clearInterval(t);el.remove();},305000);
+}
+
+window.approveModLogin=async(docId,approved)=>{
+  try{
+    await updateDoc(Doc('modLoginRequests',docId),{status:approved?'approved':'rejected',reviewedAt:serverTimestamp(),reviewedBy:G.user?.uid});
+    $('modApprovalNotif')?.remove();
+    toast(approved?'✅ Moderator login approved!':'❌ Login rejected.', approved?'ok':'info');
+  }catch(e){toast(e.message,'err');}
+};
 
 // ══ NAVIGATION ══
 const pgTitles={dash:'Dashboard',prods:'Products',newOrder:'Create Order',orders:'Orders',custs:'Customers',team:'Team',reports:'Reports',account:'My Account',cfg:'Settings'};
@@ -2229,7 +2392,7 @@ async function pgAccount(){
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:14px">
-        <div class="card">
+        <div class="card" style="border-color:rgba(99,102,241,.2)">
           <div class="cardTitle">📋 Login Methods</div>
           <div style="padding:12px;background:rgba(16,185,129,.08);border-radius:10px;border:1px solid rgba(16,185,129,.2);margin-bottom:10px">
             <div style="font-size:13px;font-weight:600;color:var(--green)">📧 Email Login</div>
@@ -2240,6 +2403,22 @@ async function pgAccount(){
             <div style="font-size:12px;color:var(--t2);margin-top:3px">@${esc(ud.username||'-')}</div>
           </div>
         </div>
+        ${G.role==='admin'?`
+        <div class="card" style="border-color:rgba(168,85,247,.25)">
+          <div class="cardTitle">🔐 Two-Factor Authentication (TOTP)</div>
+          ${ud.totpEnabled?`
+          <div class="al aO" style="margin-bottom:12px">✅ Google Authenticator 2FA is <strong>ENABLED</strong></div>
+          <p style="font-size:13px;color:var(--t2);margin-bottom:14px">Your account is protected with Google Authenticator. Every login requires a 6-digit code from the app.</p>
+          <button class="btn bD bFull" onclick="disableTOTP()">🗑️ Disable 2FA</button>
+          `:`
+          <div class="al aI" style="margin-bottom:12px;font-size:12px">
+            📱 Use <strong>Google Authenticator</strong> or <strong>Authy</strong> app to scan a QR code. Then every login will require a 6-digit code from the app — no email needed!
+          </div>
+          <button class="btn bP bFull" onclick="setupTOTP()">⚙️ Setup Google Authenticator</button>
+          `}
+        </div>
+        <div class="mOvl" id="totpMOvl" onclick="if(event.target===this)closeMov('totpMOvl')"><div class="modal" id="totpMod" style="max-width:420px"></div></div>
+        `:''}
         <div class="card" style="border-color:rgba(99,102,241,.2)">
           <div class="cardTitle">📊 Account Info</div>
           <div style="font-size:13px;color:var(--t2);line-height:2.8">
@@ -2283,8 +2462,106 @@ window.changePassword=async()=>{
   catch(e){toast('❌ '+(e.code==='auth/wrong-password'?'Current password wrong.':e.message),'err');}
 };
 
-// CHECK OWNER HASH ON LOAD
-checkOwnerHash();
+// ══ TOTP 2FA (Google Authenticator) ══
+let _totpSecret=null;
+
+window.setupTOTP=async()=>{
+  // Load otpauth library
+  if(!window.OTPAuth){
+    const script=document.createElement('script');
+    script.src='https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.3.6/otpauth.umd.min.js';
+    document.head.appendChild(script);
+    await new Promise(res=>{script.onload=res;script.onerror=()=>res();});
+  }
+  if(!window.OTPAuth){toast('Failed to load TOTP library','err');return;}
+  // Generate secret
+  const totp=new OTPAuth.TOTP({issuer:'Drystan',label:G.user?.displayName||'Admin',algorithm:'SHA1',digits:6,period:30});
+  _totpSecret=totp.secret.base32;
+  // Generate QR code URL
+  const otpAuthUrl=totp.toString();
+  const qrUrl=`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(otpAuthUrl)}`;
+  $('totpMod').innerHTML=`
+  <div class="mH"><h3>⚙️ Setup Google Authenticator</h3><button class="btn bS bIco" onclick="closeMov('totpMOvl')">✕</button></div>
+  <div class="mB" style="text-align:center">
+    <div class="al aI" style="text-align:left;font-size:12px;margin-bottom:16px">
+      📱 <strong>Step 1:</strong> Install <strong>Google Authenticator</strong> or <strong>Authy</strong> on your phone<br/>
+      <strong>Step 2:</strong> Tap "+" → "Scan QR code"<br/>
+      <strong>Step 3:</strong> Scan the code below<br/>
+      <strong>Step 4:</strong> Enter the 6-digit code to confirm
+    </div>
+    <div style="padding:16px;background:#fff;border-radius:12px;display:inline-block;margin-bottom:16px">
+      <img src="${qrUrl}" width="180" height="180" alt="QR Code" style="display:block"/>
+    </div>
+    <div style="font-size:11px;color:var(--t2);margin-bottom:16px">
+      Can't scan? Enter manually: <code style="background:var(--card);padding:3px 6px;border-radius:4px;font-size:11px;word-break:break-all">${_totpSecret}</code>
+    </div>
+    <div class="afG" style="text-align:left">
+      <label class="afL">Enter 6-digit code from app to confirm:</label>
+      <input class="afI" id="totpVerifyInp" maxlength="6" placeholder="000000" type="text" inputmode="numeric" style="text-align:center;font-size:20px;font-weight:700;letter-spacing:6px"/>
+    </div>
+    <div id="totpSetupErr" class="al aE" style="display:none"></div>
+  </div>
+  <div class="mF">
+    <button class="btn bS" onclick="closeMov('totpMOvl')">Cancel</button>
+    <button class="btn bP" onclick="confirmTOTPSetup()">✅ Activate 2FA</button>
+  </div>`;
+  $('totpMOvl').classList.add('open');
+};
+
+window.confirmTOTPSetup=async()=>{
+  const code=$('totpVerifyInp')?.value.trim();
+  const err=$('totpSetupErr');err.style.display='none';
+  if(!code||code.length!==6){err.style.display='flex';err.textContent='❌ Enter 6-digit code.';return;}
+  if(!window.OTPAuth||!_totpSecret){err.style.display='flex';err.textContent='❌ Setup error. Try again.';return;}
+  // Verify the code
+  const totp=new OTPAuth.TOTP({secret:OTPAuth.Secret.fromBase32(_totpSecret),digits:6,period:30});
+  const delta=totp.validate({token:code,window:1});
+  if(delta===null){err.style.display='flex';err.textContent='❌ Wrong code. Check your app time sync.';return;}
+  // Save to Firestore
+  try{
+    await updateDoc(Doc('users',G.user.uid),{totpEnabled:true,totpSecret:_totpSecret,totpSetAt:serverTimestamp()});
+    closeMov('totpMOvl');
+    toast('🎉 Google Authenticator 2FA enabled!','ok');
+    pgAccount(); // refresh
+  }catch(e){err.style.display='flex';err.textContent='❌ '+e.message;}
+};
+
+window.disableTOTP=async()=>{
+  if(!confirm('Disable Google Authenticator 2FA?\nYour account will be less secure.'))return;
+  try{
+    await updateDoc(Doc('users',G.user.uid),{totpEnabled:false,totpSecret:null});
+    toast('2FA disabled','info');pgAccount();
+  }catch(e){toast(e.message,'err');}
+};
+
+window.totpLoginInput=(el,idx)=>{
+  el.value=el.value.replace(/\D/g,'').slice(-1);
+  if(el.value&&idx<5)$('totp'+(idx+1))?.focus();
+  el.classList.toggle('filled',!!el.value);
+  const code=[0,1,2,3,4,5].map(i=>$('totp'+i)?.value||'').join('');
+  if(code.length===6)setTimeout(verifyTOTPLogin,200);
+};
+window.totpKey=(e,idx)=>{if(e.key==='Backspace'&&!e.target.value&&idx>0)$('totp'+(idx-1))?.focus();};
+window.verifyTOTPLogin=async()=>{
+  const code=$('totpLoginInp')?.value.trim();
+  const err=$('totpLoginErr');if(err)err.style.display='none';
+  if(!code||code.length!==6){if(err){err.style.display='flex';err.textContent='❌ Enter 6-digit code.';}return;}
+  if(!_totpPendingUser?.totpSecret){loadApp();return;}
+  if(!window.OTPAuth){
+    const script=document.createElement('script');
+    script.src='https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.3.6/otpauth.umd.min.js';
+    document.head.appendChild(script);
+    await new Promise(res=>{script.onload=res;});
+  }
+  const totp=new OTPAuth.TOTP({secret:OTPAuth.Secret.fromBase32(_totpPendingUser.totpSecret),digits:6,period:30});
+  const delta=totp.validate({token:code,window:1});
+  if(delta===null){if(err){err.style.display='flex';err.textContent='❌ Wrong code. Check app.';}return;}
+  _totpPendingUser=null;_appReady=true;
+  toast('✅ 2FA verified!','ok');
+  loadApp();
+};
+
+window.cancelTOTPLogin=async()=>{await signOut(auth);_totpPendingUser=null;};
 createStars();
 window.G=G;
 </script>
