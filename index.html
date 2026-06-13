@@ -311,7 +311,9 @@ tbody tr:last-child td{border:none}
 #ownerWrap.show{display:flex}
 .ownerCard{background:var(--bg2);border:1px solid rgba(249,115,22,.3);border-radius:20px;padding:32px;width:100%;max-width:580px;box-shadow:0 0 80px rgba(249,115,22,.1);animation:scaleIn .3s ease}
 
-/* PROGRESS BAR */
+/* Owner Panel tab buttons */
+.owTabBtn{background:var(--card);border:1px solid var(--border);color:var(--t2)}
+.owTabBtn.owActive{background:linear-gradient(135deg,#F97316,#EA580C)!important;color:#fff!important;border-color:transparent!important}
 .progressWrap{background:var(--border);border-radius:8px;height:8px;overflow:hidden;margin:8px 0}
 .progressBar{height:100%;border-radius:8px;background:var(--grad);transition:width .5s ease}
 
@@ -368,66 +370,83 @@ tbody tr:last-child td{border:none}
       <button class="btn bFull" style="background:linear-gradient(135deg,#F97316,#EA580C);color:#fff;padding:13px;font-size:15px" onclick="ownerLogin()">🔓 Access Owner Panel</button>
     </div>
     <div id="ownerDash" style="display:none">
-      <div style="margin-bottom:20px;padding:14px;background:rgba(249,115,22,.1);border-radius:12px;border:1px solid rgba(249,115,22,.2)">
-        <div style="font-weight:700;color:var(--orange);margin-bottom:4px">⚠️ Owner Access Active</div>
-        <div style="font-size:12px;color:var(--t2)">Changes here affect all users globally</div>
+      <div style="margin-bottom:16px;padding:12px 14px;background:rgba(249,115,22,.12);border-radius:12px;border:1px solid rgba(249,115,22,.25);display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px">⚠️</span>
+        <div><div style="font-weight:700;color:var(--orange);font-size:13px">Owner Access Active</div>
+        <div style="font-size:11px;color:var(--t2)">Changes affect all users globally</div></div>
       </div>
 
-      <!-- Tabs inside owner panel -->
-      <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
-        <button class="btn bSm" id="owTab1" style="background:linear-gradient(135deg,#F97316,#EA580C);color:#fff" onclick="ownerTab(1)">⚙️ Settings</button>
-        <button class="btn bS bSm" id="owTab2" onclick="ownerTab(2)">👥 Users</button>
-        <button class="btn bS bSm" id="owTab3" onclick="ownerTab(3)">📊 Storage</button>
+      <!-- Owner Tabs -->
+      <div style="display:flex;gap:5px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn bSm owTabBtn" id="owTab1" onclick="ownerTab(1)" style="font-size:11px">⚙️ Settings</button>
+        <button class="btn bSm owTabBtn" id="owTab2" onclick="ownerTab(2)" style="font-size:11px">👥 Users</button>
+        <button class="btn bSm owTabBtn" id="owTab3" onclick="ownerTab(3)" style="font-size:11px">📊 Storage</button>
+        <button class="btn bSm owTabBtn" id="owTab4" onclick="ownerTab(4)" style="font-size:11px">🔔 Activity</button>
+        <button class="btn bSm owTabBtn" id="owTab5" onclick="ownerTab(5)" style="font-size:11px">🛡️ Security</button>
       </div>
 
-      <!-- Settings Tab -->
+      <!-- Settings -->
       <div id="owSection1">
-        <div class="afG"><label class="afL">🎨 Site Theme Color</label>
+        <div class="afG"><label class="afL">🏷️ Site Name</label><input class="afI" id="ow_sitename" placeholder="Drystan"/></div>
+        <div class="afG"><label class="afL">🎨 Theme Color</label>
           <select class="afI" id="ow_theme" onchange="ownerApplyTheme(this.value)">
-            <option value="indigo">Indigo (Default)</option>
-            <option value="purple">Purple</option>
-            <option value="blue">Blue</option>
-            <option value="green">Green</option>
-            <option value="orange">Orange</option>
+            <option value="indigo">🟣 Indigo (Default)</option>
+            <option value="purple">💜 Purple</option>
+            <option value="blue">🔵 Blue</option>
+            <option value="green">🟢 Green</option>
+            <option value="orange">🟠 Orange</option>
           </select>
         </div>
-        <div class="afG"><label class="afL">🏷️ Site Name</label>
-          <input class="afI" id="ow_sitename" placeholder="Drystan" value="Drystan"/>
+        <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;margin-bottom:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:10px">📧 EmailJS Configuration</div>
+          <div class="afG"><label class="afL">Public Key</label><input class="afI" id="ow_ejk" placeholder="user_XXXX"/></div>
+          <div class="afG"><label class="afL">Service ID</label><input class="afI" id="ow_ejs" placeholder="service_XXXX"/></div>
+          <div class="afG"><label class="afL">Template ID</label><input class="afI" id="ow_ejt" placeholder="template_XXXX"/></div>
         </div>
-        <div class="afG"><label class="afL">📧 EmailJS Public Key</label>
-          <input class="afI" id="ow_ejk" placeholder="user_XXXXXXXXXXXX"/>
-        </div>
-        <div class="afG"><label class="afL">📧 EmailJS Service ID</label>
-          <input class="afI" id="ow_ejs" placeholder="service_XXXXXXX"/>
-        </div>
-        <div class="afG"><label class="afL">📧 EmailJS Template ID</label>
-          <input class="afI" id="ow_ejt" placeholder="template_XXXXXXX"/>
-        </div>
-        <div class="afG">
-          <label class="afL">🛡️ Force 2FA for all Admins</label>
-          <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border-radius:10px">
-            <label class="toggle"><input type="checkbox" id="ow_2fa"/><span class="toggleSlider"></span></label>
-            <span style="font-size:13px;color:var(--t2)">When ON — all admin logins require OTP</span>
+        <button class="btn bFull" style="background:linear-gradient(135deg,#F97316,#EA580C);color:#fff;padding:12px" onclick="ownerSave()">💾 Save Global Settings</button>
+      </div>
+
+      <!-- Users (Admin tree + Moderators) -->
+      <div id="owSection2" style="display:none">
+        <div style="font-size:12px;color:var(--t2);margin-bottom:10px">Click on an Admin to see their moderators.</div>
+        <div id="owUsersList"><div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div></div>
+      </div>
+
+      <!-- Storage -->
+      <div id="owSection3" style="display:none">
+        <div id="owStorageInfo"><div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div></div>
+      </div>
+
+      <!-- Activity Log -->
+      <div id="owSection4" style="display:none">
+        <div id="owActivityLog"><div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div></div>
+      </div>
+
+      <!-- Security -->
+      <div id="owSection5" style="display:none">
+        <div id="owSecurityInfo">
+          <div style="padding:14px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-bottom:10px">
+            <div style="font-weight:700;font-size:13px;margin-bottom:8px">🔒 Platform Security Overview</div>
+            <div style="font-size:12px;color:var(--t2);line-height:2.2">
+              <div>🔐 Auth Provider: <strong style="color:var(--t1)">Firebase Authentication</strong></div>
+              <div>🗄️ Database: <strong style="color:var(--t1)">Firestore (Encrypted at rest)</strong></div>
+              <div>🌐 Hosting: <strong style="color:var(--t1)">GitHub Pages (HTTPS)</strong></div>
+              <div>📱 2FA Method: <strong style="color:var(--t1)">TOTP (Google Authenticator)</strong></div>
+              <div>🔑 Owner Access: <strong style="color:var(--orange)">Secret URL + Password</strong></div>
+            </div>
+          </div>
+          <div style="padding:14px;background:rgba(249,115,22,.08);border-radius:10px;border:1px solid rgba(249,115,22,.2)">
+            <div style="font-weight:700;font-size:13px;color:var(--orange);margin-bottom:8px">⚠️ Change Owner Password</div>
+            <div class="afG"><label class="afL">Current Password</label><input class="afI" type="password" id="owPwOld" placeholder="Current owner password"/></div>
+            <div class="afG"><label class="afL">New Password</label><input class="afI" type="password" id="owPwNew" placeholder="New password (min 8 chars)"/></div>
+            <div class="afG"><label class="afL">Confirm New Password</label><input class="afI" type="password" id="owPwNew2" placeholder="Repeat new password"/></div>
+            <div id="owPwErr" class="al aE" style="display:none"></div>
+            <button class="btn bFull" style="background:linear-gradient(135deg,#F97316,#EA580C);color:#fff;padding:11px" onclick="ownerChangePw()">🔑 Update Owner Password</button>
           </div>
         </div>
-        <button class="btn bFull" style="background:linear-gradient(135deg,#F97316,#EA580C);color:#fff;padding:13px;margin-bottom:12px" onclick="ownerSave()">💾 Save Global Settings</button>
       </div>
 
-      <!-- Users Tab -->
-      <div id="owSection2" style="display:none">
-        <div id="owUsersList" style="margin-bottom:12px">
-          <div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div>
-        </div>
-      </div>
-
-      <!-- Storage Tab -->
-      <div id="owSection3" style="display:none">
-        <div id="owStorageInfo">
-          <div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div>
-        </div>
-      </div>
-
-      <button class="btn bS bFull bSm" style="margin-top:8px" onclick="exitOwner()">← Exit Owner Panel</button>
+      <button class="btn bS bFull bSm" style="margin-top:14px" onclick="exitOwner()">← Exit Owner Panel</button>
     </div>
   </div>
 </div>
@@ -821,40 +840,142 @@ window.ownerLogin=()=>{
 };
 
 window.ownerTab=async(n)=>{
-  [1,2,3].forEach(i=>{
-    const s=$(('owSection'+i));if(s)s.style.display=i===n?'block':'none';
-    const t=$('owTab'+i);if(t){t.style.background=i===n?'linear-gradient(135deg,#F97316,#EA580C)':'';t.style.color=i===n?'#fff':'';}
+  [1,2,3,4,5].forEach(i=>{
+    const s=$('owSection'+i);if(s)s.style.display=i===n?'block':'none';
+    const t=$('owTab'+i);if(t)t.classList.toggle('owActive',i===n);
   });
   if(n===2)loadOwnerUsers();
   if(n===3)loadOwnerStorage();
+  if(n===4)loadOwnerActivity();
 };
 
+// ── USERS TAB — Admin tree with expandable moderators ──
 async function loadOwnerUsers(){
   const el=$('owUsersList');if(!el)return;
   el.innerHTML='<div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div>';
   try{
     const snap=await getDocs(Col('users'));
-    const users=snap.docs.map(d=>({id:d.id,...d.data()}));
-    const admins=users.filter(u=>u.role==='admin');
-    const mods=users.filter(u=>u.role==='moderator');
-    el.innerHTML=`
-    <div style="font-size:13px;color:var(--t2);margin-bottom:12px">Total: <strong style="color:var(--t1)">${users.length}</strong> users (${admins.length} admins, ${mods.length} moderators)</div>
-    ${users.map(u=>`
-    <div style="padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
-        <div>
-          <div style="font-weight:600;font-size:13px">${esc(u.displayName||'?')} <span class="badge ${u.role==='admin'?'bAdmin':'bMod'}" style="font-size:10px">${u.role.toUpperCase()}</span></div>
-          <div style="font-size:11px;color:var(--t2)">@${esc(u.username||'-')} · ${esc(u.email||'-')}</div>
-          <div style="font-size:11px;color:var(--t3)">BizID: ${u.bizId?.slice(0,12)||'-'}... · Joined: ${u.createdAt?fdate(u.createdAt):'-'}</div>
-        </div>
-        <div style="display:flex;gap:5px;flex-shrink:0">
-          <button class="btn bY bSm" style="font-size:11px" onclick="ownerResetPw('${u.id}','${esc(u.email||'')}','${esc(u.displayName||'')}')">🔑 Reset PW</button>
-          <button class="btn bD bSm" style="font-size:11px" onclick="ownerDelUser('${u.id}','${esc(u.displayName||'')}')">🗑️</button>
+    const allUsers=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const admins=allUsers.filter(u=>u.role==='admin');
+    const mods=allUsers.filter(u=>u.role==='moderator');
+    el.innerHTML=`<div style="font-size:12px;color:var(--t2);margin-bottom:10px">
+      Total: <strong style="color:var(--t1)">${allUsers.length}</strong> users — ${admins.length} admins · ${mods.length} moderators
+    </div>`;
+    admins.forEach(admin=>{
+      const adminMods=mods.filter(m=>(m.bizId===admin.bizId||m.adminUid===admin.id||m.bizId===admin.id));
+      const adminEl=document.createElement('div');
+      adminEl.style.cssText='margin-bottom:10px';
+      adminEl.innerHTML=`
+      <div style="padding:12px 14px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:12px;cursor:pointer" onclick="toggleAdminExpand('${admin.id}')">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--grad2);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:15px;flex-shrink:0">${(admin.displayName||'A')[0].toUpperCase()}</div>
+            <div>
+              <div style="font-weight:700;font-size:13px">${esc(admin.displayName||'Admin')} <span class="badge bAdmin" style="font-size:10px">ADMIN</span></div>
+              <div style="font-size:11px;color:var(--t2)">@${esc(admin.username||'-')} · ${esc(admin.email||'-')}</div>
+              <div style="font-size:10px;color:var(--t3)">👥 ${adminMods.length} moderator(s) · Joined: ${admin.createdAt?fdate(admin.createdAt):'-'}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:5px;align-items:center">
+            <button class="btn bY bSm" style="font-size:10px;padding:5px 8px" onclick="event.stopPropagation();ownerResetPw('${admin.id}','${esc(admin.email||'')}','${esc(admin.displayName||'')}')" title="Reset Password">🔑</button>
+            <button class="btn bD bSm" style="font-size:10px;padding:5px 8px" onclick="event.stopPropagation();ownerDelUser('${admin.id}','${esc(admin.displayName||'')}')" title="Delete">🗑️</button>
+            <span style="color:var(--t3);font-size:14px" id="arrow_${admin.id}">▼</span>
+          </div>
         </div>
       </div>
-    </div>`).join('')}`;
+      <div id="modList_${admin.id}" style="display:none;margin-top:6px;margin-left:20px;border-left:2px solid rgba(99,102,241,.2);padding-left:14px">
+        ${adminMods.length===0?`<div style="font-size:12px;color:var(--t3);padding:8px">No moderators under this admin</div>`:
+        adminMods.map(m=>`
+        <div style="padding:10px 12px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:10px;margin-bottom:6px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--grad3);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:12px">${(m.displayName||'M')[0].toUpperCase()}</div>
+              <div>
+                <div style="font-weight:600;font-size:12px">${esc(m.displayName||'Mod')} <span class="badge bMod" style="font-size:9px">MODERATOR</span></div>
+                <div style="font-size:10px;color:var(--t2)">@${esc(m.username||'-')}</div>
+                <div style="font-size:10px;color:var(--t3)">
+                  ${m.permissions?.products?'📦 ':''} ${m.permissions?.customers?'👥 ':''} ${m.permissions?.reports?'📊 ':''} Orders always ON
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:5px">
+              <button class="btn bY bSm" style="font-size:10px;padding:5px 8px" onclick="ownerResetModPw('${m.id}','${esc(m.username||'')}','${esc(m.email||'')}')" title="Reset Password">🔑</button>
+              <button class="btn bD bSm" style="font-size:10px;padding:5px 8px" onclick="ownerDelUser('${m.id}','${esc(m.displayName||'')}')" title="Delete">🗑️</button>
+            </div>
+          </div>
+        </div>`).join('')}
+      </div>`;
+      el.appendChild(adminEl);
+    });
   }catch(e){el.innerHTML=`<div class="al aE">❌ ${e.message}</div>`;}
 }
+window.toggleAdminExpand=(adminId)=>{
+  const list=$('modList_'+adminId);const arrow=$('arrow_'+adminId);
+  if(!list)return;
+  const open=list.style.display==='none';
+  list.style.display=open?'block':'none';
+  if(arrow)arrow.textContent=open?'▲':'▼';
+};
+
+window.ownerResetModPw=async(uid,username,email)=>{
+  const newPw=prompt(`Set new password for @${username}:\n(Min 6 characters)`);
+  if(!newPw||newPw.length<6){toast('Too short or cancelled','err');return;}
+  try{
+    // Update temp password in Firestore so admin can see it
+    await updateDoc(Doc('users',uid),{tempPw:newPw,tempPwSetAt:serverTimestamp()});
+    alert(`New password for @${username}:\n\n${newPw}\n\nShare this with the moderator directly. They can login with this password now.`);
+    toast('✅ Password stored. Share with moderator.','ok');
+  }catch(e){toast(e.message,'err');}
+};
+
+// ── ACTIVITY LOG TAB ──
+async function loadOwnerActivity(){
+  const el=$('owActivityLog');if(!el)return;
+  el.innerHTML='<div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div>';
+  try{
+    // Get recent mod login requests
+    const snap=await getDocs(query(Col('modLoginRequests'),orderBy('requestedAt','desc'),limit(20)));
+    const requests=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const statusIcon={approved:'✅',rejected:'❌',pending:'⏳',expired:'⏰'};
+    el.innerHTML=`
+    <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:10px">Recent Moderator Login Requests</div>
+    ${requests.length===0?`<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px">No login requests yet</div>`
+    :requests.map(r=>`
+    <div style="padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;font-size:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <strong>@${esc(r.username||'?')}</strong>
+          <span style="color:var(--t3);margin-left:8px">${r.requestedAt?.toDate?r.requestedAt.toDate().toLocaleString('en-GB'):'—'}</span>
+        </div>
+        <span style="font-weight:700;color:${r.status==='approved'?'var(--green)':r.status==='rejected'?'var(--red)':'var(--yellow)'}">${statusIcon[r.status]||'?'} ${(r.status||'unknown').toUpperCase()}</span>
+      </div>
+    </div>`).join('')}
+    <button class="btn bD bSm" style="margin-top:8px" onclick="clearActivityLog()">🗑️ Clear Log</button>`;
+  }catch(e){el.innerHTML=`<div class="al aE">❌ ${e.message}</div>`;}
+}
+window.clearActivityLog=async()=>{
+  if(!confirm('Clear all login request logs?'))return;
+  try{
+    const snap=await getDocs(Col('modLoginRequests'));
+    for(const d of snap.docs)await deleteDoc(d.ref);
+    toast('✅ Log cleared');loadOwnerActivity();
+  }catch(e){toast(e.message,'err');}
+};
+
+// ── SECURITY TAB — Change Owner Password ──
+let _ownerPwCurrent=OWNER_PASS;
+window.ownerChangePw=()=>{
+  const old=$('owPwOld').value,nw=$('owPwNew').value,nw2=$('owPwNew2').value;
+  const err=$('owPwErr');err.style.display='none';
+  if(old!==_ownerPwCurrent){err.style.display='flex';err.textContent='❌ Wrong current password.';return;}
+  if(nw.length<8){err.style.display='flex';err.textContent='❌ Min 8 characters.';return;}
+  if(nw!==nw2){err.style.display='flex';err.textContent='❌ Passwords do not match.';return;}
+  // Note: In production this would be stored securely. For now, update session only.
+  _ownerPwCurrent=nw;
+  toast('✅ Owner password updated for this session. Update the code for permanent change.','warn');
+  $('owPwOld').value='';$('owPwNew').value='';$('owPwNew2').value='';
+};
+
 
 async function loadOwnerStorage(){
   const el=$('owStorageInfo');if(!el)return;
@@ -2365,8 +2486,9 @@ async function pgAccount(){
               <span class="badge ${ud.role==='admin'?'bAdmin':'bMod'}" style="margin-top:6px">${ud.role==='admin'?'ADMIN':'MODERATOR'}</span>
             </div>
           </div>
+          ${G.role==='admin'?`
           <div class="afG"><label class="afL">Display Name</label><input class="afI" id="ac_name" value="${esc(ud.displayName||'')}"/></div>
-          <div class="afG"><label class="afL">Username</label>
+          <div class="afG"><label class="afL">Username <span style="font-size:10px;color:var(--t3)">(login username)</span></label>
             <input class="afI" id="ac_user" value="${esc(ud.username||'')}" oninput="checkAccUname(this.value,'${esc(ud.username||'')}')"/>
             <div id="acUnChk" style="font-size:11px;margin-top:3px;display:none"></div>
           </div>
@@ -2384,9 +2506,24 @@ async function pgAccount(){
               <input class="afI" id="ac_ph" value="${esc(ud.phone||'')}" placeholder="01XXXXXXXXX"/>
             </div>
           </div>
-          <div class="afG"><label class="afL">Email <span style="color:var(--t3);font-size:10px">(cannot change)</span></label><input class="afI" value="${esc(ud.email||G.user?.email||'')}" readonly style="opacity:.5;cursor:not-allowed"/></div>
+          <div class="afG"><label class="afL">Email <span style="color:var(--t3);font-size:10px">(cannot change)</span></label>
+            <input class="afI" value="${esc(ud.email||G.user?.email||'')}" readonly style="opacity:.5;cursor:not-allowed"/>
+          </div>
           <button class="btn bP bFull" onclick="saveProfile()">💾 Update Profile</button>
+          `:`
+          <div class="al aI" style="font-size:12px;margin-bottom:12px">
+            ℹ️ Username ও Password পরিবর্তন করতে Admin এর সাথে যোগাযোগ করুন।
+          </div>
+          <div style="padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:13px;color:var(--t2);line-height:2.5">
+              <div>Name: <strong style="color:var(--t1)">${esc(ud.displayName||'-')}</strong></div>
+              <div>Username: <strong style="color:var(--acc2)">@${esc(ud.username||'-')}</strong></div>
+              <div>Permissions: ${Object.entries(ud.permissions||{orders:true}).filter(([k,v])=>v).map(([k])=>({orders:'📋 Orders',products:'📦 Products',customers:'👥 Customers',reports:'📊 Reports'})[k]||k).join(' · ')||'Orders only'}</div>
+            </div>
+          </div>
+          `}
         </div>
+        ${G.role==='admin'?`
         <div class="card">
           <div class="cardTitle">🔒 Change Password</div>
           <div class="afG"><label class="afL">Current Password</label><input class="afI" type="password" id="ac_oldpw" placeholder="Your current password"/></div>
@@ -2395,7 +2532,7 @@ async function pgAccount(){
           </div>
           <div class="afG"><label class="afL">Confirm New Password</label><input class="afI" type="password" id="ac_newpw2"/></div>
           <button class="btn bG bFull" onclick="changePassword()">🔑 Update Password</button>
-        </div>
+        </div>`:''}
       </div>
       <div style="display:flex;flex-direction:column;gap:14px">
         <div class="card" style="border-color:rgba(99,102,241,.2)">
