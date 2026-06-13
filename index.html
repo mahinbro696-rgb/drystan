@@ -2,7 +2,16 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#070A12"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<!-- Security headers via meta -->
+<meta http-equiv="X-Content-Type-Options" content="nosniff"/>
+<meta name="referrer" content="strict-origin-when-cross-origin"/>
+<!-- Prevent clickjacking -->
+<meta http-equiv="X-Frame-Options" content="DENY"/>
 <title>Drystan – Business Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
@@ -326,18 +335,83 @@ tbody tr:last-child td{border:none}
 .toggle input:checked + .toggleSlider::before{transform:translateX(22px)}
 
 /* RESPONSIVE */
+/* ══ MOBILE RESPONSIVE ══ */
 @media(max-width:768px){
-  #sidebar{position:fixed;top:0;left:0;bottom:0;transform:translateX(-100%)}
+  /* Sidebar */
+  #sidebar{position:fixed;top:0;left:0;bottom:0;transform:translateX(-100%);z-index:200}
   #sidebar.open{transform:translateX(0)}
   .sOverlay.open{display:block}
+  /* Topbar */
+  #topbar{padding:0 14px}
+  .pgTitle{font-size:15px}
+  /* Page content */
+  #pageContent{padding:12px}
+  /* Grids */
   .g4{grid-template-columns:repeat(2,1fr)}
-  .g3{grid-template-columns:1fr}
-  #pageContent{padding:14px}
-  .afRow{grid-template-columns:1fr}
+  .g3,.afRow{grid-template-columns:1fr}
+  /* Stats */
+  .statCard{padding:14px}
+  .statVal{font-size:22px}
+  /* Dashboard grid */
+  div[style*="grid-template-columns:2fr 1fr"],
+  div[style*="grid-template-columns:1fr 1fr"],
+  div[style*="grid-template-columns:3fr 2fr"]{
+    grid-template-columns:1fr!important;
+  }
+  /* Order form grid */
+  div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+  /* pH header */
+  .pH{flex-direction:column;gap:8px}
+  .pH h1{font-size:18px}
+  /* Table scroll */
+  .tWrap{-webkit-overflow-scrolling:touch}
+  /* Modal */
+  .modal{max-height:95vh;border-radius:16px 16px 0 0;position:fixed;bottom:0;left:0;right:0;max-width:100%}
+  .mOvl{align-items:flex-end;padding:0}
+  /* Login */
+  .lContent{padding:0 4px}
+  .authTabs button{font-size:11px;padding:8px 4px}
+  /* Owner card */
+  .ownerCard{padding:20px 16px;border-radius:16px}
+  /* Toast */
+  .toastWrap{left:12px;right:12px;top:12px}
+  .toast{min-width:unset;width:100%}
+  /* Receipt */
+  .rcptBox{padding:20px 16px}
+  /* Quick actions buttons */
+  div[style*="display:flex;gap:8px;flex-wrap:wrap"] .btn{font-size:12px;padding:8px 12px}
 }
+
 @media(max-width:480px){
   .g4,.g2{grid-template-columns:1fr}
-  .lCard{padding:24px 18px}
+  .lCard{padding:22px 16px;border-radius:20px}
+  .lLogoIco{width:60px;height:60px;font-size:28px}
+  .lLogoName{font-size:26px}
+  .authTabs{gap:2px;padding:4px}
+  .authTabs button{font-size:10px;padding:7px 3px}
+  .otpInp{width:42px;height:50px;font-size:20px}
+  .statCard{padding:12px}
+  .statVal{font-size:20px}
+  .statIco{width:38px;height:38px}
+  .btn.bSm{padding:6px 10px;font-size:11px}
+  #topbar{height:54px}
+  .tBtn.ico{width:32px;height:32px;padding:6px}
+  .tAvatar{width:30px;height:30px;font-size:11px}
+  /* Hide some text on very small screens */
+  .sBar{min-width:unset}
+  /* Order items grid */
+  div[style*="grid-template-columns:2fr 100px 80px auto"]{
+    grid-template-columns:1fr 80px auto!important;
+    row-gap:6px!important;
+  }
+}
+
+/* Touch-friendly tap targets */
+@media(hover:none){
+  .btn{min-height:40px}
+  .nItem{min-height:44px}
+  .fI,.afI{min-height:44px;font-size:16px} /* Prevent iOS zoom */
+  input[type="text"],input[type="password"],input[type="email"],input[type="tel"],input[type="number"]{font-size:16px!important} /* Prevent iOS zoom */
 }
 </style>
 </head>
@@ -1070,12 +1144,15 @@ window.exitOwner=()=>{
   history.replaceState(null,'',location.pathname);
   $('ownerContent').style.display='block';
   $('ownerDash').style.display='none';
-  $('ownerPw').value='';
-  // Go back to app or login
-  if(G.user&&G.role){
+  if($('ownerPw'))$('ownerPw').value='';
+  // Go back to correct screen based on auth state
+  if(G.user&&G.bizId&&G.role){
+    $('loginWrap').classList.remove('show');
     $('appWrap').classList.add('show');
   } else {
+    $('appWrap').classList.remove('show');
     $('loginWrap').classList.add('show');
+    switchTab('signin');
     createStars();
   }
 };
@@ -1226,6 +1303,12 @@ window.checkPwStr=val=>{
   const lv=val?Math.min(sc,4):0;const ls=[{w:'0%',c:'var(--t3)',l:'Too short'},{w:'25%',c:'var(--red)',l:'Weak'},{w:'50%',c:'var(--orange)',l:'Fair'},{w:'75%',c:'var(--yellow)',l:'Good'},{w:'100%',c:'var(--green)',l:'Strong 💪'}];
   bar.style.width=ls[lv].w;bar.style.background=ls[lv].c;txt.textContent=ls[lv].l;txt.style.color=ls[lv].c;
 };
+window.checkPwStr2=val=>{
+  const bar=$('pwStr2'),txt=$('pwStrTxt2');if(!bar||!txt)return;
+  let sc=0;if(val.length>=6)sc++;if(val.length>=10)sc++;if(/[A-Z]/.test(val))sc++;if(/[0-9]/.test(val))sc++;if(/[^A-Za-z0-9]/.test(val))sc++;
+  const lv=val?Math.min(sc,4):0;const ls=[{w:'0%',c:'var(--t3)',l:'Too short'},{w:'25%',c:'var(--red)',l:'Weak'},{w:'50%',c:'var(--orange)',l:'Fair'},{w:'75%',c:'var(--yellow)',l:'Good'},{w:'100%',c:'var(--green)',l:'Strong 💪'}];
+  bar.style.width=ls[lv].w;bar.style.background=ls[lv].c;txt.textContent=ls[lv].l;txt.style.color=ls[lv].c;
+};
 
 // STEP 3 — CREATE ADMIN ACCOUNT
 window.rgStep3Create=async()=>{
@@ -1280,6 +1363,7 @@ window.doLogin=async()=>{
   const u=$('siUser').value.trim(),p=$('siPass').value;
   const err=$('siErr'),btn=$('siBtn');err.style.display='none';
   if(!u||!p){err.style.display='flex';err.textContent='❌ Enter username/email and password.';return;}
+  if(!checkRateLimit()){btn.innerHTML='Sign In →';return;}
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Signing in...';
   try{
     let email=null,userDoc=null;
@@ -1416,7 +1500,36 @@ async function cancelModRequest(docId,reason){
 }
 window.doLogout=async()=>{await signOut(auth);};
 
-// ══ AUTH STATE ══
+// ══ SECURITY ══
+// Console warning for non-developers
+console.log('%c⚠️ STOP!', 'color:red;font-size:48px;font-weight:900');
+console.log('%cThis console is for developers only. If someone told you to paste something here, it\'s a scam!', 'color:orange;font-size:16px');
+
+// Login rate limiting (client-side)
+const _loginAttempts={count:0,lastReset:Date.now()};
+function checkRateLimit(){
+  const now=Date.now();
+  if(now-_loginAttempts.lastReset>15*60*1000){_loginAttempts.count=0;_loginAttempts.lastReset=now;}
+  _loginAttempts.count++;
+  if(_loginAttempts.count>10){
+    toast('⛔ Too many attempts. Please wait 15 minutes.','err');
+    return false;
+  }
+  return true;
+}
+
+// Session timeout — auto logout after 8 hours of inactivity
+let _sessionTimer=null;
+function resetSessionTimer(){
+  clearTimeout(_sessionTimer);
+  _sessionTimer=setTimeout(async()=>{
+    if(G.user){toast('⏰ Session expired. Please login again.','warn');await signOut(auth);}
+  }, 8*60*60*1000); // 8 hours
+}
+['click','keydown','touchstart'].forEach(e=>document.addEventListener(e,resetSessionTimer,{passive:true}));
+
+// Prevent right-click source view (basic deterrent — not foolproof)
+// Real security is in Firebase Rules + Auth, not HTML hiding
 onAuthStateChanged(auth,async user=>{
   const ls=$('loadScreen');
   if(user){
@@ -2527,8 +2640,8 @@ async function pgAccount(){
         <div class="card">
           <div class="cardTitle">🔒 Change Password</div>
           <div class="afG"><label class="afL">Current Password</label><input class="afI" type="password" id="ac_oldpw" placeholder="Your current password"/></div>
-          <div class="afG"><label class="afL">New Password</label><input class="afI" type="password" id="ac_newpw" placeholder="Min 6 characters" oninput="checkPwStr(this.value)"/>
-            <div class="pwStrBar"><div class="pwStrFill" id="pwStr"></div></div><span class="pwStrTxt" id="pwStrTxt" style="color:var(--t3)">Enter password</span>
+          <div class="afG"><label class="afL">New Password</label><input class="afI" type="password" id="ac_newpw" placeholder="Min 6 characters" oninput="checkPwStr2(this.value)"/>
+            <div class="pwStrBar"><div class="pwStrFill" id="pwStr2"></div></div><span class="pwStrTxt" id="pwStrTxt2" style="color:var(--t3)">Enter password</span>
           </div>
           <div class="afG"><label class="afL">Confirm New Password</label><input class="afI" type="password" id="ac_newpw2"/></div>
           <button class="btn bG bFull" onclick="changePassword()">🔑 Update Password</button>
