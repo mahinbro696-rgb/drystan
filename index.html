@@ -597,30 +597,6 @@ tbody tr:last-child td{border:none}
       </div>
 
       <!-- 2FA -->
-      <div class="authPanel" id="panel2fa">
-        <div style="text-align:center;margin-bottom:18px">
-          <div style="font-size:42px;margin-bottom:8px">🛡️</div>
-          <div style="font-size:15px;font-weight:700">Two-Factor Verification</div>
-          <div style="font-size:12px;color:var(--t2);margin-top:5px">6-digit code sent to</div>
-          <div id="twoFAEmailDisplay" style="font-size:13px;font-weight:700;color:var(--acc2);margin-top:3px;word-break:break-all"></div>
-        </div>
-        <div class="al aI" style="font-size:12px;margin-bottom:14px">🔐 Code expires in <strong id="tfaCountdown">5:00</strong></div>
-        <div class="otpWrap">
-          <input class="otpInp" maxlength="1" id="tfa0" oninput="tfaInput(this,0)" onkeydown="tfaKey(event,0)" type="text" inputmode="numeric"/>
-          <input class="otpInp" maxlength="1" id="tfa1" oninput="tfaInput(this,1)" onkeydown="tfaKey(event,1)" type="text" inputmode="numeric"/>
-          <input class="otpInp" maxlength="1" id="tfa2" oninput="tfaInput(this,2)" onkeydown="tfaKey(event,2)" type="text" inputmode="numeric"/>
-          <input class="otpInp" maxlength="1" id="tfa3" oninput="tfaInput(this,3)" onkeydown="tfaKey(event,3)" type="text" inputmode="numeric"/>
-          <input class="otpInp" maxlength="1" id="tfa4" oninput="tfaInput(this,4)" onkeydown="tfaKey(event,4)" type="text" inputmode="numeric"/>
-          <input class="otpInp" maxlength="1" id="tfa5" oninput="tfaInput(this,5)" onkeydown="tfaKey(event,5)" type="text" inputmode="numeric"/>
-        </div>
-        <div id="tfaErr" class="al aE" style="display:none"></div>
-        <button class="btn bP bFull" onclick="verify2FA()" style="padding:13px;font-size:15px">🛡️ Verify & Login</button>
-        <div style="display:flex;gap:10px;justify-content:center;margin-top:12px">
-          <button class="btn bS bSm" id="tfaResendBtn" onclick="resend2FA()" disabled>Resend (<span id="tfaResendTimer">60</span>s)</button>
-          <button class="btn bS bSm" onclick="cancel2FA()">✕ Cancel</button>
-        </div>
-      </div>
-
 
       <!-- TOTP Google Authenticator Panel -->
       <div class="authPanel" id="panelTotp">
@@ -878,19 +854,19 @@ window.togglePw=id=>{const i=$(id);if(i)i.type=i.type==='password'?'text':'passw
 window.closeMov=id=>{$(id)?.classList.remove('open');};
 
 // ══ OWNER PANEL ══
-window.addEventListener('hashchange',checkOwnerHash);
+window.addEventListener('hashchange', checkOwnerHash);
 function checkOwnerHash(){
-  if(location.hash==='#'+OWNER_SECRET){
-    // Always show owner panel — hide everything else
-    $('loginWrap').classList.remove('show');
-    $('appWrap').classList.remove('show');
-    $('loadScreen').classList.add('hide');
-    $('ownerWrap').classList.add('show');
-    loadOwnerData();
-  }
+  if(location.hash !== '#'+OWNER_SECRET) return;
+  // Always show owner panel on top of everything
+  document.querySelectorAll('#loginWrap,#appWrap,#loadScreen').forEach(el=>{
+    el.classList.remove('show');
+    if(el.id==='loadScreen') el.classList.add('hide');
+  });
+  $('ownerWrap').classList.add('show');
+  loadOwnerData();
 }
-// Also check on page load
-window.addEventListener('load',()=>{setTimeout(checkOwnerHash,800);});
+// Check on page load after short delay
+window.addEventListener('load', ()=>setTimeout(checkOwnerHash, 200));
 async function loadOwnerData(){
   try{
     const d=await getDoc(GCfg());
@@ -1134,7 +1110,7 @@ window.ownerApplyTheme=val=>{
 };
 window.ownerSave=async()=>{
   try{
-    const data={siteName:$('ow_sitename').value.trim(),ejsKey:$('ow_ejk').value.trim(),ejsService:$('ow_ejs').value.trim(),ejsTemplate:$('ow_ejt').value.trim(),force2FA:$('ow_2fa').checked,siteTheme:$('ow_theme').value,updatedAt:serverTimestamp()};
+    const data={siteName:$('ow_sitename').value.trim(),ejsKey:$('ow_ejk').value.trim(),ejsService:$('ow_ejs').value.trim(),ejsTemplate:$('ow_ejt').value.trim(),siteTheme:$('ow_theme').value,updatedAt:serverTimestamp()};
     await setDoc(GCfg(),data,{merge:true});
     toast('✅ Global settings saved!');
   }catch(e){toast(e.message,'err');}
@@ -1159,7 +1135,7 @@ window.exitOwner=()=>{
 
 // ══ TAB SWITCH ══
 const TAB_MAP={signin:'tabSI',modlogin:'tabMOD',register:'tabRG',forgot:'tabFP'};
-const PANEL_MAP={signin:'panelSignin',modlogin:'panelModlogin',register:'panelRegister',forgot:'panelForgot','2fa':'panel2fa',totp:'panelTotp'};
+const PANEL_MAP={signin:'panelSignin',modlogin:'panelModlogin',register:'panelRegister',forgot:'panelForgot',totp:'panelTotp'};
 window.switchTab=tab=>{
   Object.values(TAB_MAP).forEach(id=>$(id)?.classList.remove('active'));
   Object.values(PANEL_MAP).forEach(id=>$(id)?.classList.remove('active'));
@@ -1531,6 +1507,7 @@ function resetSessionTimer(){
 // Prevent right-click source view (basic deterrent — not foolproof)
 // Real security is in Firebase Rules + Auth, not HTML hiding
 onAuthStateChanged(auth,async user=>{
+  if(location.hash==='#'+OWNER_SECRET){return;} // Owner panel takes priority
   const ls=$('loadScreen');
   if(user){
     G.user=user;
@@ -1649,7 +1626,7 @@ window.approveModLogin=async(docId,approved)=>{
 };
 
 // ══ NAVIGATION ══
-const pgTitles={dash:'Dashboard',prods:'Products',newOrder:'Create Order',orders:'Orders',custs:'Customers',team:'Team',reports:'Reports',account:'My Account',cfg:'Settings'};
+const pgTitles={dash:'Dashboard',prods:'Products',newOrder:'Create Order',orders:'Orders',custs:'Customers',team:'Team',reports:'Reports',account:'My Account',cfg:'Settings',tools:'🛠️ Business Tools'};
 window.nav=p=>{
   if(G.role==='moderator'){
     const perms=G.modPerms||{orders:true};
@@ -1683,7 +1660,7 @@ function buildSidebar(){
     cart:'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>',
     users:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
     chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
-    shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+    tool:'<path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>',
     settings:'<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/>',
     user:'<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>',
   };
@@ -1695,6 +1672,7 @@ function buildSidebar(){
     {p:'orders',ico:'cart',lbl:'Orders'},
     {p:'custs',ico:'users',lbl:'Customers'},
     {p:'reports',ico:'chart',lbl:'Reports & Analytics'},
+    {p:'tools',ico:'tool',lbl:'Business Tools'},
     {p:'team',ico:'shield',lbl:'Team / Moderators'},
     {p:'cfg',ico:'settings',lbl:'Settings'},
   ];
@@ -1720,7 +1698,7 @@ function buildSidebar(){
 
 function renderPage(){
   buildSidebar();
-  const fns={dash:pgDash,prods:pgProds,newOrder:pgNewOrder,orders:pgOrders,custs:pgCusts,reports:pgReports,team:pgTeam,cfg:pgCfg,account:pgAccount};
+  const fns={dash:pgDash,prods:pgProds,newOrder:pgNewOrder,orders:pgOrders,custs:pgCusts,reports:pgReports,team:pgTeam,cfg:pgCfg,account:pgAccount,tools:pgTools};
   (fns[G.page]||pgDash)();
 }
 
@@ -1909,22 +1887,46 @@ async function pgNewOrder(){
   try{
     const snap=await getDocs(query(BCol('products'),where('active','==',true)));
     const prods=snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>Number(p.stock)>0);
-    if(!G.oForm)G.oForm={cName:'',ordererPhone:'',recvPhone:'',recvName:'',cAddr:'',payMethod:'cod',delivery:G.cfg.delCOD||'150',rLang:G.lang,orderDate:today(),delivDate:plus3(),notes:''};
+    if(!G.oForm)G.oForm={cName:'',ordererPhone:'',recvPhone:'',recvName:'',cAddr:'',payMethod:'cod',delivery:G.cfg.delCOD||'150',rLang:G.lang,orderDate:today(),delivDate:plus3(),notes:'',discount:0};
     const f=G.oForm;
     const sub=G.oItems.reduce((s,it)=>s+(Number(it.price||0)*Number(it.qty||1)),0);
-    const del=Number(f.delivery)||0;const total=sub+del;
+    const disc=Number(f.discount)||0;
+    const del=Number(f.delivery)||0;
+    const total=sub-disc+del;
     setC(`
     <div class="pH"><div><h1>Create Order</h1><p>Fill details to generate receipt</p></div></div>
+
+    <!-- 📋 SMART PASTE BOX -->
+    <div class="card" style="margin-bottom:16px;border-color:rgba(99,102,241,.3)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="font-size:20px">✨</div>
+        <div>
+          <div style="font-weight:700;font-size:14px">Smart Paste</div>
+          <div style="font-size:12px;color:var(--t2)">নাম, ফোন, ঠিকানা একসাথে paste করুন — automatically সঠিক জায়গায় বসবে</div>
+        </div>
+      </div>
+      <textarea class="afI" id="smartPasteBox" rows="3" placeholder="উদাহরণ:&#10;Md Rahim&#10;01711234567&#10;Dhaka, Mirpur-10, House-5" style="font-size:13px"></textarea>
+      <button class="btn bP bSm" style="margin-top:8px" onclick="doSmartPaste()">⚡ Auto Fill করুন</button>
+    </div>
+
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
       <div class="card">
         <div class="cardTitle">👤 Customer Info</div>
         <div class="afG"><label class="afL">Customer Name *</label><input class="afI" id="of_cn" value="${esc(f.cName)}" placeholder="Full name" oninput="G.oForm.cName=this.value"/></div>
         <div class="afRow">
-          <div class="afG"><label class="afL">Orderer Phone * <span style="font-size:10px;color:var(--t3)">(যিনি order করলেন)</span></label><input class="afI" id="of_op" value="${esc(f.ordererPhone)}" placeholder="01XXXXXXXXX" oninput="G.oForm.ordererPhone=this.value"/></div>
-          <div class="afG"><label class="afL">Receiver Phone <span style="font-size:10px;color:var(--t3)">(যিনি পাবেন)</span></label><input class="afI" id="of_rph" value="${esc(f.recvPhone)}" placeholder="Same if blank" oninput="G.oForm.recvPhone=this.value"/></div>
+          <div class="afG"><label class="afL">Orderer Phone * <span style="font-size:10px;color:var(--t3)">(যিনি order করলেন)</span></label>
+            <input class="afI" id="of_op" value="${esc(f.ordererPhone)}" placeholder="01XXXXXXXXX" oninput="G.oForm.ordererPhone=this.value"/>
+          </div>
+          <div class="afG"><label class="afL">Receiver Phone <span style="font-size:10px;color:var(--t3)">(যিনি পাবেন)</span></label>
+            <input class="afI" id="of_rph" value="${esc(f.recvPhone)}" placeholder="Same if blank" oninput="G.oForm.recvPhone=this.value"/>
+          </div>
         </div>
-        <div class="afG"><label class="afL">Receiver Name <span style="font-size:10px;color:var(--t3)">(if different)</span></label><input class="afI" id="of_rv" value="${esc(f.recvName)}" placeholder="Blank = same" oninput="G.oForm.recvName=this.value"/></div>
-        <div class="afG"><label class="afL">Delivery Address *</label><textarea class="afI" rows="2" oninput="G.oForm.cAddr=this.value">${esc(f.cAddr)}</textarea></div>
+        <div class="afG"><label class="afL">Receiver Name <span style="font-size:10px;color:var(--t3)">(if different)</span></label>
+          <input class="afI" id="of_rv" value="${esc(f.recvName)}" placeholder="Blank = same" oninput="G.oForm.recvName=this.value"/>
+        </div>
+        <div class="afG"><label class="afL">Delivery Address *</label>
+          <textarea class="afI" id="of_addr" rows="2" oninput="G.oForm.cAddr=this.value">${esc(f.cAddr)}</textarea>
+        </div>
       </div>
       <div class="card">
         <div class="cardTitle">⚙️ Order Settings</div>
@@ -1935,7 +1937,10 @@ async function pgNewOrder(){
             <option value="partial" ${f.payMethod==='partial'?'selected':''}>🔄 Partial Payment</option>
           </select>
         </div>
-        <div class="afG"><label class="afL">Delivery Charge (৳)</label><input class="afI" type="number" id="of_del" value="${f.delivery}" min="0" oninput="G.oForm.delivery=this.value;updTotal()"/></div>
+        <div class="afRow">
+          <div class="afG" style="margin:0"><label class="afL">Delivery Charge (৳)</label><input class="afI" type="number" id="of_del" value="${f.delivery}" min="0" oninput="G.oForm.delivery=this.value;updTotal()"/></div>
+          <div class="afG" style="margin:0"><label class="afL">Discount (৳)</label><input class="afI" type="number" id="of_disc" value="${f.discount||0}" min="0" oninput="G.oForm.discount=this.value;updTotal()"/></div>
+        </div>
         <div class="afRow">
           <div class="afG"><label class="afL">Order Date</label><input class="afI" type="date" value="${f.orderDate}" oninput="G.oForm.orderDate=this.value"/></div>
           <div class="afG"><label class="afL">Delivery By</label><input class="afI" type="date" value="${f.delivDate}" oninput="G.oForm.delivDate=this.value"/></div>
@@ -1949,56 +1954,104 @@ async function pgNewOrder(){
         <div class="afG"><label class="afL">Notes</label><textarea class="afI" rows="2" oninput="G.oForm.notes=this.value">${esc(f.notes)}</textarea></div>
       </div>
     </div>
+
     <div class="card" style="margin-bottom:16px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div class="cardTitle" style="margin:0">📦 Items</div>
+        <div class="cardTitle" style="margin:0">📦 Products</div>
         <button class="btn bS bSm" onclick="addOI()">+ Add Item</button>
       </div>
       <div id="oiWrap">
         ${G.oItems.map((it,i)=>`
-        <div style="display:grid;grid-template-columns:2fr 100px 80px auto;gap:10px;margin-bottom:10px;align-items:end">
+        <div style="display:grid;grid-template-columns:2fr 110px 80px auto;gap:8px;margin-bottom:10px;align-items:end">
           <div class="afG" style="margin:0"><label class="afL">Product</label>
-            <select class="afI" onchange="setOI(${i},'pid',this.value)">
+            <select class="afI" id="psel_${i}" onchange="setOI(${i},'pid',this.value)">
               <option value="">Select product...</option>
-              ${prods.map(p=>`<option value="${p.id}" data-price="${p.sellPrice}" ${it.pid===p.id?'selected':''}>${esc(p.name)} (Stock:${p.stock}) — ${cur(p.sellPrice)}</option>`).join('')}
+              ${prods.map(p=>`<option value="${p.id}" data-price="${p.sellPrice}" data-stock="${p.stock}" ${it.pid===p.id?'selected':''}>${esc(p.name)} (${p.stock} left) — ${cur(p.sellPrice)}</option>`).join('')}
             </select>
           </div>
-          <div class="afG" style="margin:0"><label class="afL">Price (৳)</label><input class="afI" type="number" min="0" value="${it.price||''}" placeholder="0" onchange="setOI(${i},'price',this.value)"/></div>
-          <div class="afG" style="margin:0"><label class="afL">Qty</label><input class="afI" type="number" min="1" value="${it.qty||1}" onchange="setOI(${i},'qty',this.value)"/></div>
+          <div class="afG" style="margin:0"><label class="afL">Price (৳)</label>
+            <input class="afI" id="pprice_${i}" type="number" min="0" value="${it.price||''}" placeholder="0" oninput="setOI(${i},'price',this.value)" style="${it.pid&&it.price?'color:var(--green);font-weight:700':''}"/>
+          </div>
+          <div class="afG" style="margin:0"><label class="afL">Qty</label>
+            <input class="afI" id="pqty_${i}" type="number" min="1" value="${it.qty||1}" oninput="setOI(${i},'qty',this.value)"/>
+          </div>
           <button class="btn bD bIco" onclick="rmOI(${i})" ${G.oItems.length===1?'disabled':''}>🗑️</button>
         </div>`).join('')}
       </div>
-      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:8px">
+      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
         <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-bottom:6px" id="subRow"><span>Subtotal</span><span style="font-weight:600">${cur(sub)}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-bottom:10px"><span>Delivery</span><span style="font-weight:600">${cur(del)}</span></div>
+        ${disc>0?`<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--green);margin-bottom:6px"><span>Discount</span><span style="font-weight:600">- ${cur(disc)}</span></div>`:''}
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-bottom:10px" id="delRow"><span>Delivery</span><span style="font-weight:600">${cur(del)}</span></div>
         <div style="display:flex;justify-content:space-between;font-size:20px;font-weight:800;padding:14px;background:var(--acc4);border-radius:12px;border:1px solid rgba(99,102,241,.2)" id="totRow">
           <span>Grand Total</span><span style="color:var(--acc2)">${cur(total)}</span>
         </div>
       </div>
     </div>
-    <div style="display:flex;gap:10px;justify-content:flex-end">
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
       <button class="btn bS" onclick="G.oForm=null;G.oItems=[{pid:'',qty:1,price:''}];pgNewOrder()">🔄 Reset</button>
       <button class="btn bP" id="subOBtn" onclick="submitOrder()" style="min-width:200px;padding:12px">✅ Create Order & Receipt</button>
     </div>`);
   }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
 }
+
+// ── SMART PASTE ──
+window.doSmartPaste=()=>{
+  const raw=$('smartPasteBox')?.value.trim();
+  if(!raw){toast('Paste করার পর Auto Fill ক্লিক করুন','warn');return;}
+  const lines=raw.split(/\n/).map(l=>l.trim()).filter(Boolean);
+  let name='',phone='',addr=[];
+  const phoneRx=/^(01[3-9]\d{8}|\+8801[3-9]\d{8}|008801[3-9]\d{8})$/;
+  for(const line of lines){
+    const clean=line.replace(/[^\d]/g,'');
+    if(phoneRx.test(line)||clean.length===11&&clean.startsWith('01')){
+      if(!phone)phone=clean.length===11?clean:clean.slice(-11);
+    } else if(!name&&line.length>1&&line.length<50&&!/\d{3}/.test(line)){
+      name=line;
+    } else {
+      addr.push(line);
+    }
+  }
+  if(name){$('of_cn').value=name;G.oForm.cName=name;}
+  if(phone){$('of_op').value=phone;G.oForm.ordererPhone=phone;}
+  if(addr.length){const a=addr.join(', ');$('of_addr').value=a;G.oForm.cAddr=a;}
+  $('smartPasteBox').value='';
+  toast(`✅ Auto filled! Name: ${name||'?'} | Phone: ${phone||'?'} | Address: ${addr.join(', ')||'?'}`,'ok');
+};
+
 window.updDel=()=>{G.oForm.delivery=G.oForm.payMethod==='cod'?(G.cfg.delCOD||'150'):(G.cfg.delPaid||'0');const el=$('of_del');if(el)el.value=G.oForm.delivery;updTotal();};
-window.updTotal=()=>{const sub=G.oItems.reduce((s,it)=>s+(Number(it.price||0)*Number(it.qty||1)),0);const del=Number(G.oForm?.delivery||0);const tr=$('totRow');if(tr)tr.innerHTML=`<span>Grand Total</span><span style="color:var(--acc2)">${cur(sub+del)}</span>`;const sr=$('subRow');if(sr)sr.innerHTML=`<span>Subtotal</span><span style="font-weight:600">${cur(sub)}</span>`;};
+window.updTotal=()=>{
+  const sub=G.oItems.reduce((s,it)=>s+(Number(it.price||0)*Number(it.qty||1)),0);
+  const disc=Number(G.oForm?.discount||0);
+  const del=Number(G.oForm?.delivery||0);
+  const total=sub-disc+del;
+  const tr=$('totRow');if(tr)tr.innerHTML=`<span>Grand Total</span><span style="color:var(--acc2)">${cur(total)}</span>`;
+  const sr=$('subRow');if(sr)sr.innerHTML=`<span>Subtotal</span><span style="font-weight:600">${cur(sub)}</span>`;
+  const dr=$('delRow');if(dr)dr.innerHTML=`<span>Delivery</span><span style="font-weight:600">${cur(del)}</span>`;
+};
 window.addOI=()=>{G.oItems.push({pid:'',qty:1,price:''});pgNewOrder();};
 window.rmOI=i=>{G.oItems.splice(i,1);pgNewOrder();};
-window.setOI=(i,field,val)=>{G.oItems[i][field]=val;if(field==='pid'&&val){const sels=document.querySelectorAll(`[onchange*="setOI(${i},'pid'"]`);if(sels[0]){const opt=sels[0].querySelector(`option[value="${val}"]`);if(opt)G.oItems[i].price=opt.dataset.price||'';}}updTotal();};
+window.setOI=(i,field,val)=>{
+  G.oItems[i][field]=val;
+  if(field==='pid'&&val){
+    const sel=$('psel_'+i);
+    if(sel){const opt=sel.querySelector(`option[value="${val}"]`);
+      if(opt){G.oItems[i].price=opt.dataset.price||'';
+        const pinp=$('pprice_'+i);if(pinp){pinp.value=opt.dataset.price||'';pinp.style.color='var(--green)';pinp.style.fontWeight='700';}
+      }
+    }
+  }
+  updTotal();
 window.submitOrder=async()=>{
   const f=G.oForm;const ordPhone=f.ordererPhone;const recvPhone=f.recvPhone||ordPhone;
   if(!f.cName||!ordPhone||!f.cAddr){toast('Fill name, phone, address','err');return;}
-  // Validate phone (11 digits Bangladesh)
-  if(!/^01[3-9]\d{8}$/.test(ordPhone)){toast('Orderer phone must be valid 11-digit BD number (e.g. 01XXXXXXXXX)','err');return;}
+  if(!/^01[3-9]\d{8}$/.test(ordPhone)){toast('Orderer phone must be valid 11-digit BD number','err');return;}
   if(f.recvPhone&&!/^01[3-9]\d{8}$/.test(f.recvPhone)){toast('Receiver phone must be valid 11-digit BD number','err');return;}
   const validItems=G.oItems.filter(it=>it.pid&&it.price);
   if(!validItems.length){toast('Add at least one product','err');return;}
   const btn=$('subOBtn');btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Creating...';
   try{
     for(const it of validItems){const pd=await getDoc(BDoc('products',it.pid));if(!pd.exists()||Number(pd.data().stock)<Number(it.qty)){toast(`Insufficient stock: ${pd.data()?.name}. Available: ${pd.data()?.stock||0}`,'err');btn.disabled=false;btn.innerHTML='✅ Create Order & Receipt';return;}}
-    const sub=validItems.reduce((s,it)=>s+(Number(it.price)*Number(it.qty)),0);const del=Number(f.delivery||0);const total=sub+del;
+    const sub=validItems.reduce((s,it)=>s+(Number(it.price)*Number(it.qty)),0);const disc=Number(f.discount||0);const del=Number(f.delivery||0);const total=sub-disc+del;
     const cnt=(await getDocs(BCol('orders'))).size;const num='DRY-'+String(cnt+1).padStart(5,'0');
     // Customer
     const cSnap=await getDocs(query(BCol('customers'),where('phone','==',ordPhone)));
@@ -2009,7 +2062,7 @@ window.submitOrder=async()=>{
     const oRef=await addDoc(BCol('orders'),{num,custId,cName:f.cName,cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:f.recvName||f.cName,cAddr:f.cAddr,payMethod:f.payMethod,delivery:del,subtotal:sub,total,status:'pending',payStatus:f.payMethod==='paid'?'paid':'pending',orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:oItems,createdBy:G.user?.uid,createdAt:serverTimestamp()});
     for(const it of validItems){const pd=await getDoc(BDoc('products',it.pid));await updateDoc(BDoc('products',it.pid),{stock:Number(pd.data().stock)-Number(it.qty)});}
     toast('Order created! 🎉');
-    G.lastOrder={id:oRef.id,num,cName:f.cName,cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:f.recvName||f.cName,cAddr:f.cAddr,payMethod:f.payMethod,delivery:del,subtotal:sub,total,orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:oItems};
+    G.lastOrder={id:oRef.id,num,cName:f.cName,cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:f.recvName||f.cName,cAddr:f.cAddr,payMethod:f.payMethod,delivery:del,subtotal:sub,discount:disc,total,orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:oItems};
     G.oItems=[{pid:'',qty:1,price:''}];G.oForm=null;showReceipt(G.lastOrder);
   }catch(e){toast(e.message,'err');btn.disabled=false;btn.innerHTML='✅ Create Order & Receipt';}
 };
@@ -2064,54 +2117,229 @@ function showReceipt(o){
   $('rcptPrintArea').innerHTML=rHtml;
   setC(`
   <div class="pH">
-    <div><h1 style="color:var(--green)">✅ Order Created!</h1><p>Order <strong>${esc(o.num)}</strong> — Orderer: ${esc(o.ordererPhone)} | Receiver: ${esc(o.recvName||o.cName)} (${esc(o.recvPhone||o.cPhone)})</p></div>
+    <div><h1 style="color:var(--green)">✅ Order Created!</h1><p><strong>${esc(o.num)}</strong> | Receiver: ${esc(o.recvName||o.cName)} — ${esc(o.recvPhone||o.cPhone)}</p></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn bP" onclick="printRcpt()">🖨️ Print</button>
-      <button class="btn bS" onclick="downloadRcptPDF()">📄 Save PDF</button>
-      <button class="btn bS" onclick="downloadRcptImg()">🖼️ Save Image</button>
+      <button class="btn bG" onclick="downloadRcptImg()" id="dlImgBtn">📥 Download PNG</button>
       <button class="btn bS" onclick="nav('orders')">📋 Orders</button>
-      <button class="btn bG" onclick="G.lastOrder=null;nav('newOrder')">➕ New Order</button>
+      <button class="btn bG bSm" onclick="G.lastOrder=null;nav('newOrder')">➕ New Order</button>
     </div>
   </div>
-  <div class="al aI" style="margin-bottom:12px;font-size:12px">
-    📌 Receipt shows <strong>Receiver</strong> info only. Orderer info (${esc(o.ordererPhone)}) is saved in your dashboard Orders section.
-  </div>
-  <div class="card" style="display:flex;justify-content:center;padding:24px">${rHtml}</div>`);
+  <div class="card" style="display:flex;justify-content:center;padding:20px;overflow-x:auto">${rHtml}</div>`);
 }
 window.printRcpt=()=>{
   const html=$('rcptPrintArea').innerHTML;
-  const pw=window.open('','_blank','width=620,height=850');
-  pw.document.write(`<!DOCTYPE html><html><head><title>Receipt</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet"><style>body{margin:0;padding:24px;font-family:'Inter',sans-serif;background:#fff}@media print{body{padding:8px}}</style></head><body>${html}<script>window.onload=()=>window.print()<\/script></body></html>`);
+  const pw=window.open('','_blank','width=600,height=800');
+  if(!pw){toast('Popup blocked — allow popup for this site','warn');return;}
+  pw.document.write(`<!DOCTYPE html><html><head><title>Receipt</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet"><style>body{margin:0;padding:20px;font-family:'Inter',sans-serif;background:#fff}@media print{body{padding:4px}button{display:none}}</style></head><body>${html}<button onclick="window.print()" style="margin-top:16px;padding:10px 24px;background:#6366F1;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">🖨️ Print</button><script>window.onload=()=>window.print()<\/script></body></html>`);
   pw.document.close();
 };
-window.downloadRcptPDF=()=>{
-  const html=$('rcptPrintArea').innerHTML;
-  const pw=window.open('','_blank','width=620,height=850');
-  pw.document.write(`<!DOCTYPE html><html><head><title>Receipt PDF</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet"><style>body{margin:0;padding:24px;font-family:'Inter',sans-serif;background:#fff}@media print{body{padding:8px}}</style></head><body>${html}<script>window.onload=()=>{window.print();}<\/script></body></html>`);
-  pw.document.close();
-  toast('Browser এ "Save as PDF" সিলেক্ট করুন','info');
-};
-window.downloadRcptImg=()=>{
-  toast('Image তৈরি হচ্ছে...','info');
+window.downloadRcptImg=async()=>{
+  const btn=$('dlImgBtn');
+  if(btn){btn.disabled=true;btn.innerHTML='⏳ Creating...';}
   const el=document.getElementById('rcptContent');
-  if(!el){toast('Receipt not found','err');return;}
-  const script=document.createElement('script');
-  script.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-  script.onload=async()=>{
-    try{
-      const canvas=await window.html2canvas(el,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false});
-      const link=document.createElement('a');
-      link.download=`receipt-${G.lastOrder?.num||'drystan'}.png`;
-      link.href=canvas.toDataURL('image/png');
-      link.click();
-      toast('✅ Image downloaded!','ok');
-    }catch(e){toast('❌ '+e.message,'err');}
-  };
-  script.onerror=()=>toast('Failed to load image library','err');
-  document.head.appendChild(script);
+  if(!el){toast('Receipt not found','err');if(btn){btn.disabled=false;btn.innerHTML='📥 Download PNG';}return;}
+  // Load html2canvas if not loaded
+  if(!window.html2canvas){
+    await new Promise((res,rej)=>{
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload=res;s.onerror=rej;
+      document.head.appendChild(s);
+    }).catch(()=>{});
+  }
+  if(!window.html2canvas){toast('Library load failed. Try print instead.','err');if(btn){btn.disabled=false;btn.innerHTML='📥 Download PNG';}return;}
+  try{
+    const canvas=await window.html2canvas(el,{scale:3,backgroundColor:'#ffffff',useCORS:true,logging:false,allowTaint:true});
+    const link=document.createElement('a');
+    link.download=`Drystan-Receipt-${G.lastOrder?.num||Date.now()}.png`;
+    link.href=canvas.toDataURL('image/png',1.0);
+    link.click();
+    toast('✅ Receipt PNG downloaded!','ok');
+  }catch(e){toast('❌ '+e.message,'err');}
+  finally{if(btn){btn.disabled=false;btn.innerHTML='📥 Download PNG';}}
 };
 
-// ══ ORDERS ══
+// ══ BUSINESS TOOLS PAGE ══
+async function pgTools(){
+  const stKey=G.cfg.steadfastKey||'';const stSecret=G.cfg.steadfastSecret||'';
+  setC(`
+  <div class="pH"><div><h1>🛠️ Business Tools</h1><p>Useful tools for your business</p></div></div>
+
+  <div class="g g2" style="gap:16px;margin-bottom:16px">
+
+    <!-- STEADFAST COURIER INTEGRATION -->
+    <div class="card" style="border-color:rgba(16,185,129,.25)">
+      <div class="cardTitle">🚚 Steadfast Courier Integration</div>
+      <div class="al aI" style="font-size:12px;margin-bottom:14px">
+        📦 Steadfast API দিয়ে orders automatically courier এ পাঠানো যাবে। API key লাগবে।<br/>
+        <a href="https://steadfast.com.bd" target="_blank" style="color:var(--acc2)">steadfast.com.bd</a> → API section থেকে key নিন।
+      </div>
+      <div class="afG"><label class="afL">Steadfast API Key</label><input class="afI" id="sf_key" value="${esc(stKey)}" placeholder="Your API Key"/></div>
+      <div class="afG"><label class="afL">Steadfast Secret Key</label><input class="afI" id="sf_secret" value="${esc(stSecret)}" placeholder="Your Secret Key"/></div>
+      <button class="btn bG bFull" onclick="saveSteadfastConfig()">💾 Save Steadfast Config</button>
+      ${stKey?`
+      <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+        <div style="font-weight:600;font-size:13px;margin-bottom:10px">📋 Send Pending Orders to Steadfast</div>
+        <button class="btn bP bFull" onclick="sendToSteadfast()">🚀 Send All Pending Orders</button>
+        <div id="sfResult" style="margin-top:10px"></div>
+      </div>`:''}
+    </div>
+
+    <!-- BUSINESS CALCULATOR -->
+    <div class="card">
+      <div class="cardTitle">🧮 Business Calculator</div>
+      <div class="afG"><label class="afL">Buy Price (৳)</label><input class="afI" type="number" id="calc_buy" placeholder="0" oninput="calcProfit()"/></div>
+      <div class="afG"><label class="afL">Sell Price (৳)</label><input class="afI" type="number" id="calc_sell" placeholder="0" oninput="calcProfit()"/></div>
+      <div class="afG"><label class="afL">Quantity</label><input class="afI" type="number" id="calc_qty" placeholder="1" value="1" oninput="calcProfit()"/></div>
+      <div id="calcResult" style="padding:14px;background:var(--card);border-radius:10px;border:1px solid var(--border);font-size:13px;line-height:2.5;display:none">
+        <div>Profit/unit: <strong id="cr_unit" style="color:var(--green)"></strong></div>
+        <div>Total profit: <strong id="cr_total" style="color:var(--green)"></strong></div>
+        <div>Profit margin: <strong id="cr_margin" style="color:var(--acc2)"></strong></div>
+      </div>
+    </div>
+
+    <!-- STOCK VALUE CALCULATOR -->
+    <div class="card">
+      <div class="cardTitle">📊 Current Stock Value</div>
+      <button class="btn bS bFull" onclick="calcStockValue()" id="stockCalcBtn">Calculate Stock Value</button>
+      <div id="stockResult" style="margin-top:12px"></div>
+    </div>
+
+    <!-- BULK SMS (future) -->
+    <div class="card" style="opacity:.6">
+      <div class="cardTitle">📱 Bulk SMS <span style="font-size:11px;color:var(--t3)">(Coming Soon)</span></div>
+      <div class="al aI" style="font-size:12px">Send SMS to all customers with order updates. Coming in next update.</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="cardTitle">📤 Export Data</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn bS" onclick="exportOrders()">📋 Export Orders CSV</button>
+      <button class="btn bS" onclick="exportCustomers()">👥 Export Customers CSV</button>
+      <button class="btn bS" onclick="exportProducts()">📦 Export Products CSV</button>
+    </div>
+  </div>`);
+}
+
+window.calcProfit=()=>{
+  const buy=Number($('calc_buy')?.value)||0;
+  const sell=Number($('calc_sell')?.value)||0;
+  const qty=Number($('calc_qty')?.value)||1;
+  const el=$('calcResult');if(!el)return;
+  if(!buy&&!sell){el.style.display='none';return;}
+  el.style.display='block';
+  const pUnit=sell-buy;const pTotal=pUnit*qty;const margin=buy>0?((pUnit/buy)*100):0;
+  $('cr_unit').textContent=cur(pUnit)+(pUnit<0?' (Loss)':' (Profit)');
+  $('cr_total').textContent=cur(pTotal);
+  $('cr_margin').textContent=margin.toFixed(1)+'%';
+  $('cr_unit').style.color=pUnit>=0?'var(--green)':'var(--red)';
+  $('cr_total').style.color=pTotal>=0?'var(--green)':'var(--red)';
+};
+
+window.calcStockValue=async()=>{
+  const btn=$('stockCalcBtn');const res=$('stockResult');
+  btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';
+  try{
+    const snap=await getDocs(query(BCol('products'),where('active','==',true)));
+    const prods=snap.docs.map(d=>d.data());
+    const buyVal=prods.reduce((s,p)=>s+Number(p.buyPrice||0)*Number(p.stock||0),0);
+    const sellVal=prods.reduce((s,p)=>s+Number(p.sellPrice||0)*Number(p.stock||0),0);
+    res.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
+      <div style="padding:12px;background:rgba(239,68,68,.08);border-radius:10px;border:1px solid rgba(239,68,68,.2);text-align:center">
+        <div style="font-size:11px;color:var(--t2)">Buy Value (Cost)</div>
+        <div style="font-size:20px;font-weight:800;color:var(--red)">${cur(buyVal)}</div>
+      </div>
+      <div style="padding:12px;background:rgba(16,185,129,.08);border-radius:10px;border:1px solid rgba(16,185,129,.2);text-align:center">
+        <div style="font-size:11px;color:var(--t2)">Sell Value (Revenue)</div>
+        <div style="font-size:20px;font-weight:800;color:var(--green)">${cur(sellVal)}</div>
+      </div>
+      <div style="padding:12px;background:rgba(99,102,241,.08);border-radius:10px;border:1px solid rgba(99,102,241,.2);text-align:center;grid-column:1/-1">
+        <div style="font-size:11px;color:var(--t2)">Potential Profit</div>
+        <div style="font-size:22px;font-weight:800;color:var(--acc2)">${cur(sellVal-buyVal)}</div>
+      </div>
+    </div>`;
+  }catch(e){res.innerHTML=`<div class="al aE">❌ ${e.message}</div>`;}
+  btn.disabled=false;btn.innerHTML='Recalculate';
+};
+
+window.saveSteadfastConfig=async()=>{
+  const key=$('sf_key')?.value.trim();const secret=$('sf_secret')?.value.trim();
+  try{
+    await setDoc(BCfg(),{steadfastKey:key,steadfastSecret:secret},{merge:true});
+    G.cfg.steadfastKey=key;G.cfg.steadfastSecret=secret;
+    toast('✅ Steadfast config saved!');pgTools();
+  }catch(e){toast(e.message,'err');}
+};
+
+window.sendToSteadfast=async()=>{
+  const key=G.cfg.steadfastKey;const secret=G.cfg.steadfastSecret;
+  if(!key||!secret){toast('Save Steadfast API keys first','err');return;}
+  const res=$('sfResult');
+  if(res)res.innerHTML='<div class="spin spinSm" style="margin:0 auto"></div>';
+  try{
+    const snap=await getDocs(query(BCol('orders'),where('status','==','pending')));
+    const orders=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(!orders.length){if(res)res.innerHTML='<div class="al aI">No pending orders to send.</div>';return;}
+    let success=0,fail=0;
+    for(const o of orders){
+      try{
+        const resp=await fetch('https://portal.steadfast.com.bd/api/v1/create-order',{
+          method:'POST',
+          headers:{'Api-Key':key,'Secret-Key':secret,'Content-Type':'application/json'},
+          body:JSON.stringify({
+            invoice:o.num,
+            recipient_name:o.recvName||o.cName,
+            recipient_phone:o.recvPhone||o.cPhone,
+            recipient_address:o.cAddr,
+            cod_amount:o.payMethod==='cod'?o.total:0,
+            note:o.notes||''
+          })
+        });
+        const data=await resp.json();
+        if(data.status===200||data.consignment?.status==='in_review'){
+          await updateDoc(BDoc('orders',o.id),{status:'parcel_sent',steadfastCN:data.consignment?.tracking_code||'',sentAt:serverTimestamp()});
+          success++;
+        }else{fail++;}
+      }catch{fail++;}
+    }
+    if(res)res.innerHTML=`<div class="al aO">✅ Sent: ${success} orders | ❌ Failed: ${fail}</div>`;
+    toast(`Steadfast: ${success} sent, ${fail} failed`,'ok');
+  }catch(e){if(res)res.innerHTML=`<div class="al aE">❌ ${e.message}</div>`;}
+};
+
+// ── EXPORT CSV ──
+window.exportOrders=async()=>{
+  try{
+    const snap=await getDocs(query(BCol('orders'),orderBy('createdAt','desc')));
+    const rows=[['Order#','Customer','Phone','Address','Items','Subtotal','Delivery','Discount','Total','Payment','Status','Date']];
+    snap.docs.forEach(d=>{const o=d.data();rows.push([o.num,o.cName,o.cPhone||o.ordererPhone,o.cAddr,(o.items||[]).map(i=>`${i.name}x${i.qty}`).join(';'),o.subtotal,o.delivery,o.discount||0,o.total,o.payMethod,o.status,o.orderDate]);});
+    downloadCSV(rows,'orders');
+  }catch(e){toast(e.message,'err');}
+};
+window.exportCustomers=async()=>{
+  try{
+    const snap=await getDocs(BCol('customers'));
+    const rows=[['Name','Phone','Address','Orders','Total Spent']];
+    snap.docs.forEach(d=>{const c=d.data();rows.push([c.name,c.phone,c.addr,c.orders,c.spent]);});
+    downloadCSV(rows,'customers');
+  }catch(e){toast(e.message,'err');}
+};
+window.exportProducts=async()=>{
+  try{
+    const snap=await getDocs(query(BCol('products'),where('active','==',true)));
+    const rows=[['Name','Buy Price','Sell Price','Stock','Category']];
+    snap.docs.forEach(d=>{const p=d.data();rows.push([p.name,p.buyPrice,p.sellPrice,p.stock,p.cat]);});
+    downloadCSV(rows,'products');
+  }catch(e){toast(e.message,'err');}
+};
+function downloadCSV(rows,name){
+  const csv=rows.map(r=>r.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`drystan-${name}-${today()}.csv`;a.click();
+  toast(`✅ ${name} CSV downloaded!`,'ok');
+}
 let oSrch='',oFilt='';
 async function pgOrders(){
   loading();
@@ -2846,6 +3074,7 @@ window.verifyTOTPLogin=async()=>{
 window.cancelTOTPLogin=async()=>{await signOut(auth);_totpPendingUser=null;};
 createStars();
 window.G=G;
+} // close any unclosed block
 </script>
 </body>
 </html>
