@@ -795,6 +795,7 @@ const db=getFirestore(app);
 // OWNER SECRET (hardcoded — never in Firestore)
 const OWNER_SECRET='DRY$T4N-0WN3R-X9K2M';
 const OWNER_PASS='DRYST4N#0wner@2025!';
+let _ownerPwCurrent=OWNER_PASS;
 
 // HELPERS
 const cur=n=>'৳'+Number(n||0).toLocaleString('en-BD');
@@ -875,19 +876,47 @@ async function loadOwnerData(){
     if($('ow_ejk'))$('ow_ejk').value=cfg.ejsKey||'';
     if($('ow_ejs'))$('ow_ejs').value=cfg.ejsService||'';
     if($('ow_ejt'))$('ow_ejt').value=cfg.ejsTemplate||'';
-    if($('ow_2fa'))$('ow_2fa').checked=cfg.force2FA===true;
     if($('ow_theme'))$('ow_theme').value=cfg.siteTheme||'indigo';
   }catch{}
 }
+let _ownerTries=0,_ownerLockUntil=0;
 window.ownerLogin=()=>{
-  const pw=$('ownerPw').value;
   const err=$('ownerErr');err.style.display='none';
-  if(pw!==OWNER_PASS){err.style.display='flex';err.textContent='❌ Wrong password.';return;}
+  const now=Date.now();
+  if(now<_ownerLockUntil){
+    const secs=Math.ceil((_ownerLockUntil-now)/1000);
+    err.style.display='flex';err.textContent=`🔒 Too many attempts. Locked for ${secs}s.`;return;
+  }
+  const pw=$('ownerPw').value;
+  if(pw!==_ownerPwCurrent){
+    _ownerTries++;
+    if(_ownerTries>=5){_ownerLockUntil=now+5*60*1000;_ownerTries=0;err.style.display='flex';err.textContent='🔒 5 wrong attempts. Locked for 5 minutes.';return;}
+    err.style.display='flex';err.textContent=`❌ Wrong password. (${5-_ownerTries} tries left)`;return;
+  }
+  _ownerTries=0;
   $('ownerContent').style.display='none';
   $('ownerDash').style.display='block';
   loadOwnerData();
   ownerTab(1);
+  // Auto-lock owner panel after 10 min inactivity
+  startOwnerIdleLock();
 };
+let _ownerIdleTimer=null;
+function startOwnerIdleLock(){
+  const reset=()=>{
+    clearTimeout(_ownerIdleTimer);
+    _ownerIdleTimer=setTimeout(()=>{
+      if($('ownerWrap').classList.contains('show')){
+        $('ownerDash').style.display='none';
+        $('ownerContent').style.display='block';
+        if($('ownerPw'))$('ownerPw').value='';
+        toast('🔒 Owner panel locked due to inactivity','warn');
+      }
+    },10*60*1000);
+  };
+  ['click','keydown','mousemove'].forEach(e=>$('ownerWrap').addEventListener(e,reset,{passive:true}));
+  reset();
+}
 
 window.ownerTab=async(n)=>{
   [1,2,3,4,5].forEach(i=>{
@@ -1013,7 +1042,6 @@ window.clearActivityLog=async()=>{
 };
 
 // ── SECURITY TAB — Change Owner Password ──
-let _ownerPwCurrent=OWNER_PASS;
 window.ownerChangePw=()=>{
   const old=$('owPwOld').value,nw=$('owPwNew').value,nw2=$('owPwNew2').value;
   const err=$('owPwErr');err.style.display='none';
@@ -1147,6 +1175,7 @@ window.switchTab=tab=>{
 // ══ OTP HELPERS ══
 let _otpCode='',_otpEmail='',_otpTimer=null,_resendTimer=null,_rgData={};
 let _tfaTimer=null,_tfaResendTimer=null,_tfaPending=null,_appReady=false,_tfaCode='',_tfaSent=false;
+let _totpPendingUser=null;
 
 function genOTP(){return String(Math.floor(100000+Math.random()*900000));}
 
@@ -1172,8 +1201,6 @@ async function sendEmail(email,name,otp,subjType='otp'){
 // OTP Input
 window.otpInput=(el,idx)=>{el.value=el.value.replace(/\D/g,'').slice(-1);if(el.value&&idx<5)$('otp'+(idx+1))?.focus();el.classList.toggle('filled',!!el.value);const code=[0,1,2,3,4,5].map(i=>$('otp'+i)?.value||'').join('');if(code.length===6)setTimeout(rgStep2Verify,200);};
 window.otpKey=(e,idx)=>{if(e.key==='Backspace'&&!e.target.value&&idx>0)$('otp'+(idx-1))?.focus();};
-window.tfaInput=(el,idx)=>{el.value=el.value.replace(/\D/g,'').slice(-1);if(el.value&&idx<5)$('tfa'+(idx+1))?.focus();el.classList.toggle('filled',!!el.value);const code=[0,1,2,3,4,5].map(i=>$('tfa'+i)?.value||'').join('');if(code.length===6)setTimeout(verify2FA,200);};
-window.tfaKey=(e,idx)=>{if(e.key==='Backspace'&&!e.target.value&&idx>0)$('tfa'+(idx-1))?.focus();};
 
 function startCountdown(elId,secs,onExpire){
   let s=secs;const el=$(elId);
@@ -1305,33 +1332,6 @@ window.rgStep3Create=async()=>{
     try{await deleteDoc(Doc('otpCodes',_rgData.email.replace(/[@.]/g,'_')));}catch{}
     toast('🎉 Business account created! Welcome!','ok');
   }catch(e){const msg=e.code==='auth/email-already-in-use'?'Email already registered.':e.message;err.style.display='flex';err.textContent='❌ '+msg;btn.disabled=false;btn.innerHTML='🎉 Create Business Account';}
-};
-
-// ══ 2FA ══
-window.verify2FA=async()=>{
-  const entered=[0,1,2,3,4,5].map(i=>$('tfa'+i)?.value||'').join('');
-  const err=$('tfaErr');err.style.display='none';
-  if(entered.length<6){err.style.display='flex';err.textContent='❌ Enter all 6 digits.';return;}
-  if(entered!==_tfaCode){err.style.display='flex';err.textContent='❌ Wrong code. Try again.';[0,1,2,3,4,5].forEach(i=>{const el=$('tfa'+i);if(el)el.value='';});$('tfa0')?.focus();return;}
-  clearInterval(_tfaTimer);clearInterval(_tfaResendTimer);
-  _tfaCode='';_tfaPending=null;_appReady=true;_tfaSent=false;
-  toast('✅ 2FA Verified! Welcome.','ok');
-  loadApp();
-};
-window.resend2FA=async()=>{
-  if(!_tfaPending)return;
-  _tfaCode=genOTP();
-  await sendEmail(_tfaPending.email,_tfaPending.name,_tfaCode,'2fa');
-  clearInterval(_tfaTimer);clearInterval(_tfaResendTimer);
-  _tfaTimer=startCountdown('tfaCountdown',300,()=>{const e=$('tfaErr');if(e){e.style.display='flex';e.textContent='Code expired. Login again.';}});
-  _tfaResendTimer=startResend('tfaResendBtn','tfaResendTimer',60);
-  [0,1,2,3,4,5].forEach(i=>{const el=$('tfa'+i);if(el)el.value='';});
-  $('tfa0')?.focus();toast('New 2FA code sent!','ok');
-};
-window.cancel2FA=async()=>{
-  await signOut(auth);_tfaCode='';_tfaPending=null;
-  clearInterval(_tfaTimer);clearInterval(_tfaResendTimer);
-  switchTab('signin');
 };
 
 // ══ LOGIN ══
@@ -1660,6 +1660,7 @@ function buildSidebar(){
     cart:'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>',
     users:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
     chart:'<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+    shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
     tool:'<path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>',
     settings:'<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/>',
     user:'<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>',
@@ -2041,6 +2042,7 @@ window.setOI=(i,field,val)=>{
     }
   }
   updTotal();
+};
 window.submitOrder=async()=>{
   const f=G.oForm;const ordPhone=f.ordererPhone;const recvPhone=f.recvPhone||ordPhone;
   if(!f.cName||!ordPhone||!f.cAddr){toast('Fill name, phone, address','err');return;}
@@ -2951,7 +2953,6 @@ window.changePassword=async()=>{
 
 // ══ TOTP 2FA (Google Authenticator) ══
 let _totpSecret=null;
-
 window.setupTOTP=async()=>{
   // Load otpauth library
   if(!window.OTPAuth){
@@ -3074,7 +3075,6 @@ window.verifyTOTPLogin=async()=>{
 window.cancelTOTPLogin=async()=>{await signOut(auth);_totpPendingUser=null;};
 createStars();
 window.G=G;
-} // close any unclosed block
 </script>
 </body>
 </html>
