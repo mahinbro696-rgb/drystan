@@ -451,12 +451,18 @@ tbody tr:last-child td{border:none}
       </div>
 
       <!-- Owner Tabs -->
-      <div style="display:flex;gap:5px;margin-bottom:16px;flex-wrap:wrap">
+      <div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn bSm owTabBtn" id="owTab0" onclick="ownerTab(0)" style="font-size:11px">📈 Overview</button>
         <button class="btn bSm owTabBtn" id="owTab1" onclick="ownerTab(1)" style="font-size:11px">⚙️ Settings</button>
         <button class="btn bSm owTabBtn" id="owTab2" onclick="ownerTab(2)" style="font-size:11px">👥 Users</button>
-        <button class="btn bSm owTabBtn" id="owTab3" onclick="ownerTab(3)" style="font-size:11px">📊 Storage</button>
+        <button class="btn bSm owTabBtn" id="owTab3" onclick="ownerTab(3)" style="font-size:11px">📦 Storage</button>
         <button class="btn bSm owTabBtn" id="owTab4" onclick="ownerTab(4)" style="font-size:11px">🔔 Activity</button>
         <button class="btn bSm owTabBtn" id="owTab5" onclick="ownerTab(5)" style="font-size:11px">🛡️ Security</button>
+      </div>
+
+      <!-- Platform Overview -->
+      <div id="owSection0" style="display:none">
+        <div id="owOverviewData"><div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div></div>
       </div>
 
       <!-- Settings -->
@@ -480,9 +486,11 @@ tbody tr:last-child td{border:none}
         <button class="btn bFull" style="background:linear-gradient(135deg,#F97316,#EA580C);color:#fff;padding:12px" onclick="ownerSave()">💾 Save Global Settings</button>
       </div>
 
-      <!-- Users (Admin tree + Moderators) -->
+      <!-- Users (Admin tree + Moderators + Search) -->
       <div id="owSection2" style="display:none">
-        <div style="font-size:12px;color:var(--t2);margin-bottom:10px">Click on an Admin to see their moderators.</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <input class="afI" id="owUserSearch" placeholder="Search by name or username..." oninput="owFilterUsers(this.value)" style="flex:1;padding:9px 12px;font-size:13px"/>
+        </div>
         <div id="owUsersList"><div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div></div>
       </div>
 
@@ -498,25 +506,24 @@ tbody tr:last-child td{border:none}
 
       <!-- Security -->
       <div id="owSection5" style="display:none">
-        <div id="owSecurityInfo">
-          <div style="padding:14px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-bottom:10px">
-            <div style="font-weight:700;font-size:13px;margin-bottom:8px">🔒 Platform Security Overview</div>
-            <div style="font-size:12px;color:var(--t2);line-height:2.2">
-              <div>🔐 Auth Provider: <strong style="color:var(--t1)">Firebase Authentication</strong></div>
-              <div>🗄️ Database: <strong style="color:var(--t1)">Firestore (Encrypted at rest)</strong></div>
-              <div>🌐 Hosting: <strong style="color:var(--t1)">GitHub Pages (HTTPS)</strong></div>
-              <div>📱 2FA Method: <strong style="color:var(--t1)">TOTP (Google Authenticator)</strong></div>
-              <div>🔑 Owner Access: <strong style="color:var(--orange)">Secret URL + Password</strong></div>
-            </div>
+        <div style="padding:14px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-bottom:12px">
+          <div style="font-weight:700;font-size:13px;margin-bottom:10px">🔒 Platform Security</div>
+          <div style="font-size:12px;color:var(--t2);line-height:2.4">
+            <div>🔐 Auth: <strong style="color:var(--t1)">Firebase Authentication</strong></div>
+            <div>🗄️ DB: <strong style="color:var(--t1)">Firestore (encrypted at rest)</strong></div>
+            <div>🌐 Hosting: <strong style="color:var(--t1)">GitHub Pages (HTTPS)</strong></div>
+            <div>📱 2FA: <strong style="color:var(--t1)">TOTP — Google Authenticator</strong></div>
+            <div>🔑 Owner PW: <strong style="color:var(--green)">SHA-256 hashed (not plaintext)</strong></div>
+            <div>🔒 Login lock: <strong style="color:var(--t1)">5 attempts → 5 min lockout</strong></div>
           </div>
-          <div style="padding:14px;background:rgba(249,115,22,.08);border-radius:10px;border:1px solid rgba(249,115,22,.2)">
-            <div style="font-weight:700;font-size:13px;color:var(--orange);margin-bottom:8px">⚠️ Change Owner Password</div>
-            <div class="afG"><label class="afL">Current Password</label><input class="afI" type="password" id="owPwOld" placeholder="Current owner password"/></div>
-            <div class="afG"><label class="afL">New Password</label><input class="afI" type="password" id="owPwNew" placeholder="New password (min 8 chars)"/></div>
-            <div class="afG"><label class="afL">Confirm New Password</label><input class="afI" type="password" id="owPwNew2" placeholder="Repeat new password"/></div>
-            <div id="owPwErr" class="al aE" style="display:none"></div>
-            <button class="btn bFull" style="background:linear-gradient(135deg,#F97316,#EA580C);color:#fff;padding:11px" onclick="ownerChangePw()">🔑 Update Owner Password</button>
-          </div>
+        </div>
+        <div style="padding:14px;background:rgba(249,115,22,.08);border-radius:10px;border:1px solid rgba(249,115,22,.2)">
+          <div style="font-weight:700;font-size:13px;color:var(--orange);margin-bottom:10px">🔑 Change Owner Password</div>
+          <div class="afG"><label class="afL">Current Password</label><input class="afI" type="password" id="owPwOld" placeholder="Current password"/></div>
+          <div class="afG"><label class="afL">New Password <span style="color:var(--t3);font-size:10px">(min 8 chars)</span></label><input class="afI" type="password" id="owPwNew" placeholder="New password"/></div>
+          <div class="afG"><label class="afL">Confirm New Password</label><input class="afI" type="password" id="owPwNew2" placeholder="Repeat new password"/></div>
+          <div id="owPwErr" class="al aE" style="display:none"></div>
+          <button class="btn bFull" style="background:linear-gradient(135deg,#F97316,#EA580C);color:#fff;padding:11px" onclick="ownerChangePw()">🔑 Update Password</button>
         </div>
       </div>
 
@@ -719,15 +726,10 @@ tbody tr:last-child td{border:none}
         <button class="btn bS bFull bSm" onclick="switchTab('signin')">← Back to Sign In</button>
       </div>
     </div>
-    <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px">
-      <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:14px">
-        <p style="font-size:12px;color:rgba(255,255,255,.25)">Drystan v5.0</p>
-        <button onclick="toggleTheme()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:11px;color:rgba(255,255,255,.5);cursor:pointer;font-family:inherit;transition:all .2s">
-          ☀️ / 🌙
-        </button>
-      </div>
-      <button onclick="toggleTheme()" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 12px;font-size:11px;color:rgba(255,255,255,.5);cursor:pointer;font-family:inherit;transition:all .2s">
-        <span id="loginThemeIco">☀️</span> Light / Dark
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-top:16px">
+      <p style="font-size:11px;color:rgba(255,255,255,.2)">Drystan v6.0 · Powered by Firebase</p>
+      <button onclick="toggleTheme()" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 14px;font-size:11px;color:rgba(255,255,255,.45);cursor:pointer;font-family:inherit;transition:all .2s" id="loginThemeBtn">
+        <span id="loginThemeIco">☀️</span><span>Theme</span>
       </button>
     </div>
   </div>
@@ -794,8 +796,10 @@ const db=getFirestore(app);
 
 // OWNER SECRET (hardcoded — never in Firestore)
 const OWNER_SECRET='DRY$T4N-0WN3R-X9K2M';
-const OWNER_PASS='DRYST4N#0wner@2025!';
-let _ownerPwCurrent=OWNER_PASS;
+// SHA-256 hash of owner password — never plaintext in source
+const OWNER_PASS_HASH='770c9fabf9efce3d3c7a75e84f5a7a36a0fea275107e1083bd0fbc7b5785a4d1';
+let _ownerPwCurrentHash=OWNER_PASS_HASH;
+async function hashStr(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 
 // HELPERS
 const cur=n=>'৳'+Number(n||0).toLocaleString('en-BD');
@@ -847,6 +851,8 @@ window.toggleTheme=()=>{
   G.theme=G.theme==='dark'?'light':'dark';
   localStorage.setItem('dry_theme',G.theme);
   applyTheme();
+  const ico=$('loginThemeIco');
+  if(ico)ico.textContent=G.theme==='dark'?'☀️':'🌙';
 };
 window.toggleLang=()=>{G.lang=G.lang==='en'?'bn':'en';localStorage.setItem('dry_lang',G.lang);$('langLbl').textContent=G.lang.toUpperCase();renderPage();};
 window.toggleSB=()=>{$('sidebar').classList.toggle('open');$('sOverlay').classList.toggle('open');};
@@ -880,26 +886,26 @@ async function loadOwnerData(){
   }catch{}
 }
 let _ownerTries=0,_ownerLockUntil=0;
-window.ownerLogin=()=>{
+window.ownerLogin=async()=>{
   const err=$('ownerErr');err.style.display='none';
   const now=Date.now();
   if(now<_ownerLockUntil){
     const secs=Math.ceil((_ownerLockUntil-now)/1000);
-    err.style.display='flex';err.textContent=`🔒 Too many attempts. Locked for ${secs}s.`;return;
+    err.style.display='flex';err.textContent=`🔒 Locked for ${secs}s.`;return;
   }
   const pw=$('ownerPw').value;
-  if(pw!==_ownerPwCurrent){
+  if(!pw){err.style.display='flex';err.textContent='❌ Enter password.';return;}
+  const inputHash=await hashStr(pw);
+  if(inputHash!==_ownerPwCurrentHash){
     _ownerTries++;
-    if(_ownerTries>=5){_ownerLockUntil=now+5*60*1000;_ownerTries=0;err.style.display='flex';err.textContent='🔒 5 wrong attempts. Locked for 5 minutes.';return;}
+    if(_ownerTries>=5){_ownerLockUntil=now+5*60*1000;_ownerTries=0;
+      err.style.display='flex';err.textContent='🔒 5 wrong attempts locked 5 min.';return;}
     err.style.display='flex';err.textContent=`❌ Wrong password. (${5-_ownerTries} tries left)`;return;
   }
   _ownerTries=0;
   $('ownerContent').style.display='none';
   $('ownerDash').style.display='block';
-  loadOwnerData();
-  ownerTab(1);
-  // Auto-lock owner panel after 10 min inactivity
-  startOwnerIdleLock();
+  loadOwnerData();ownerTab(0);startOwnerIdleLock();
 };
 let _ownerIdleTimer=null;
 function startOwnerIdleLock(){
@@ -919,13 +925,83 @@ function startOwnerIdleLock(){
 }
 
 window.ownerTab=async(n)=>{
-  [1,2,3,4,5].forEach(i=>{
+  [0,1,2,3,4,5].forEach(i=>{
     const s=$('owSection'+i);if(s)s.style.display=i===n?'block':'none';
     const t=$('owTab'+i);if(t)t.classList.toggle('owActive',i===n);
   });
+  if(n===0)loadOwnerOverview();
   if(n===2)loadOwnerUsers();
   if(n===3)loadOwnerStorage();
   if(n===4)loadOwnerActivity();
+};
+
+// ── PLATFORM OVERVIEW TAB ──
+async function loadOwnerOverview(){
+  const el=$('owOverviewData');if(!el)return;
+  el.innerHTML='<div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div>';
+  try{
+    const userSnap=await getDocs(Col('users'));
+    const allUsers=userSnap.docs.map(d=>({id:d.id,...d.data()}));
+    const admins=allUsers.filter(u=>u.role==='admin');
+    const mods=allUsers.filter(u=>u.role==='moderator');
+    // Get all business data
+    let totalOrders=0,totalRevenue=0,totalProducts=0,totalCustomers=0;
+    const bizStats=[];
+    for(const admin of admins){
+      const bizId=admin.bizId||admin.id;
+      let orders=0,revenue=0,prods=0,custs=0;
+      try{
+        const os=await getDocs(collection(db,'businesses',bizId,'orders'));
+        orders=os.size;
+        os.docs.forEach(d=>{const o=d.data();if(o.status!=='cancelled')revenue+=Number(o.total||0);});
+      }catch{}
+      try{prods=(await getDocs(collection(db,'businesses',bizId,'products'))).size;}catch{}
+      try{custs=(await getDocs(collection(db,'businesses',bizId,'customers'))).size;}catch{}
+      totalOrders+=orders;totalRevenue+=revenue;totalProducts+=prods;totalCustomers+=custs;
+      bizStats.push({name:admin.displayName,bizName:admin.bizName||'—',orders,revenue,prods,custs});
+    }
+    const c=n=>'৳'+Number(n||0).toLocaleString('en-BD');
+    el.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      ${[
+        {v:admins.length,l:'Admin Businesses',ic:'🏢',clr:'#6366F1'},
+        {v:mods.length,l:'Total Moderators',ic:'👤',clr:'#10B981'},
+        {v:totalOrders,l:'All Orders',ic:'📦',clr:'#3B82F6'},
+        {v:c(totalRevenue),l:'All Revenue',ic:'💰',clr:'#F59E0B'},
+        {v:totalProducts,l:'Total Products',ic:'🏷️',clr:'#A855F7'},
+        {v:totalCustomers,l:'Total Customers',ic:'👥',clr:'#EF4444'},
+      ].map(s=>`<div style="padding:10px;background:var(--card);border-radius:10px;border:1px solid var(--border);text-align:center">
+        <div style="font-size:20px">${s.ic}</div>
+        <div style="font-size:18px;font-weight:800;color:${s.clr}">${s.v}</div>
+        <div style="font-size:10px;color:var(--t2)">${s.l}</div>
+      </div>`).join('')}
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:8px">📊 Per Business Breakdown</div>
+    ${bizStats.length===0?'<p style="color:var(--t3);font-size:12px">No businesses yet</p>':
+    bizStats.sort((a,b)=>b.revenue-a.revenue).map(b=>`
+    <div style="padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;font-size:12px">
+      <div style="font-weight:700;margin-bottom:4px">${esc(b.name||'?')}</div>
+      <div style="display:flex;gap:12px;color:var(--t2);flex-wrap:wrap">
+        <span>💰 ${c(b.revenue)}</span>
+        <span>📦 ${b.orders} orders</span>
+        <span>🏷️ ${b.prods} products</span>
+        <span>👥 ${b.custs} customers</span>
+      </div>
+    </div>`).join('')}`;
+  }catch(e){el.innerHTML=`<div class="al aE">❌ ${e.message}</div>`;}
+}
+
+// user search filter
+let _owAllUsers=[];
+window.owFilterUsers=(q)=>{
+  const search=q.toLowerCase();
+  const el=$('owUsersList');if(!el)return;
+  const filtered=_owAllUsers.filter(u=>
+    (u.displayName||'').toLowerCase().includes(search)||
+    (u.username||'').toLowerCase().includes(search)||
+    (u.email||'').toLowerCase().includes(search)
+  );
+  renderOwUsersList(filtered);
 };
 
 // ── USERS TAB — Admin tree with expandable moderators ──
@@ -934,12 +1010,19 @@ async function loadOwnerUsers(){
   el.innerHTML='<div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div>';
   try{
     const snap=await getDocs(Col('users'));
-    const allUsers=snap.docs.map(d=>({id:d.id,...d.data()}));
-    const admins=allUsers.filter(u=>u.role==='admin');
-    const mods=allUsers.filter(u=>u.role==='moderator');
-    el.innerHTML=`<div style="font-size:12px;color:var(--t2);margin-bottom:10px">
-      Total: <strong style="color:var(--t1)">${allUsers.length}</strong> users — ${admins.length} admins · ${mods.length} moderators
-    </div>`;
+    _owAllUsers=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderOwUsersList(_owAllUsers);
+  }catch(e){if(el)el.innerHTML=`<div class="al aE">❌ ${e.message}</div>`;}
+}
+
+function renderOwUsersList(users){
+  const el=$('owUsersList');if(!el)return;
+  const admins=users.filter(u=>u.role==='admin');
+  const mods=users.filter(u=>u.role==='moderator');
+  el.innerHTML=`<div style="font-size:11px;color:var(--t2);margin-bottom:10px">
+    <strong style="color:var(--t1)">${_owAllUsers.length}</strong> total — ${admins.length} admins · ${mods.length} moderators
+    ${users.length!==_owAllUsers.length?` · Showing ${users.length} results`:''}
+  </div>`;
     admins.forEach(admin=>{
       const adminMods=mods.filter(m=>(m.bizId===admin.bizId||m.adminUid===admin.id||m.bizId===admin.id));
       const adminEl=document.createElement('div');
@@ -986,7 +1069,7 @@ async function loadOwnerUsers(){
       </div>`;
       el.appendChild(adminEl);
     });
-  }catch(e){el.innerHTML=`<div class="al aE">❌ ${e.message}</div>`;}
+    if(admins.length===0)el.innerHTML+='<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px">No admins found</div>';
 }
 window.toggleAdminExpand=(adminId)=>{
   const list=$('modList_'+adminId);const arrow=$('arrow_'+adminId);
@@ -1042,16 +1125,19 @@ window.clearActivityLog=async()=>{
 };
 
 // ── SECURITY TAB — Change Owner Password ──
-window.ownerChangePw=()=>{
-  const old=$('owPwOld').value,nw=$('owPwNew').value,nw2=$('owPwNew2').value;
-  const err=$('owPwErr');err.style.display='none';
-  if(old!==_ownerPwCurrent){err.style.display='flex';err.textContent='❌ Wrong current password.';return;}
-  if(nw.length<8){err.style.display='flex';err.textContent='❌ Min 8 characters.';return;}
-  if(nw!==nw2){err.style.display='flex';err.textContent='❌ Passwords do not match.';return;}
-  // Note: In production this would be stored securely. For now, update session only.
-  _ownerPwCurrent=nw;
-  toast('✅ Owner password updated for this session. Update the code for permanent change.','warn');
-  $('owPwOld').value='';$('owPwNew').value='';$('owPwNew2').value='';
+window.ownerChangePw=async()=>{
+  const old=$('owPwOld')?.value,nw=$('owPwNew')?.value,nw2=$('owPwNew2')?.value;
+  const err=$('owPwErr');if(err)err.style.display='none';
+  if(!old||!nw||!nw2){if(err){err.style.display='flex';err.textContent='❌ All fields required.';}return;}
+  const oldHash=await hashStr(old);
+  if(oldHash!==_ownerPwCurrentHash){if(err){err.style.display='flex';err.textContent='❌ Wrong current password.';}return;}
+  if(nw.length<8){if(err){err.style.display='flex';err.textContent='❌ Min 8 characters.';}return;}
+  if(nw!==nw2){if(err){err.style.display='flex';err.textContent='❌ Passwords do not match.';}return;}
+  _ownerPwCurrentHash=await hashStr(nw);
+  toast('✅ Password updated for this session. To make permanent, update OWNER_PASS_HASH in code.','warn');
+  if($('owPwOld'))$('owPwOld').value='';
+  if($('owPwNew'))$('owPwNew').value='';
+  if($('owPwNew2'))$('owPwNew2').value='';
 };
 
 
