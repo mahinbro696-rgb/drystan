@@ -35,7 +35,6 @@
   --border:rgba(99,102,241,.12);--border2:rgba(99,102,241,.22);
   --t1:#0F172A;--t2:#475569;--t3:#64748B;
 }
-/* ══ COMPREHENSIVE LIGHT MODE FIXES ══ */
 [data-theme=light] .modal{background:#fff!important;color:#0F172A!important}
 [data-theme=light] .mH{background:#fff;border-bottom-color:rgba(99,102,241,.15)}
 [data-theme=light] .mH h3{color:#0F172A}
@@ -44,43 +43,67 @@
 [data-theme=light] .afI{background:#fff!important;border-color:rgba(99,102,241,.25)!important;color:#0F172A!important}
 [data-theme=light] .afI::placeholder{color:#94A3B8!important}
 [data-theme=light] .afI option{background:#fff;color:#0F172A}
-[data-theme=light] .afL{color:#475569!important}
+[data-theme=light] .afL{color:#334155!important;font-weight:600!important}
 [data-theme=light] .fI{background:#fff!important;border-color:rgba(99,102,241,.2)!important;color:#0F172A!important}
 [data-theme=light] .fI::placeholder{color:#94A3B8!important}
-[data-theme=light] .fL{color:#475569!important}
-[data-theme=light] .card{background:rgba(255,255,255,.9)!important;border-color:rgba(99,102,241,.12)!important;color:#0F172A}
-[data-theme=light] .cardTitle{color:#0F172A}
+[data-theme=light] .fL{color:#334155!important;font-weight:600!important}
+[data-theme=light] .card{background:rgba(255,255,255,.95)!important;border-color:rgba(99,102,241,.12)!important}
+[data-theme=light] .card *:not(.badge):not(.btn):not(.bP):not(.bG):not(.bD):not(.bY):not(.statVal):not(svg):not(code){color:#0F172A}
+[data-theme=light] .cardTitle{color:#0F172A!important;font-weight:700!important}
 [data-theme=light] .statCard{background:#fff!important;border-color:rgba(99,102,241,.12)!important}
-[data-theme=light] .statLbl,.statSub{color:#475569}
+[data-theme=light] .statLbl{color:#334155!important}
+[data-theme=light] .statSub{color:#64748B!important}
 [data-theme=light] .mOvl{background:rgba(0,0,0,.55)!important}
 [data-theme=light] .al{color:inherit!important}
-[data-theme=light] .aE{color:#DC2626!important;background:rgba(239,68,68,.06)!important}
-[data-theme=light] .aI{color:#4F46E5!important;background:rgba(99,102,241,.06)!important}
-[data-theme=light] .aW{color:#D97706!important;background:rgba(245,158,11,.06)!important}
-[data-theme=light] .aO{color:#059669!important;background:rgba(16,185,129,.06)!important}
+[data-theme=light] .aE{color:#DC2626!important;background:rgba(239,68,68,.07)!important;border-color:rgba(239,68,68,.2)!important}
+[data-theme=light] .aI{color:#4338CA!important;background:rgba(99,102,241,.07)!important;border-color:rgba(99,102,241,.2)!important}
+[data-theme=light] .aW{color:#92400E!important;background:rgba(245,158,11,.07)!important;border-color:rgba(245,158,11,.2)!important}
+[data-theme=light] .aO{color:#065F46!important;background:rgba(16,185,129,.07)!important;border-color:rgba(16,185,129,.2)!important}
 [data-theme=light] td{color:#0F172A!important}
 [data-theme=light] th{color:#475569!important}
-[data-theme=light] tbody tr:hover td{background:rgba(99,102,241,.06)!important}
-[data-theme=light] .nItem{color:#475569!important}
+[data-theme=light] tbody tr:hover td{background:rgba(99,102,241,.05)!important}
+[data-theme=light] .nItem{color:#334155!important}
 [data-theme=light] .nItem:hover{color:#0F172A!important;background:rgba(99,102,241,.08)!important}
-[data-theme=light] .nItem.active{color:#4F46E5!important;background:rgba(99,102,241,.1)!important}
-[data-theme=light] .pgTitle{color:#0F172A}
-[data-theme=light] .tBtn{color:#475569!important;background:#fff!important;border-color:rgba(99,102,241,.15)!important}
-[data-theme=light] .tBtn:hover{color:#0F172A!important}
-[data-theme=light] .sBar{background:#fff!important;border-color:rgba(99,102,241,.15)!important}
+[data-theme=light] .nItem.active{color:#4338CA!important;background:rgba(99,102,241,.1)!important}
+[data-theme=light] .nItem svg{color:#334155}
+[data-theme=light] .nItem.active svg{color:#4338CA}
+[data-theme=light] .pgTitle{color:#0F172A!important}
+[data-theme=light] .tBtn{color:#334155!important;background:#f8faff!important;border-color:rgba(99,102,241,.15)!important}
+[data-theme=light] .tBtn:hover{color:#0F172A!important;background:#eef2ff!important}
+[data-theme=light] .sBar{background:#f8faff!important;border-color:rgba(99,102,241,.15)!important}
 [data-theme=light] .sBar input{color:#0F172A!important}
 [data-theme=light] .sBar input::placeholder{color:#94A3B8!important}
-[data-theme=light] .badge{opacity:.9}
+[data-theme=light] .sBar svg{color:#475569}
+[data-theme=light] .badge{opacity:.95}
 [data-theme=light] .sUserCard{background:rgba(99,102,241,.05)!important}
-[data-theme=light] .sUserCard:hover{background:rgba(99,102,241,.1)!important}
+[data-theme=light] .sUserCard:hover{background:rgba(99,102,241,.09)!important}
 [data-theme=light] .sUserNm{color:#0F172A!important}
-[data-theme=light] code{color:#4F46E5!important}
+[data-theme=light] .sUserRole{color:#475569!important}
+[data-theme=light] #sidebar{background:#fff!important;border-right-color:rgba(99,102,241,.1)!important}
+[data-theme=light] #topbar{background:#fff!important;border-bottom-color:rgba(99,102,241,.1)!important}
+[data-theme=light] .sFtr{border-top-color:rgba(99,102,241,.1)!important}
+[data-theme=light] .sSectionLbl{color:#94A3B8!important}
+[data-theme=light] #pageContent{background:var(--bg)}
+[data-theme=light] code{color:#4338CA!important;background:rgba(99,102,241,.08);padding:2px 5px;border-radius:4px}
 [data-theme=light] .ownerCard{background:#fff!important;border-color:rgba(249,115,22,.3)!important}
+[data-theme=light] .owTabBtn{background:#f1f5ff!important;border-color:rgba(99,102,241,.2)!important;color:#334155!important}
+[data-theme=light] .owTabBtn.owActive{background:linear-gradient(135deg,#F97316,#EA580C)!important;color:#fff!important;border-color:transparent!important}
+[data-theme=light] .bS{background:#f8faff!important;border-color:rgba(99,102,241,.18)!important;color:#334155!important}
+[data-theme=light] .bS:hover{background:#eef2ff!important;color:#0F172A!important}
 [data-theme=light] .lLogoSub{color:#475569}
 [data-theme=light] .lCard{background:rgba(255,255,255,.97)!important;border-color:rgba(99,102,241,.2)!important;box-shadow:0 32px 80px rgba(99,102,241,.15)!important}
 [data-theme=light] .divTxt{color:#94A3B8}
 [data-theme=light] .divTxt::before,[data-theme=light] .divTxt::after{background:rgba(99,102,241,.15)}
 [data-theme=light] .lLogoName{background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+/* Light mode heading/text catch-all */
+[data-theme=light] h1,[data-theme=light] h2,[data-theme=light] h3{color:#0F172A}
+[data-theme=light] p,[data-theme=light] span,[data-theme=light] div{color:inherit}
+[data-theme=light] .pH h1{color:#0F172A!important}
+[data-theme=light] .pH p{color:#475569!important}
+[data-theme=light] .empty h3{color:#0F172A!important}
+[data-theme=light] .empty p{color:#64748B!important}
+/* Toast in light mode */
+[data-theme=light] .toast{background:rgba(255,255,255,.98)!important;color:#0F172A!important;border-color:rgba(99,102,241,.2)!important;box-shadow:0 8px 32px rgba(0,0,0,.15)!important}
 html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);overflow-x:hidden}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(99,102,241,.25);border-radius:3px}
 
@@ -572,9 +595,14 @@ tbody tr:last-child td{border:none}
           </div>
         </div>
         <div id="siErr" class="al aE" style="display:none"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--t2)">
+            <input type="checkbox" id="stayLogin" checked style="width:14px;height:14px;accent-color:var(--acc)"/>
+            Stay logged in
+          </label>
+          <button class="btn bSm" style="background:none;border:none;color:var(--t2);font-size:12px;padding:0;cursor:pointer" onclick="switchTab('forgot')">Forgot password?</button>
+        </div>
         <button class="btn bP bFull" id="siBtn" onclick="doLogin()" style="padding:13px;font-size:15px">Sign In →</button>
-        <div class="divTxt">or</div>
-        <button class="btn bS bFull bSm" onclick="switchTab('forgot')">Forgot password?</button>
       </div>
 
       <!-- MODERATOR LOGIN -->
@@ -786,7 +814,7 @@ tbody tr:last-child td{border:none}
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,createUserWithEmailAndPassword,updatePassword,reauthenticateWithCredential,EmailAuthProvider}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,createUserWithEmailAndPassword,updatePassword,reauthenticateWithCredential,EmailAuthProvider,setPersistence,browserLocalPersistence,browserSessionPersistence}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import{getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,query,where,orderBy,serverTimestamp,limit,onSnapshot}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const FC={apiKey:"AIzaSyDtoVVHuMKUiIbyQEOmEPyspzBNT5zxGC4",authDomain:"drystan-cfe3b.firebaseapp.com",projectId:"drystan-cfe3b",storageBucket:"drystan-cfe3b.firebasestorage.app",messagingSenderId:"419259525007",appId:"1:419259525007:web:25c283364579b356d74dfa"};
@@ -1143,44 +1171,70 @@ window.ownerChangePw=async()=>{
 
 async function loadOwnerStorage(){
   const el=$('owStorageInfo');if(!el)return;
-  el.innerHTML='<div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div></div>';
+  el.innerHTML='<div style="text-align:center;padding:20px"><div class="spin spinSm" style="margin:0 auto"></div><div style="font-size:12px;color:var(--t2);margin-top:8px">Loading storage data...</div></div>';
   try{
     const userSnap=await getDocs(Col('users'));
-    const gcfgSnap=await getDoc(GCfg());
     const users=userSnap.docs.map(d=>({id:d.id,...d.data()}));
     const adminUsers=users.filter(u=>u.role==='admin');
-    // Estimate storage per business
-    let storageHtml='';
+    let storageRows='';
+    let grandTotal=0;
     for(const u of adminUsers){
       const bizId=u.bizId||u.id;
-      let ordCount=0,prodCount=0,custCount=0;
-      try{ordCount=(await getDocs(collection(db,'businesses',bizId,'orders'))).size;}catch{}
-      // Override BCol temporarily
+      let prodCount=0,ordCount=0,custCount=0;
       try{
-        const pc=await getDocs(collection(db,'businesses',bizId,'products'));
-        const oc=await getDocs(collection(db,'businesses',bizId,'orders'));
-        const cc=await getDocs(collection(db,'businesses',bizId,'customers'));
+        // Fetch each collection separately (no double-fetch)
+        const [pc,oc,cc]=await Promise.all([
+          getDocs(collection(db,'businesses',bizId,'products')),
+          getDocs(collection(db,'businesses',bizId,'orders')),
+          getDocs(collection(db,'businesses',bizId,'customers'))
+        ]);
         prodCount=pc.size;ordCount=oc.size;custCount=cc.size;
-      }catch{}
-      const estDocs=prodCount+ordCount+custCount;
-      storageHtml+=`
-      <div style="padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-bottom:8px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div><strong>${esc(u.displayName)}</strong> <span style="font-size:11px;color:var(--t2)">@${esc(u.username)}</span></div>
-          <button class="btn bD bSm" style="font-size:11px" onclick="ownerClearBiz('${bizId}','${esc(u.displayName)}')">🗑️ Clear Data</button>
+      }catch(e){console.warn('Storage fetch error for',bizId,e);}
+      const total=prodCount+ordCount+custCount;
+      grandTotal+=total;
+      // Calculate revenue for display
+      let revenue=0;
+      try{const os=await getDocs(query(collection(db,'businesses',bizId,'orders'),where('status','!=','cancelled')));os.docs.forEach(d=>revenue+=Number(d.data().total||0));}catch{}
+      const pct=Math.min(Math.round(total/1000*100),100);
+      storageRows+=`
+      <div style="padding:14px;background:var(--card);border-radius:12px;border:1px solid var(--border);margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div>
+            <div style="font-weight:700;font-size:14px">${esc(u.displayName||'?')}</div>
+            <div style="font-size:11px;color:var(--t2)">@${esc(u.username||'-')} · Joined: ${u.createdAt?fdate(u.createdAt):'-'}</div>
+          </div>
+          <button class="btn bD bSm" style="font-size:11px" onclick="ownerClearBiz('${bizId}','${esc(u.displayName||'')}')">🗑️ Clear</button>
         </div>
-        <div style="font-size:12px;color:var(--t2);display:flex;gap:14px">
-          <span>📦 ${prodCount} products</span><span>🛒 ${ordCount} orders</span><span>👤 ${custCount} customers</span>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+          <div style="text-align:center;padding:8px;background:rgba(99,102,241,.08);border-radius:8px">
+            <div style="font-size:18px;font-weight:800;color:var(--acc2)">${prodCount}</div>
+            <div style="font-size:10px;color:var(--t2)">📦 Products</div>
+          </div>
+          <div style="text-align:center;padding:8px;background:rgba(59,130,246,.08);border-radius:8px">
+            <div style="font-size:18px;font-weight:800;color:var(--blue)">${ordCount}</div>
+            <div style="font-size:10px;color:var(--t2)">🛒 Orders</div>
+          </div>
+          <div style="text-align:center;padding:8px;background:rgba(16,185,129,.08);border-radius:8px">
+            <div style="font-size:18px;font-weight:800;color:var(--green)">${custCount}</div>
+            <div style="font-size:10px;color:var(--t2)">👤 Customers</div>
+          </div>
         </div>
-        <div style="font-size:11px;color:var(--t3);margin-top:4px">Est. ~${estDocs} documents</div>
+        <div style="font-size:12px;color:var(--t2);display:flex;justify-content:space-between">
+          <span>~${total} documents · Revenue: <strong style="color:var(--green)">৳${Number(revenue).toLocaleString('en-BD')}</strong></span>
+          <span style="color:var(--t3)">${pct}% of 1K free limit</span>
+        </div>
+        <div style="height:4px;background:var(--border);border-radius:4px;margin-top:6px;overflow:hidden">
+          <div style="height:100%;background:${pct>80?'var(--red)':pct>50?'var(--yellow)':'var(--green)'};width:${pct}%;border-radius:4px;transition:width .5s"></div>
+        </div>
       </div>`;
     }
     el.innerHTML=`
-    <div style="padding:12px;background:rgba(99,102,241,.08);border-radius:10px;border:1px solid rgba(99,102,241,.2);margin-bottom:12px;font-size:13px">
-      <strong>Firestore Free Tier:</strong> 1 GB storage · 50K reads/day · 20K writes/day
+    <div style="padding:12px 14px;background:rgba(99,102,241,.08);border-radius:10px;border:1px solid rgba(99,102,241,.2);margin-bottom:14px;font-size:13px;display:flex;justify-content:space-between;align-items:center">
+      <div><strong>Firestore Free Tier:</strong> 1GB · 50K reads/day · 20K writes/day</div>
+      <div style="font-size:12px;color:var(--t2)">Total docs: <strong>${grandTotal}</strong></div>
     </div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:10px">Business Storage Usage:</div>
-    ${storageHtml||'<p style="color:var(--t2)">No admin businesses found</p>'}`;
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px">📦 Per Business Usage</div>
+    ${storageRows||'<p style="color:var(--t2);padding:20px;text-align:center">No businesses yet</p>'}`;
   }catch(e){el.innerHTML=`<div class="al aE">❌ ${e.message}</div>`;}
 }
 
@@ -1426,6 +1480,9 @@ window.doLogin=async()=>{
   const err=$('siErr'),btn=$('siBtn');err.style.display='none';
   if(!u||!p){err.style.display='flex';err.textContent='❌ Enter username/email and password.';return;}
   if(!checkRateLimit()){btn.innerHTML='Sign In →';return;}
+  // Set persistence
+  const stayOn=$('stayLogin')?.checked!==false;
+  try{await setPersistence(auth,stayOn?browserLocalPersistence:browserSessionPersistence);}catch{}
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Signing in...';
   try{
     let email=null,userDoc=null;
@@ -1802,29 +1859,79 @@ async function pgDash(){
     const prods=pSnap.docs.map(d=>({id:d.id,...d.data()}));
     const custs=cSnap.docs.map(d=>({id:d.id,...d.data()}));
     const active=orders.filter(o=>o.status!=='cancelled');
+    const bn=G.lang==='bn';
+
+    // Revenue = total collected from customers
     const totalRev=active.reduce((s,o)=>s+Number(o.total||0),0);
+    // Net Profit = (sellPrice - buyPrice) * qty  [delivery is pure extra, included]
+    const totalProfit=active.reduce((s,o)=>s+(o.items||[]).reduce((ps,it)=>{
+      const profit=(Number(it.price||0)-Number(it.buyPrice||0))*Number(it.qty||1);
+      return ps+profit;
+    },0)+Number(o.delivery||0)-Number(o.discount||0),0);
+    const totalDelivery=active.reduce((s,o)=>s+Number(o.delivery||0),0);
+
     const pending=orders.filter(o=>o.status==='pending').length;
     const completed=orders.filter(o=>o.status==='completed').length;
+    const parcelSent=orders.filter(o=>o.status==='parcel_sent').length;
     const todayStr=today();
     const todayOrds=orders.filter(o=>o.orderDate===todayStr);
-    const todayRev=todayOrds.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+Number(o.total||0),0);
+    const todayActive=todayOrds.filter(o=>o.status!=='cancelled');
+    const todayRev=todayActive.reduce((s,o)=>s+Number(o.total||0),0);
+    const todayProfit=todayActive.reduce((s,o)=>s+(o.items||[]).reduce((ps,it)=>(Number(it.price||0)-Number(it.buyPrice||0))*Number(it.qty||1)+ps,0)+Number(o.delivery||0),0);
     const lowStock=prods.filter(p=>Number(p.stock)<=Number(p.alertAt||5));
-    const recent=orders.slice(0,5);
-    const sb=s=>{const m={pending:'bPend',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent'};const l={pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Sent'};return`<span class="badge ${m[s]||'bPend'}">${l[s]||s}</span>`;};
-    // Monthly revenue calculation
-    const now=new Date();const thisMonth=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-    const monthRev=active.filter(o=>o.orderDate?.startsWith(thisMonth)).reduce((s,o)=>s+Number(o.total||0),0);
+    const recent=orders.slice(0,6);
+    const now2=new Date();
+    const thisMonth=`${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
+    const monthActive=active.filter(o=>o.orderDate?.startsWith(thisMonth));
+    const monthRev=monthActive.reduce((s,o)=>s+Number(o.total||0),0);
+    const monthProfit=monthActive.reduce((s,o)=>s+(o.items||[]).reduce((ps,it)=>(Number(it.price||0)-Number(it.buyPrice||0))*Number(it.qty||1)+ps,0)+Number(o.delivery||0),0);
+    const profitMargin=totalRev>0?((totalProfit/totalRev)*100).toFixed(1):0;
+
+    const sb=s=>{
+      const m={pending:'bPend',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent'};
+      const l=bn?{pending:'অপেক্ষমান',completed:'সম্পন্ন',cancelled:'বাতিল',parcel_sent:'পাঠানো হয়েছে'}:{pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Sent'};
+      return`<span class="badge ${m[s]||'bPend'}">${l[s]||s}</span>`;
+    };
+
+    const T=(en,b)=>bn?b:en;
 
     setC(`
-    <div style="margin-bottom:6px"><h1 style="font-size:22px;font-weight:800">Welcome back, ${esc(G.user?.displayName||'Admin')} 👋</h1>
-    <p style="color:var(--t2);font-size:13px;margin-top:4px">${G.cfg.bizName||'Your Business'} — ${new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p></div>
+    <div style="margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <div>
+        <h1 style="font-size:22px;font-weight:800">${T('Welcome back','স্বাগতম,')} ${esc(G.user?.displayName||'Admin')} 👋</h1>
+        <p style="color:var(--t2);font-size:13px;margin-top:4px">${esc(G.cfg.bizName||'Your Business')} — ${new Date().toLocaleDateString(bn?'bn-BD':'en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn bP bSm" onclick="nav('newOrder')">➕ ${T('New Order','নতুন অর্ডার')}</button>
+        <button class="btn bS bSm" onclick="nav('prods')">📦 ${T('Products','পণ্য')}</button>
+      </div>
+    </div>
 
-    <div class="g g4" style="margin:16px 0">
+    <!-- PROFIT HIGHLIGHT BAR -->
+    <div style="background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(16,185,129,.05));border:1px solid rgba(16,185,129,.25);border-radius:14px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:11px;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">💰 ${T('Net Profit (All Time)','মোট লাভ (সর্বকাল)')}</div>
+        <div style="font-size:32px;font-weight:900;color:var(--green)">${cur(totalProfit)}</div>
+        <div style="font-size:12px;color:var(--t2);margin-top:3px">${T('Profit margin','লাভের হার')}: <strong style="color:var(--green)">${profitMargin}%</strong> · ${T('Delivery income','ডেলিভারি আয়')}: <strong>${cur(totalDelivery)}</strong></div>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div style="text-align:center">
+          <div style="font-size:13px;font-weight:700;color:var(--acc2)">${cur(monthProfit)}</div>
+          <div style="font-size:10px;color:var(--t2)">${T("This Month's Profit","এ মাসের লাভ")}</div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:13px;font-weight:700;color:var(--yellow)">${cur(todayProfit)}</div>
+          <div style="font-size:10px;color:var(--t2)">${T("Today's Profit","আজকের লাভ")}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="g g4" style="margin-bottom:14px">
       ${[
-        {val:cur(totalRev),lbl:'Total Revenue',sub:'All time (active orders)',ico:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>',clr:'#6366F1',bg:'rgba(99,102,241,.15)'},
-        {val:cur(monthRev),lbl:'This Month',sub:thisMonth,ico:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',clr:'#A855F7',bg:'rgba(168,85,247,.15)'},
-        {val:orders.length,lbl:'Total Orders',sub:`${pending} pending · ${completed} done`,ico:'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>',clr:'#3B82F6',bg:'rgba(59,130,246,.15)'},
-        {val:custs.length,lbl:'Customers',sub:'Total database',ico:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>',clr:'#10B981',bg:'rgba(16,185,129,.15)'},
+        {val:cur(totalRev),lbl:T('Total Revenue','মোট আয়'),sub:T('All active orders','সব সক্রিয় অর্ডার'),ico:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>',clr:'#6366F1',bg:'rgba(99,102,241,.15)'},
+        {val:cur(monthRev),lbl:T('This Month','এ মাস'),sub:thisMonth,ico:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',clr:'#A855F7',bg:'rgba(168,85,247,.15)'},
+        {val:orders.length,lbl:T('Total Orders','মোট অর্ডার'),sub:`${pending} ${T('pending','অপেক্ষমান')} · ${completed} ${T('done','সম্পন্ন')}`,ico:'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>',clr:'#3B82F6',bg:'rgba(59,130,246,.15)'},
+        {val:custs.length,lbl:T('Customers','গ্রাহক'),sub:T('Total database','মোট তালিকা'),ico:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>',clr:'#10B981',bg:'rgba(16,185,129,.15)'},
       ].map((s,i)=>`
       <div class="statCard" style="animation:fadeUp .4s ease ${i*0.07}s both">
         <div><div class="statVal">${s.val}</div><div class="statLbl">${s.lbl}</div><div class="statSub">${s.sub}</div></div>
@@ -1834,10 +1941,10 @@ async function pgDash(){
 
     <div class="g g4" style="margin-bottom:16px">
       ${[
-        {val:cur(todayRev),lbl:"Today's Revenue",sub:todayOrds.length+' orders today',ico:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>',clr:'#F59E0B',bg:'rgba(245,158,11,.15)'},
-        {val:pending,lbl:'Pending Orders',sub:'Need processing',ico:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',clr:'#F59E0B',bg:'rgba(245,158,11,.15)'},
-        {val:prods.length,lbl:'Products',sub:lowStock.length?lowStock.length+' low stock':'All stocked ✅',ico:'<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>',clr:'#10B981',bg:'rgba(16,185,129,.15)'},
-        {val:lowStock.length,lbl:'Low Stock',sub:'Below alert level',ico:'<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>',clr:'#EF4444',bg:'rgba(239,68,68,.15)'},
+        {val:cur(todayRev),lbl:T("Today's Revenue","আজকের আয়"),sub:todayOrds.length+' '+T('orders today','অর্ডার আজ'),ico:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>',clr:'#F59E0B',bg:'rgba(245,158,11,.15)'},
+        {val:pending,lbl:T('Pending','অপেক্ষমান'),sub:T('Need processing','প্রক্রিয়া দরকার'),ico:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',clr:'#F59E0B',bg:'rgba(245,158,11,.15)'},
+        {val:parcelSent,lbl:T('Parcel Sent','পাঠানো হয়েছে'),sub:T('Awaiting delivery','ডেলিভারির অপেক্ষায়'),ico:'<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>',clr:'#3B82F6',bg:'rgba(59,130,246,.15)'},
+        {val:lowStock.length,lbl:T('Low Stock','কম স্টক'),sub:T('Below alert level','সতর্ক সীমার নিচে'),ico:'<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>',clr:'#EF4444',bg:'rgba(239,68,68,.15)'},
       ].map((s,i)=>`
       <div class="statCard" style="animation:fadeUp .4s ease ${(i+4)*0.07}s both">
         <div><div class="statVal">${s.val}</div><div class="statLbl">${s.lbl}</div><div class="statSub">${s.sub}</div></div>
@@ -1848,40 +1955,54 @@ async function pgDash(){
     <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div class="cardTitle" style="margin:0">📦 Recent Orders</div>
-          <button class="btn bS bSm" onclick="nav('orders')">View All →</button>
+          <div class="cardTitle" style="margin:0">📦 ${T('Recent Orders','সাম্প্রতিক অর্ডার')}</div>
+          <button class="btn bS bSm" onclick="nav('orders')">${T('View All →','সব দেখুন →')}</button>
         </div>
-        ${recent.length===0?'<div class="empty" style="padding:30px"><h3>No orders yet</h3><p>Create your first order!</p></div>':`
+        ${recent.length===0?`<div class="empty" style="padding:30px"><h3>${T('No orders yet','এখনো কোনো অর্ডার নেই')}</h3><p>${T('Create your first order!','প্রথম অর্ডার তৈরি করুন!')}</p></div>`:`
         <div class="tWrap"><table>
-          <thead><tr><th>#</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead>
-          <tbody>${recent.map(o=>`<tr>
-            <td><code style="color:var(--acc2);font-size:12px">${esc(o.num)}</code></td>
-            <td><div style="font-weight:600">${esc(o.cName)}</div><div style="font-size:11px;color:var(--t2)">${esc(o.ordererPhone||o.cPhone||'')}</div></td>
-            <td style="font-weight:700">${cur(o.total)}</td>
-            <td><span class="badge ${o.payMethod==='paid'?'bDone':'bPend'}">${o.payMethod==='paid'?'PAID':'COD'}</span></td>
-            <td>${sb(o.status)}</td>
-          </tr>`).join('')}</tbody>
+          <thead><tr><th>#</th><th>${T('Customer','গ্রাহক')}</th><th>${T('Total','মোট')}</th><th>${T('Profit','লাভ')}</th><th>${T('Status','অবস্থা')}</th></tr></thead>
+          <tbody>${recent.map(o=>{
+            const oProfit=o.status!=='cancelled'?((o.items||[]).reduce((ps,it)=>(Number(it.price||0)-Number(it.buyPrice||0))*Number(it.qty||1)+ps,0)+Number(o.delivery||0)):0;
+            return`<tr>
+              <td><code style="color:var(--acc2);font-size:12px">${esc(o.num)}</code></td>
+              <td><div style="font-weight:600;font-size:13px">${esc(o.cName)}</div><div style="font-size:11px;color:var(--t2)">${esc(o.ordererPhone||o.cPhone||'')}</div></td>
+              <td style="font-weight:700">${cur(o.total)}</td>
+              <td style="font-weight:700;color:${oProfit>0?'var(--green)':'var(--red)'}">${cur(oProfit)}</td>
+              <td>${sb(o.status)}</td>
+            </tr>`;
+          }).join('')}</tbody>
         </table></div>`}
       </div>
-      <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;flex-direction:column;gap:12px">
         ${lowStock.length?`<div class="card" style="border-color:rgba(245,158,11,.3)">
-          <div class="cardTitle" style="color:var(--yellow)">⚠️ Low Stock Alert</div>
-          ${lowStock.slice(0,5).map(p=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+          <div class="cardTitle" style="color:var(--yellow)">⚠️ ${T('Low Stock Alert','কম স্টক সতর্কতা')}</div>
+          ${lowStock.slice(0,4).map(p=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px">
             <span style="font-weight:500">${esc(p.name)}</span>
-            <span style="color:var(--red);font-weight:700">Qty: ${p.stock}</span>
+            <span style="color:var(--red);font-weight:700">${p.stock} ${T('left','বাকি')}</span>
           </div>`).join('')}
         </div>`:''}
         <div class="card" style="border-color:rgba(99,102,241,.2)">
-          <div class="cardTitle">⚡ Quick Actions</div>
+          <div class="cardTitle">⚡ ${T('Quick Actions','দ্রুত কাজ')}</div>
           <div style="display:flex;flex-direction:column;gap:8px">
-            <button class="btn bP bFull bSm" onclick="nav('newOrder')">➕ Create Order</button>
-            <button class="btn bS bFull bSm" onclick="nav('prods')">📦 Add Product</button>
-            <button class="btn bS bFull bSm" onclick="nav('reports')">📊 View Reports</button>
+            <button class="btn bP bFull bSm" onclick="nav('newOrder')">➕ ${T('Create Order','অর্ডার তৈরি')}</button>
+            <button class="btn bS bFull bSm" onclick="nav('prods')">📦 ${T('Manage Products','পণ্য ব্যবস্থাপনা')}</button>
+            <button class="btn bS bFull bSm" onclick="nav('reports')">📊 ${T('View Reports','রিপোর্ট দেখুন')}</button>
+            <button class="btn bS bFull bSm" onclick="nav('tools')">🛠️ ${T('Business Tools','ব্যবসার সরঞ্জাম')}</button>
+          </div>
+        </div>
+        <div class="card" style="border-color:rgba(16,185,129,.2)">
+          <div class="cardTitle">📈 ${T('Quick Stats','দ্রুত পরিসংখ্যান')}</div>
+          <div style="font-size:13px;line-height:2.5;color:var(--t2)">
+            <div>${T('Avg order value','গড় অর্ডার মূল্য')}: <strong style="color:var(--t1)">${cur(active.length?totalRev/active.length:0)}</strong></div>
+            <div>${T('Completed rate','সম্পন্নের হার')}: <strong style="color:var(--green)">${orders.length?((completed/orders.length)*100).toFixed(0):0}%</strong></div>
+            <div>${T('Products in stock','স্টকে পণ্য')}: <strong style="color:var(--t1)">${prods.length}</strong></div>
           </div>
         </div>
       </div>
-    </div>`);
-  }catch(e){setC(`<div class="al aE">❌ ${e.message}<br><small>Try creating a Firestore index if prompted.</small></div>`);}
+    </div>`);}
+  catch(e){setC(`<div class="al aE">❌ ${e.message}<br><small>${T('Try creating a Firestore index if prompted.','প্রয়োজনে Firestore index তৈরি করুন।')}</small></div>`);}
+}
+
 }
 
 // ══ PRODUCTS ══
@@ -2146,7 +2267,7 @@ window.submitOrder=async()=>{
     let custId;
     if(!cSnap.empty){const cd=cSnap.docs[0];custId=cd.id;await updateDoc(BDoc('customers',custId),{name:f.cName,addr:f.cAddr,orders:(cd.data().orders||0)+1,spent:(cd.data().spent||0)+total,lastOrder:serverTimestamp()});}
     else{const r=await addDoc(BCol('customers'),{name:f.cName,phone:ordPhone,addr:f.cAddr,orders:1,spent:total,createdAt:serverTimestamp()});custId=r.id;}
-    const oItems=await Promise.all(validItems.map(async it=>{const pd=(await getDoc(BDoc('products',it.pid))).data();return{pid:it.pid,name:pd.name,nameBn:pd.nameBn||pd.name,qty:Number(it.qty),price:Number(it.price),lineTotal:Number(it.price)*Number(it.qty)};}));
+    const oItems=await Promise.all(validItems.map(async it=>{const pd=(await getDoc(BDoc('products',it.pid))).data();return{pid:it.pid,name:pd.name,nameBn:pd.nameBn||pd.name,qty:Number(it.qty),price:Number(it.price),buyPrice:Number(pd.buyPrice||0),lineTotal:Number(it.price)*Number(it.qty),profit:(Number(it.price)-Number(pd.buyPrice||0))*Number(it.qty)};}));
     const oRef=await addDoc(BCol('orders'),{num,custId,cName:f.cName,cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:f.recvName||f.cName,cAddr:f.cAddr,payMethod:f.payMethod,delivery:del,subtotal:sub,total,status:'pending',payStatus:f.payMethod==='paid'?'paid':'pending',orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:oItems,createdBy:G.user?.uid,createdAt:serverTimestamp()});
     for(const it of validItems){const pd=await getDoc(BDoc('products',it.pid));await updateDoc(BDoc('products',it.pid),{stock:Number(pd.data().stock)-Number(it.qty)});}
     toast('Order created! 🎉');
@@ -2224,28 +2345,51 @@ window.printRcpt=()=>{
 };
 window.downloadRcptImg=async()=>{
   const btn=$('dlImgBtn');
-  if(btn){btn.disabled=true;btn.innerHTML='⏳ Creating...';}
-  const el=document.getElementById('rcptContent');
-  if(!el){toast('Receipt not found','err');if(btn){btn.disabled=false;btn.innerHTML='📥 Download PNG';}return;}
-  // Load html2canvas if not loaded
-  if(!window.html2canvas){
-    await new Promise((res,rej)=>{
-      const s=document.createElement('script');
-      s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-      s.onload=res;s.onerror=rej;
-      document.head.appendChild(s);
-    }).catch(()=>{});
-  }
-  if(!window.html2canvas){toast('Library load failed. Try print instead.','err');if(btn){btn.disabled=false;btn.innerHTML='📥 Download PNG';}return;}
+  if(btn){btn.disabled=true;btn.innerHTML='⏳ তৈরি হচ্ছে...';}
   try{
-    const canvas=await window.html2canvas(el,{scale:3,backgroundColor:'#ffffff',useCORS:true,logging:false,allowTaint:true});
-    const link=document.createElement('a');
-    link.download=`Drystan-Receipt-${G.lastOrder?.num||Date.now()}.png`;
-    link.href=canvas.toDataURL('image/png',1.0);
-    link.click();
-    toast('✅ Receipt PNG downloaded!','ok');
-  }catch(e){toast('❌ '+e.message,'err');}
-  finally{if(btn){btn.disabled=false;btn.innerHTML='📥 Download PNG';}}
+    // Try html2canvas
+    if(!window.html2canvas){
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload=res;
+        s.onerror=()=>rej(new Error('Library load failed'));
+        document.head.appendChild(s);
+      });
+    }
+    // Find the receipt element
+    const el=document.getElementById('rcptContent');
+    if(!el){toast('Receipt element not found','err');return;}
+    // Capture with high resolution
+    const canvas=await window.html2canvas(el,{
+      scale:2,
+      backgroundColor:'#ffffff',
+      useCORS:true,
+      logging:false,
+      allowTaint:true,
+      imageTimeout:3000,
+      removeContainer:true,
+      foreignObjectRendering:false
+    });
+    // Convert to blob for better compatibility
+    canvas.toBlob(blob=>{
+      if(!blob){toast('Image creation failed — try Print instead','err');return;}
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download=`Drystan-Receipt-${G.lastOrder?.num||Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
+      toast('✅ PNG downloaded!','ok');
+    },'image/png',1.0);
+  }catch(e){
+    console.error('PNG download error:',e);
+    toast('❌ PNG failed: '+e.message+' — Use Print instead','err');
+  }finally{
+    if(btn){btn.disabled=false;btn.innerHTML='📥 Download PNG';}
+  }
 };
 
 // ══ BUSINESS TOOLS PAGE ══
