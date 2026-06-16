@@ -814,7 +814,7 @@ tbody tr:last-child td{border:none}
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,createUserWithEmailAndPassword,updatePassword,reauthenticateWithCredential,EmailAuthProvider,setPersistence,browserLocalPersistence,browserSessionPersistence}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,createUserWithEmailAndPassword,updatePassword,reauthenticateWithCredential,EmailAuthProvider}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import{getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,query,where,orderBy,serverTimestamp,limit,onSnapshot}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const FC={apiKey:"AIzaSyDtoVVHuMKUiIbyQEOmEPyspzBNT5zxGC4",authDomain:"drystan-cfe3b.firebaseapp.com",projectId:"drystan-cfe3b",storageBucket:"drystan-cfe3b.firebasestorage.app",messagingSenderId:"419259525007",appId:"1:419259525007:web:25c283364579b356d74dfa"};
@@ -1480,9 +1480,6 @@ window.doLogin=async()=>{
   const err=$('siErr'),btn=$('siBtn');err.style.display='none';
   if(!u||!p){err.style.display='flex';err.textContent='❌ Enter username/email and password.';return;}
   if(!checkRateLimit()){btn.innerHTML='Sign In →';return;}
-  // Set persistence
-  const stayOn=$('stayLogin')?.checked!==false;
-  try{await setPersistence(auth,stayOn?browserLocalPersistence:browserSessionPersistence);}catch{}
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Signing in...';
   try{
     let email=null,userDoc=null;
@@ -2003,7 +2000,6 @@ async function pgDash(){
   catch(e){setC(`<div class="al aE">❌ ${e.message}<br><small>${T('Try creating a Firestore index if prompted.','প্রয়োজনে Firestore index তৈরি করুন।')}</small></div>`);}
 }
 
-}
 
 // ══ PRODUCTS ══
 let pSrch='';
@@ -3304,7 +3300,22 @@ window.verifyTOTPLogin=async()=>{
 
 window.cancelTOTPLogin=async()=>{await signOut(auth);_totpPendingUser=null;};
 createStars();
+checkOwnerHash();
 window.G=G;
+
+// Safety fallback: if loading screen still showing after 8s, force show login
+setTimeout(()=>{
+  const ls=$('loadScreen');
+  if(ls&&!ls.classList.contains('hide')){
+    console.warn('Drystan: loading timeout — forcing login screen');
+    ls.classList.add('hide');
+    setTimeout(()=>{ls.style.display='none';},500);
+    if(!$('appWrap')?.classList.contains('show')&&!$('ownerWrap')?.classList.contains('show')){
+      $('loginWrap')?.classList.add('show');
+      applyTheme();createStars();
+    }
+  }
+},8000);
 </script>
 </body>
 </html>
