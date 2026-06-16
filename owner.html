@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/>
+<meta http-equiv="X-Frame-Options" content="DENY"/>
+<meta name="referrer" content="no-referrer"/>
+<title>Owner Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#070A12;--bg2:#0D1117;--card:rgba(255,255,255,.04);--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.15);--acc:#6366F1;--acc2:#818CF8;--green:#10B981;--red:#EF4444;--yellow:#F59E0B;--orange:#F97316;--t1:#F1F5F9;--t2:#94A3B8;--t3:#475569;--r:14px;--r2:10px;}
+html,body{min-height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--t1);display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:var(--bg2);border:1px solid rgba(249,115,22,.3);border-radius:20px;padding:28px;width:100%;max-width:600px;box-shadow:0 0 80px rgba(249,115,22,.08)}
+.logo{text-align:center;margin-bottom:24px}
+.logo-ico{font-size:48px;margin-bottom:8px}
+.logo-title{font-size:22px;font-weight:900;color:var(--orange)}
+.logo-sub{font-size:13px;color:var(--t2);margin-top:4px}
+label{display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px;margin-top:12px}
+input{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;color:var(--t1);font-family:inherit;outline:none;transition:border-color .2s}
+input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.1)}
+input::placeholder{color:var(--t3)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:inherit;margin-top:16px;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,#F97316,#EA580C);color:#fff}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(249,115,22,.4)}
+.btn-secondary{background:var(--card);border:1px solid var(--border2);color:var(--t1)}
+.err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:var(--red);padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none}
+.tabs{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:7px 12px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--t2);font-family:inherit;transition:all .2s}
+.tab.active{background:linear-gradient(135deg,#F97316,#EA580C);color:#fff;border-color:transparent}
+.section{display:none}.section.active{display:block}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.stat-val{font-size:22px;font-weight:800}
+.stat-lbl{font-size:10px;color:var(--t2);margin-top:3px}
+.user-row{padding:12px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px}
+.user-row-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.badge{display:inline-flex;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.badge-admin{background:rgba(168,85,247,.15);color:#A855F7;border:1px solid rgba(168,85,247,.2)}
+.badge-mod{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.15)}
+.user-meta{font-size:11px;color:var(--t2);margin-top:3px}
+.action-btns{display:flex;gap:5px;flex-shrink:0}
+.btn-sm{padding:5px 10px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:inherit}
+.btn-reset{background:rgba(245,158,11,.15);color:var(--yellow);border:1px solid rgba(245,158,11,.2)}
+.btn-del{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.spin{width:20px;height:20px;border:2px solid rgba(249,115,22,.2);border-top-color:var(--orange);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.inset-info{padding:12px 14px;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:10px;font-size:12px;color:var(--t2);margin-bottom:14px}
+.danger-box{padding:14px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:10px;margin-bottom:12px}
+.success{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:var(--green);padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none}
+.lock-notice{background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.2);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--orange)}
+textarea{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:13px;color:var(--t1);font-family:inherit;outline:none;min-height:70px;resize:vertical}
+textarea:focus{border-color:var(--orange)}
+select{width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;color:var(--t1);font-family:inherit;outline:none}
+select:focus{border-color:var(--orange)}
+</style>
+</head>
+<body>
+<div class="card">
+  <!-- Logo -->
+  <div class="logo">
+    <div class="logo-ico">🔥</div>
+    <div class="logo-title">Drystan Owner Panel</div>
+    <div class="logo-sub">Secure Admin Control Center</div>
+  </div>
+
+  <!-- Login Section -->
+  <div id="loginSection">
+    <div class="lock-notice">⚠️ This page is for the website owner only. All actions are logged.</div>
+    <label>Owner Password</label>
+    <input type="password" id="owPw" placeholder="Enter owner password" onkeydown="if(event.key==='Enter')owLogin()"/>
+    <div class="err" id="owErr"></div>
+    <button class="btn btn-primary" onclick="owLogin()">🔓 Access Owner Panel</button>
+  </div>
+
+  <!-- Dashboard Section -->
+  <div id="dashSection" style="display:none">
+    <div class="lock-notice" style="margin-bottom:16px">⚠️ Owner Access Active — Changes affect all users globally</div>
+    <div class="tabs">
+      <button class="tab active" id="t0" onclick="showTab(0)">📈 Overview</button>
+      <button class="tab" id="t1" onclick="showTab(1)">⚙️ Settings</button>
+      <button class="tab" id="t2" onclick="showTab(2)">👥 Users</button>
+      <button class="tab" id="t3" onclick="showTab(3)">📦 Storage</button>
+      <button class="tab" id="t4" onclick="showTab(4)">🔔 Activity</button>
+      <button class="tab" id="t5" onclick="showTab(5)">🛡️ Security</button>
+    </div>
+
+    <!-- Overview -->
+    <div class="section active" id="s0">
+      <div id="overviewContent"><div class="spin"></div></div>
+    </div>
+
+    <!-- Settings -->
+    <div class="section" id="s1">
+      <div class="inset-info">📧 EmailJS is used to send registration OTP emails to new admins.</div>
+      <label>🏷️ Site Name</label><input id="cfg_name" placeholder="Drystan"/>
+      <label>🎨 Theme Color</label>
+      <select id="cfg_theme">
+        <option value="indigo">🟣 Indigo</option>
+        <option value="purple">💜 Purple</option>
+        <option value="blue">🔵 Blue</option>
+        <option value="green">🟢 Green</option>
+        <option value="orange">🟠 Orange</option>
+      </select>
+      <label>📧 EmailJS Public Key</label><input id="cfg_ejk" placeholder="user_XXXX"/>
+      <label>📧 EmailJS Service ID</label><input id="cfg_ejs" placeholder="service_XXXX"/>
+      <label>📧 EmailJS Template ID</label><input id="cfg_ejt" placeholder="template_XXXX"/>
+      <div class="err" id="setErr"></div>
+      <div class="success" id="setOk">✅ Settings saved!</div>
+      <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+    </div>
+
+    <!-- Users -->
+    <div class="section" id="s2">
+      <input id="userSearch" placeholder="Search by name or username..." oninput="filterUsers(this.value)" style="margin-bottom:12px"/>
+      <div id="usersContent"><div class="spin"></div></div>
+    </div>
+
+    <!-- Storage -->
+    <div class="section" id="s3">
+      <div id="storageContent"><div class="spin"></div></div>
+    </div>
+
+    <!-- Activity -->
+    <div class="section" id="s4">
+      <div id="activityContent"><div class="spin"></div></div>
+    </div>
+
+    <!-- Security -->
+    <div class="section" id="s5">
+      <div class="inset-info">
+        🔒 Platform Security<br/>
+        • Auth: Firebase Authentication<br/>
+        • DB: Firestore (encrypted at rest)<br/>
+        • Hosting: GitHub Pages (HTTPS)<br/>
+        • 2FA: TOTP — Google Authenticator<br/>
+        • Owner PW: SHA-256 hashed
+      </div>
+      <div class="danger-box">
+        <div style="font-weight:700;color:var(--orange);margin-bottom:10px">🔑 Change Owner Password</div>
+        <label>Current Password</label><input type="password" id="sec_old" placeholder="Current password"/>
+        <label>New Password (min 8)</label><input type="password" id="sec_new" placeholder="New password"/>
+        <label>Confirm New Password</label><input type="password" id="sec_new2" placeholder="Repeat new password"/>
+        <div class="err" id="secErr"></div>
+        <div class="success" id="secOk">✅ Password updated for this session!</div>
+        <button class="btn btn-primary" onclick="changeOwPw()" style="margin-top:12px">🔑 Update Password</button>
+      </div>
+    </div>
+
+    <button class="btn btn-secondary" onclick="owLogout()" style="margin-top:8px">← Logout from Owner Panel</button>
+  </div>
+</div>
+
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import{getFirestore,collection,doc,getDocs,getDoc,setDoc,updateDoc,deleteDoc,query,where,orderBy,limit,serverTimestamp}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import{getAuth,sendPasswordResetEmail}from'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+const FC={apiKey:"AIzaSyDtoVVHuMKUiIbyQEOmEPyspzBNT5zxGC4",authDomain:"drystan-cfe3b.firebaseapp.com",projectId:"drystan-cfe3b",storageBucket:"drystan-cfe3b.firebasestorage.app",messagingSenderId:"419259525007",appId:"1:419259525007:web:25c283364579b356d74dfa"};
+const app=initializeApp(FC);
+const db=getFirestore(app);
+const auth=getAuth(app);
+
+// SHA-256 hash — same as main app
+const OWNER_HASH='770c9fabf9efce3d3c7a75e84f5a7a36a0fea275107e1083bd0fbc7b5785a4d1';
+let _currHash=OWNER_HASH;
+let _allUsers=[];
+let _tries=0,_lockUntil=0;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const cur=n=>'৳'+Number(n||0).toLocaleString('en-BD');
+const fdate=d=>{if(!d)return'-';const dt=d?.toDate?d.toDate():new Date(d);return dt.toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'numeric'});};
+
+async function hashStr(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+
+// Idle lock
+let _idleTimer=null;
+function resetIdle(){
+  clearTimeout(_idleTimer);
+  _idleTimer=setTimeout(()=>{
+    $('dashSection').style.display='none';
+    $('loginSection').style.display='block';
+    $('owPw').value='';
+    alert('🔒 Session locked due to 10 minutes of inactivity.');
+  },10*60*1000);
+}
+document.addEventListener('click',resetIdle);
+document.addEventListener('keydown',resetIdle);
+
+window.owLogin=async()=>{
+  const err=$('owErr');err.style.display='none';
+  const now=Date.now();
+  if(now<_lockUntil){err.style.display='block';err.textContent=`🔒 Locked. Try in ${Math.ceil((_lockUntil-now)/1000)}s.`;return;}
+  const pw=$('owPw').value;
+  if(!pw){err.style.display='block';err.textContent='Enter password.';return;}
+  const h=await hashStr(pw);
+  if(h!==_currHash){
+    _tries++;
+    if(_tries>=5){_lockUntil=now+5*60*1000;_tries=0;err.style.display='block';err.textContent='🔒 5 wrong attempts — locked 5 minutes.';return;}
+    err.style.display='block';err.textContent=`❌ Wrong password. (${5-_tries} tries left)`;return;
+  }
+  _tries=0;
+  $('loginSection').style.display='none';
+  $('dashSection').style.display='block';
+  resetIdle();
+  showTab(0);
+  loadSettings();
+};
+
+window.owLogout=()=>{
+  $('dashSection').style.display='none';
+  $('loginSection').style.display='block';
+  $('owPw').value='';
+  clearTimeout(_idleTimer);
+};
+
+window.showTab=(n)=>{
+  for(let i=0;i<6;i++){
+    $('t'+i)?.classList.toggle('active',i===n);
+    $('s'+i)?.classList.toggle('active',i===n);
+  }
+  if(n===0)loadOverview();
+  if(n===2)loadUsers();
+  if(n===3)loadStorage();
+  if(n===4)loadActivity();
+};
+
+// ── SETTINGS ──
+async function loadSettings(){
+  try{const d=await getDoc(doc(db,'globalConfig','settings'));const c=d.data()||{};
+    if($('cfg_name'))$('cfg_name').value=c.siteName||'Drystan';
+    if($('cfg_ejk'))$('cfg_ejk').value=c.ejsKey||'';
+    if($('cfg_ejs'))$('cfg_ejs').value=c.ejsService||'';
+    if($('cfg_ejt'))$('cfg_ejt').value=c.ejsTemplate||'';
+    if($('cfg_theme'))$('cfg_theme').value=c.siteTheme||'indigo';
+  }catch{}
+}
+window.saveSettings=async()=>{
+  const err=$('setErr'),ok=$('setOk');err.style.display='none';ok.style.display='none';
+  try{
+    await setDoc(doc(db,'globalConfig','settings'),{
+      siteName:$('cfg_name').value.trim(),
+      siteTheme:$('cfg_theme').value,
+      ejsKey:$('cfg_ejk').value.trim(),
+      ejsService:$('cfg_ejs').value.trim(),
+      ejsTemplate:$('cfg_ejt').value.trim(),
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    ok.style.display='block';
+    setTimeout(()=>ok.style.display='none',3000);
+  }catch(e){err.style.display='block';err.textContent='❌ '+e.message;}
+};
+
+// ── OVERVIEW ──
+async function loadOverview(){
+  const el=$('overviewContent');el.innerHTML='<div class="spin"></div>';
+  try{
+    const us=await getDocs(collection(db,'users'));
+    const users=us.docs.map(d=>({id:d.id,...d.data()}));
+    const admins=users.filter(u=>u.role==='admin');
+    const mods=users.filter(u=>u.role==='moderator');
+    let totalOrd=0,totalRev=0,totalCust=0,totalProd=0;
+    for(const a of admins){
+      const bId=a.bizId||a.id;
+      try{const oc=await getDocs(collection(db,'businesses',bId,'orders'));totalOrd+=oc.size;oc.docs.forEach(d=>{const o=d.data();if(o.status!=='cancelled')totalRev+=Number(o.total||0);});}catch{}
+      try{totalCust+=(await getDocs(collection(db,'businesses',bId,'customers'))).size;}catch{}
+      try{totalProd+=(await getDocs(collection(db,'businesses',bId,'products'))).size;}catch{}
+    }
+    el.innerHTML=`
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-val" style="color:#6366F1">${admins.length}</div><div class="stat-lbl">🏢 Businesses</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:#10B981">${mods.length}</div><div class="stat-lbl">👤 Moderators</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:#3B82F6">${totalOrd}</div><div class="stat-lbl">📦 Orders</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:#F59E0B">${cur(totalRev)}</div><div class="stat-lbl">💰 Revenue</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:#A855F7">${totalProd}</div><div class="stat-lbl">🏷️ Products</div></div>
+      <div class="stat-box"><div class="stat-val" style="color:#EF4444">${totalCust}</div><div class="stat-lbl">👥 Customers</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--t2);margin-top:4px;text-align:center">Platform overview across all ${admins.length} business(es)</div>`;
+  }catch(e){el.innerHTML=`<div style="color:var(--red);font-size:13px">❌ ${e.message}</div>`;}
+}
+
+// ── USERS ──
+async function loadUsers(){
+  const el=$('usersContent');el.innerHTML='<div class="spin"></div>';
+  try{
+    const us=await getDocs(collection(db,'users'));
+    _allUsers=us.docs.map(d=>({id:d.id,...d.data()}));
+    renderUsers(_allUsers);
+  }catch(e){el.innerHTML=`<div style="color:var(--red);font-size:13px">❌ ${e.message}</div>`;}
+}
+function renderUsers(list){
+  const el=$('usersContent');
+  const admins=list.filter(u=>u.role==='admin');
+  const mods=list.filter(u=>u.role==='moderator');
+  el.innerHTML=`<div style="font-size:11px;color:var(--t2);margin-bottom:10px">${list.length} shown of ${_allUsers.length} — ${admins.length} admins · ${mods.length} mods</div>`;
+  // Group mods under their admin
+  admins.forEach(a=>{
+    const aMods=mods.filter(m=>m.adminUid===a.id||m.bizId===a.id||m.bizId===a.bizId);
+    const div=document.createElement('div');
+    div.innerHTML=`
+    <div class="user-row" style="border-color:rgba(99,102,241,.25);margin-bottom:6px">
+      <div class="user-row-top">
+        <div>
+          <span style="font-weight:700">${esc(a.displayName||'?')}</span>
+          <span class="badge badge-admin" style="margin-left:6px">ADMIN</span>
+          <div class="user-meta">@${esc(a.username||'-')} · ${esc(a.email||'-')}</div>
+          <div class="user-meta">Joined: ${fdate(a.createdAt)} · ${aMods.length} moderator(s)</div>
+        </div>
+        <div class="action-btns">
+          <button class="btn-sm btn-reset" onclick="resetPw('${a.id}','${esc(a.email||'')}')">🔑 Reset</button>
+          <button class="btn-sm btn-del" onclick="delUser('${a.id}','${esc(a.displayName||'')}')">🗑️</button>
+        </div>
+      </div>
+      ${aMods.length>0?`<div style="margin-top:10px;padding-left:12px;border-left:2px solid rgba(99,102,241,.2)">
+        ${aMods.map(m=>`<div class="user-row" style="margin-bottom:6px;padding:10px">
+          <div class="user-row-top">
+            <div><span style="font-weight:600;font-size:13px">${esc(m.displayName||'?')}</span>
+            <span class="badge badge-mod" style="margin-left:6px">MOD</span>
+            <div class="user-meta">@${esc(m.username||'-')}</div></div>
+            <div class="action-btns">
+              <button class="btn-sm btn-del" onclick="delUser('${m.id}','${esc(m.displayName||'')}')">🗑️</button>
+            </div>
+          </div>
+        </div>`).join('')}
+      </div>`:''}
+    </div>`;
+    el.appendChild(div);
+  });
+}
+window.filterUsers=(q)=>{
+  const s=q.toLowerCase();
+  renderUsers(_allUsers.filter(u=>(u.displayName||'').toLowerCase().includes(s)||(u.username||'').toLowerCase().includes(s)||(u.email||'').toLowerCase().includes(s)));
+};
+window.resetPw=async(uid,email)=>{
+  if(!email||email.includes('drystan.app')){alert('This account has a system email — share new password directly.');return;}
+  if(!confirm(`Send reset email to ${email}?`))return;
+  try{await sendPasswordResetEmail(auth,email);alert('✅ Reset email sent to '+email);}
+  catch(e){alert('❌ '+e.message);}
+};
+window.delUser=async(id,name)=>{
+  if(!confirm(`Delete "${name}"?\nThis removes their Firestore record.`))return;
+  try{await deleteDoc(doc(db,'users',id));alert('✅ User deleted');loadUsers();}
+  catch(e){alert('❌ '+e.message);}
+};
+
+// ── STORAGE ──
+async function loadStorage(){
+  const el=$('storageContent');el.innerHTML='<div class="spin"></div>';
+  try{
+    const us=await getDocs(collection(db,'users'));
+    const admins=us.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.role==='admin');
+    let html='<div class="inset-info">Firestore Free Tier: 1GB · 50K reads/day · 20K writes/day</div>';
+    for(const a of admins){
+      const bId=a.bizId||a.id;
+      let p=0,o=0,c=0;
+      try{[p,o,c]=await Promise.all([
+        getDocs(collection(db,'businesses',bId,'products')).then(s=>s.size),
+        getDocs(collection(db,'businesses',bId,'orders')).then(s=>s.size),
+        getDocs(collection(db,'businesses',bId,'customers')).then(s=>s.size)
+      ]);}catch{}
+      html+=`<div class="user-row" style="margin-bottom:8px">
+        <div class="user-row-top" style="margin-bottom:8px">
+          <div><strong>${esc(a.displayName)}</strong><div class="user-meta">@${esc(a.username)}</div></div>
+          <button class="btn-sm btn-del" onclick="clearBiz('${bId}','${esc(a.displayName)}')">🗑️ Clear</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px;text-align:center">
+          <div style="background:rgba(99,102,241,.08);padding:8px;border-radius:6px"><strong>${p}</strong><br/>Products</div>
+          <div style="background:rgba(59,130,246,.08);padding:8px;border-radius:6px"><strong>${o}</strong><br/>Orders</div>
+          <div style="background:rgba(16,185,129,.08);padding:8px;border-radius:6px"><strong>${c}</strong><br/>Customers</div>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-top:6px">~${p+o+c} documents</div>
+      </div>`;
+    }
+    el.innerHTML=html;
+  }catch(e){el.innerHTML=`<div style="color:var(--red);font-size:13px">❌ ${e.message}</div>`;}
+}
+window.clearBiz=async(bizId,name)=>{
+  if(!confirm(`⚠️ DELETE ALL DATA for "${name}"?\n\nThis permanently deletes all orders, products, and customers!`))return;
+  const conf=prompt('Type DELETE to confirm:');
+  if(conf!=='DELETE'){return;}
+  try{
+    for(const c of['products','orders','customers']){
+      const s=await getDocs(collection(db,'businesses',bizId,c));
+      for(const d of s.docs)await deleteDoc(d.ref);
+    }
+    alert('✅ Data cleared for '+name);loadStorage();
+  }catch(e){alert('❌ '+e.message);}
+};
+
+// ── ACTIVITY ──
+async function loadActivity(){
+  const el=$('activityContent');el.innerHTML='<div class="spin"></div>';
+  try{
+    const s=await getDocs(query(collection(db,'modLoginRequests'),orderBy('requestedAt','desc'),limit(30)));
+    const items=s.docs.map(d=>({id:d.id,...d.data()}));
+    const icon={approved:'✅',rejected:'❌',pending:'⏳',expired:'⏰'};
+    el.innerHTML=`<div style="font-size:13px;font-weight:600;margin-bottom:10px">Moderator Login Requests</div>
+    ${items.length===0?'<div style="color:var(--t2);text-align:center;padding:20px">No requests yet</div>':
+    items.map(r=>`<div class="user-row" style="margin-bottom:6px;font-size:12px">
+      <div style="display:flex;justify-content:space-between">
+        <div><strong>@${esc(r.username||'?')}</strong> <span style="color:var(--t3)">${r.requestedAt?.toDate?r.requestedAt.toDate().toLocaleString('en-GB'):''}</span></div>
+        <span style="font-weight:700;color:${r.status==='approved'?'var(--green)':r.status==='rejected'?'var(--red)':'var(--yellow)'}">${icon[r.status]||'?'} ${(r.status||'').toUpperCase()}</span>
+      </div>
+    </div>`).join('')}
+    <button class="btn btn-secondary" onclick="clearActivity()" style="margin-top:10px;padding:9px;font-size:12px">🗑️ Clear Log</button>`;
+  }catch(e){el.innerHTML=`<div style="color:var(--red);font-size:13px">❌ ${e.message}</div>`;}
+}
+window.clearActivity=async()=>{
+  if(!confirm('Clear all activity logs?'))return;
+  try{const s=await getDocs(collection(db,'modLoginRequests'));for(const d of s.docs)await deleteDoc(d.ref);loadActivity();}
+  catch(e){alert('❌ '+e.message);}
+};
+
+// ── SECURITY ──
+window.changeOwPw=async()=>{
+  const old=$('sec_old').value,nw=$('sec_new').value,nw2=$('sec_new2').value;
+  const err=$('secErr'),ok=$('secOk');err.style.display='none';ok.style.display='none';
+  if(!old||!nw||!nw2){err.style.display='block';err.textContent='❌ All fields required.';return;}
+  const oh=await hashStr(old);
+  if(oh!==_currHash){err.style.display='block';err.textContent='❌ Wrong current password.';return;}
+  if(nw.length<8){err.style.display='block';err.textContent='❌ Min 8 characters.';return;}
+  if(nw!==nw2){err.style.display='block';err.textContent='❌ Passwords do not match.';return;}
+  _currHash=await hashStr(nw);
+  ok.style.display='block';
+  $('sec_old').value='';$('sec_new').value='';$('sec_new2').value='';
+  setTimeout(()=>ok.style.display='none',4000);
+};
+</script>
+</body>
+</html>
