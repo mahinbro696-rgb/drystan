@@ -133,8 +133,33 @@
   --bg:#F0F4FF;--bg2:#fff;--bg3:#E8EEFF;
   --card:rgba(99,102,241,.04);--card2:rgba(99,102,241,.08);--card3:rgba(99,102,241,.12);
   --border:rgba(99,102,241,.12);--border2:rgba(99,102,241,.22);
-  --t1:#0F172A;--t2:#475569;--t3:#64748B;
+  --t1:#0F172A;--t2:#334155;--t3:#64748B;
+  color:#0F172A!important;
 }
+/* Force all text dark in light mode — catches everything */
+[data-theme=light] body,[data-theme=light] div,[data-theme=light] span,
+[data-theme=light] p,[data-theme=light] h1,[data-theme=light] h2,[data-theme=light] h3,
+[data-theme=light] h4,[data-theme=light] label,[data-theme=light] td,[data-theme=light] th,
+[data-theme=light] li,[data-theme=light] strong,[data-theme=light] small{
+  color:#0F172A;
+}
+/* But keep accent/colored text */
+[data-theme=light] .statVal{background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:unset!important}
+[data-theme=light] .badge.bDone span,[data-theme=light] .badge.bDone{color:#065F46!important}
+[data-theme=light] .badge.bCanc,[data-theme=light] .badge.bCanc span{color:#B91C1C!important}
+[data-theme=light] .badge.bPend,[data-theme=light] .badge.bPend span{color:#92400E!important}
+[data-theme=light] .badge.bSent,[data-theme=light] .badge.bSent span{color:#1E40AF!important}
+[data-theme=light] .badge.bAdmin,[data-theme=light] .badge.bAdmin span{color:#6B21A8!important}
+[data-theme=light] .badge.bMod,[data-theme=light] .badge.bMod span{color:#065F46!important}
+[data-theme=light] .nItem.active,[data-theme=light] .nItem.active *{color:#4338CA!important}
+[data-theme=light] .btn.bP,[data-theme=light] .btn.bP *,[data-theme=light] .btn.bG,[data-theme=light] .btn.bG *,
+[data-theme=light] .btn.bD,[data-theme=light] .btn.bD *{color:#fff!important}
+[data-theme=light] .t2,[data-theme=light] .statLbl,[data-theme=light] .statSub,[data-theme=light] .afL,[data-theme=light] .fL{color:#334155!important}
+[data-theme=light] code{color:#4338CA!important}
+[data-theme=light] .al.aE *{color:#B91C1C!important}
+[data-theme=light] .al.aI *{color:#4338CA!important}
+[data-theme=light] .al.aW *{color:#92400E!important}
+[data-theme=light] .al.aO *{color:#065F46!important}
 [data-theme=light] .modal{background:#fff!important;color:#0F172A!important}
 [data-theme=light] .mH{background:#fff;border-bottom-color:rgba(99,102,241,.15)}
 [data-theme=light] .mH h3{color:#0F172A}
@@ -1951,33 +1976,36 @@ async function pgDash(){
     const orders=ordSnap.docs.map(d=>({id:d.id,...d.data()}));
     const prods=pSnap.docs.map(d=>({id:d.id,...d.data()}));
     const custs=cSnap.docs.map(d=>({id:d.id,...d.data()}));
-    const active=orders.filter(o=>o.status!=='cancelled');
     const bn=G.lang==='bn';
 
-    // Revenue = total collected from customers
-    const totalRev=active.reduce((s,o)=>s+Number(o.total||0),0);
-    // Net Profit = (sellPrice - buyPrice) * qty  [delivery is pure extra, included]
-    const totalProfit=active.reduce((s,o)=>s+(o.items||[]).reduce((ps,it)=>{
-      const profit=(Number(it.price||0)-Number(it.buyPrice||0))*Number(it.qty||1);
-      return ps+profit;
-    },0)+Number(o.delivery||0)-Number(o.discount||0),0);
-    const totalDelivery=active.reduce((s,o)=>s+Number(o.delivery||0),0);
+    // ── Revenue & Profit: ONLY completed orders ──
+    const completed_orders=orders.filter(o=>o.status==='completed');
+    const active=orders.filter(o=>o.status!=='cancelled');
+
+    // Revenue = TOTAL collected from customer (subtotal + delivery) on completed orders
+    const totalRev=completed_orders.reduce((s,o)=>s+Number(o.total||0),0);
+    // Profit = (sell_price - buy_price) × qty — NO delivery charge counted as profit
+    const totalProfit=completed_orders.reduce((s,o)=>s+
+      (o.items||[]).reduce((ps,it)=>ps+(Number(it.price||0)-Number(it.buyPrice||0))*Number(it.qty||1),0),0);
+    const totalDelivery=completed_orders.reduce((s,o)=>s+Number(o.delivery||0),0);
 
     const pending=orders.filter(o=>o.status==='pending').length;
-    const completed=orders.filter(o=>o.status==='completed').length;
+    const completedCount=completed_orders.length;
     const parcelSent=orders.filter(o=>o.status==='parcel_sent').length;
     const todayStr=today();
     const todayOrds=orders.filter(o=>o.orderDate===todayStr);
-    const todayActive=todayOrds.filter(o=>o.status!=='cancelled');
-    const todayRev=todayActive.reduce((s,o)=>s+Number(o.total||0),0);
-    const todayProfit=todayActive.reduce((s,o)=>s+(o.items||[]).reduce((ps,it)=>(Number(it.price||0)-Number(it.buyPrice||0))*Number(it.qty||1)+ps,0)+Number(o.delivery||0),0);
+    const todayCompleted=todayOrds.filter(o=>o.status==='completed');
+    const todayRev=todayCompleted.reduce((s,o)=>s+Number(o.total||0),0);
+    const todayProfit=todayCompleted.reduce((s,o)=>s+
+      (o.items||[]).reduce((ps,it)=>ps+(Number(it.price||0)-Number(it.buyPrice||0))*Number(it.qty||1),0),0);
     const lowStock=prods.filter(p=>Number(p.stock)<=Number(p.alertAt||5));
     const recent=orders.slice(0,6);
     const now2=new Date();
     const thisMonth=`${now2.getFullYear()}-${String(now2.getMonth()+1).padStart(2,'0')}`;
-    const monthActive=active.filter(o=>o.orderDate?.startsWith(thisMonth));
-    const monthRev=monthActive.reduce((s,o)=>s+Number(o.total||0),0);
-    const monthProfit=monthActive.reduce((s,o)=>s+(o.items||[]).reduce((ps,it)=>(Number(it.price||0)-Number(it.buyPrice||0))*Number(it.qty||1)+ps,0)+Number(o.delivery||0),0);
+    const monthCompleted=completed_orders.filter(o=>o.orderDate?.startsWith(thisMonth));
+    const monthRev=monthCompleted.reduce((s,o)=>s+Number(o.total||0),0);
+    const monthProfit=monthCompleted.reduce((s,o)=>s+
+      (o.items||[]).reduce((ps,it)=>ps+(Number(it.price||0)-Number(it.buyPrice||0))*Number(it.qty||1),0),0);
     const profitMargin=totalRev>0?((totalProfit/totalRev)*100).toFixed(1):0;
 
     const sb=s=>{
@@ -2139,41 +2167,169 @@ async function pgProds(){
     <div class="mOvl" id="prodMOvl" onclick="if(event.target===this)closeMov('prodMOvl')"><div class="modal" id="prodMod"></div></div>`);
   }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
 }
+// Global variant state for product form
+let _prodVariants=[];
+
 async function openProdMod(id=null){
-  let p=null;if(id){const d=await getDoc(BDoc('products',id));if(d.exists())p={id,...d.data()};}
+  let p=null;
+  if(id){const d=await getDoc(BDoc('products',id));if(d.exists())p={id,...d.data()};}
+  _prodVariants=p?.variants?JSON.parse(JSON.stringify(p.variants)):[];
+  const hasVariants=_prodVariants.length>0;
+
   $('prodMod').innerHTML=`
   <div class="mH"><h3>${p?'✏️ Edit':'➕ Add'} Product</h3><button class="btn bS bIco" onclick="closeMov('prodMOvl')">✕</button></div>
-  <div class="mB">
-    <div class="afRow">
-      <div class="afG"><label class="afL">Name (EN) *</label><input class="afI" id="p_n" value="${esc(p?.name||'')}" placeholder="Product name"/></div>
+  <div class="mB" style="max-height:75vh;overflow-y:auto">
+    <!-- Basic Info -->
+    <div class="afRow" style="margin-bottom:0">
+      <div class="afG"><label class="afL">Product Name (EN) *</label><input class="afI" id="p_n" value="${esc(p?.name||'')}" placeholder="Product name"/></div>
       <div class="afG"><label class="afL">নাম (BN)</label><input class="afI" id="p_nb" value="${esc(p?.nameBn||'')}" placeholder="বাংলা নাম"/></div>
-      <div class="afG"><label class="afL">Buy Price (৳) *</label><input class="afI" type="number" id="p_b" min="0" value="${p?.buyPrice||''}"/></div>
-      <div class="afG"><label class="afL">Sell Price (৳) *</label><input class="afI" type="number" id="p_s" min="0" value="${p?.sellPrice||''}"/></div>
-      <div class="afG"><label class="afL">Stock *</label><input class="afI" type="number" id="p_st" min="0" value="${p?.stock??0}"/></div>
+      <div class="afG" style="grid-column:1/-1"><label class="afL">🖼️ Product Image URL <span style="color:var(--t3);font-size:10px">(paste image link)</span></label>
+        <input class="afI" id="p_img" value="${esc(p?.imageUrl||'')}" placeholder="https://..." oninput="prevImg(this.value)"/>
+        <div id="p_imgPrev" style="margin-top:6px;display:${p?.imageUrl?'block':'none'}">
+          <img src="${esc(p?.imageUrl||'')}" style="height:80px;border-radius:8px;object-fit:cover;border:1px solid var(--border)" onerror="this.style.display='none'"/>
+        </div>
+      </div>
+      <div class="afG"><label class="afL">Category</label><input class="afI" id="p_cat" value="${esc(p?.cat||'General')}"/></div>
       <div class="afG"><label class="afL">Alert at (low stock)</label><input class="afI" type="number" id="p_al" min="0" value="${p?.alertAt??5}"/></div>
-      <div class="afG" style="grid-column:1/-1"><label class="afL">Category</label><input class="afI" id="p_cat" value="${esc(p?.cat||'General')}"/></div>
-      <div class="afG" style="grid-column:1/-1"><label class="afL">Description</label><textarea class="afI" id="p_desc" rows="2" placeholder="Optional">${esc(p?.desc||'')}</textarea></div>
+      <div class="afG" style="grid-column:1/-1"><label class="afL">Description</label><textarea class="afI" id="p_desc" rows="2">${esc(p?.desc||'')}</textarea></div>
     </div>
-    ${p?`<div style="padding:12px;background:var(--card);border-radius:10px;font-size:13px">
-      Profit per unit: <strong style="color:var(--green)">${cur((p.sellPrice||0)-(p.buyPrice||0))}</strong> · 
-      Total stock value: <strong style="color:var(--acc2)">${cur((p.sellPrice||0)*Number(p.stock||0))}</strong>
+
+    <div class="divider"></div>
+
+    <!-- Variants toggle -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div>
+        <div style="font-weight:700;font-size:13px">🎨 Variants (Color/Size/Design)</div>
+        <div style="font-size:11px;color:var(--t2)">Enable to add multiple colors, sizes, or designs</div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="p_useVariants" ${hasVariants?'checked':''} onchange="toggleProdVariants(this.checked)"/><span class="toggleSlider"></span></label>
+    </div>
+
+    <!-- Single price mode (no variants) -->
+    <div id="p_singleMode" style="display:${hasVariants?'none':'block'}">
+      <div class="afRow">
+        <div class="afG" style="margin:0"><label class="afL">Buy Price (৳) *</label><input class="afI" type="number" id="p_b" min="0" value="${p?.buyPrice||''}"/></div>
+        <div class="afG" style="margin:0"><label class="afL">Sell Price (৳) *</label><input class="afI" type="number" id="p_s" min="0" value="${p?.sellPrice||''}"/></div>
+        <div class="afG" style="margin:0"><label class="afL">Stock *</label><input class="afI" type="number" id="p_st" min="0" value="${p?.stock??0}"/></div>
+      </div>
+    </div>
+
+    <!-- Variants mode -->
+    <div id="p_variantMode" style="display:${hasVariants?'block':'none'}">
+      <div id="variantsList"></div>
+      <button class="btn bS bSm" onclick="addVariant()" style="margin-top:8px">➕ Add Variant</button>
+    </div>
+
+    ${p&&!hasVariants?`<div style="padding:10px;background:var(--card);border-radius:8px;font-size:12px;margin-top:10px;color:var(--t2)">
+      Profit/unit: <strong style="color:var(--green)">${cur((p.sellPrice||0)-(p.buyPrice||0))}</strong>
     </div>`:''}
   </div>
   <div class="mF">
     <button class="btn bS" onclick="closeMov('prodMOvl')">Cancel</button>
     <button class="btn bP" id="pSvBtn" onclick="saveProd('${id||''}')">💾 ${p?'Update':'Add'} Product</button>
   </div>`;
+
   $('prodMOvl').classList.add('open');
+  renderVariantsList();
 }
 window.openProdMod=openProdMod;
+
+window.prevImg=(url)=>{
+  const d=$('p_imgPrev');
+  if(!d)return;
+  if(url){
+    d.style.display='block';
+    const img=d.querySelector('img');
+    if(img){img.src=url;img.style.display='block';}
+  }else{d.style.display='none';}
+};
+
+window.toggleProdVariants=(on)=>{
+  $('p_singleMode').style.display=on?'none':'block';
+  $('p_variantMode').style.display=on?'block':'none';
+  if(on&&_prodVariants.length===0)addVariant();
+};
+
+window.addVariant=()=>{
+  _prodVariants.push({name:'',buyPrice:'',sellPrice:'',stock:0});
+  renderVariantsList();
+};
+
+window.removeVariant=(i)=>{
+  _prodVariants.splice(i,1);
+  renderVariantsList();
+};
+
+window.updateVariant=(i,field,val)=>{
+  if(_prodVariants[i])_prodVariants[i][field]=field==='name'?val:Number(val)||0;
+};
+
+function renderVariantsList(){
+  const el=$('variantsList');if(!el)return;
+  if(_prodVariants.length===0){
+    el.innerHTML=`<div style="text-align:center;padding:16px;color:var(--t2);font-size:13px">No variants yet. Click "Add Variant" to add color/size options.</div>`;
+    return;
+  }
+  el.innerHTML=_prodVariants.map((v,i)=>`
+  <div style="padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-bottom:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-size:12px;font-weight:700;color:var(--t2)">Variant ${i+1}</span>
+      <button class="btn bD bSm bIco" onclick="removeVariant(${i})">🗑️</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 90px 90px 70px;gap:8px">
+      <div class="afG" style="margin:0"><label class="afL">Name (Color/Size)</label>
+        <input class="afI" value="${esc(v.name||'')}" placeholder="e.g. Red, XL" oninput="updateVariant(${i},'name',this.value)"/>
+      </div>
+      <div class="afG" style="margin:0"><label class="afL">Buy ৳</label>
+        <input class="afI" type="number" min="0" value="${v.buyPrice||''}" placeholder="0" oninput="updateVariant(${i},'buyPrice',this.value)"/>
+      </div>
+      <div class="afG" style="margin:0"><label class="afL">Sell ৳</label>
+        <input class="afI" type="number" min="0" value="${v.sellPrice||''}" placeholder="0" oninput="updateVariant(${i},'sellPrice',this.value)"/>
+      </div>
+      <div class="afG" style="margin:0"><label class="afL">Stock</label>
+        <input class="afI" type="number" min="0" value="${v.stock||0}" oninput="updateVariant(${i},'stock',this.value)"/>
+      </div>
+    </div>
+  </div>`).join('');
+}
+
 async function saveProd(id){
   const btn=$('pSvBtn');btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';
   try{
-    const data={name:$('p_n').value.trim(),nameBn:$('p_nb').value.trim(),buyPrice:Number($('p_b').value),sellPrice:Number($('p_s').value),stock:Number($('p_st').value),alertAt:Number($('p_al').value)||5,cat:$('p_cat').value.trim()||'General',desc:$('p_desc').value.trim(),active:true};
-    if(!data.name||!data.sellPrice){toast('Name and sell price required','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
+    const useVariants=$('p_useVariants')?.checked&&_prodVariants.length>0;
+    let data={
+      name:$('p_n')?.value.trim()||'',
+      nameBn:$('p_nb')?.value.trim()||'',
+      imageUrl:$('p_img')?.value.trim()||'',
+      cat:$('p_cat')?.value.trim()||'General',
+      alertAt:Number($('p_al')?.value)||5,
+      desc:$('p_desc')?.value.trim()||'',
+      active:true
+    };
+    if(!data.name){toast('Product name required','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
+
+    if(useVariants){
+      // Validate variants
+      for(const v of _prodVariants){
+        if(!v.name||!v.sellPrice){toast('All variants need name and sell price','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
+      }
+      data.variants=_prodVariants;
+      // Total stock from variants
+      data.stock=_prodVariants.reduce((s,v)=>s+Number(v.stock||0),0);
+      // Default prices from first variant
+      data.buyPrice=Number(_prodVariants[0].buyPrice||0);
+      data.sellPrice=Number(_prodVariants[0].sellPrice||0);
+    }else{
+      data.buyPrice=Number($('p_b')?.value||0);
+      data.sellPrice=Number($('p_s')?.value||0);
+      data.stock=Number($('p_st')?.value||0);
+      data.variants=[];
+      if(!data.sellPrice){toast('Sell price required','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
+    }
+
     if(id)await updateDoc(BDoc('products',id),{...data,updatedAt:serverTimestamp()});
     else await addDoc(BCol('products'),{...data,createdAt:serverTimestamp()});
-    toast(id?'Product updated! ✅':'Product added! ✅');closeMov('prodMOvl');pgProds();
+    toast(id?'✅ Updated!':'✅ Added!','ok');closeMov('prodMOvl');pgProds();
   }catch(e){toast(e.message,'err');btn.disabled=false;btn.innerHTML='💾 Save';}
 }
 window.saveProd=saveProd;
@@ -2262,20 +2418,24 @@ async function pgNewOrder(){
       </div>
       <div id="oiWrap">
         ${G.oItems.map((it,i)=>`
-        <div style="display:grid;grid-template-columns:2fr 110px 80px auto;gap:8px;margin-bottom:10px;align-items:end">
-          <div class="afG" style="margin:0"><label class="afL">Product</label>
-            <select class="afI" id="psel_${i}" onchange="setOI(${i},'pid',this.value)">
-              <option value="">Select product...</option>
-              ${prods.map(p=>`<option value="${p.id}" data-price="${p.sellPrice}" data-stock="${p.stock}" ${it.pid===p.id?'selected':''}>${esc(p.name)} (${p.stock} left) — ${cur(p.sellPrice)}</option>`).join('')}
-            </select>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px">
+          <div style="display:grid;grid-template-columns:2fr 110px 80px auto;gap:8px;align-items:end">
+            <div class="afG" style="margin:0"><label class="afL">Product</label>
+              <select class="afI" id="psel_${i}" onchange="setOI(${i},'pid',this.value)">
+                <option value="">Select product...</option>
+                ${prods.map(p=>`<option value="${p.id}" data-price="${p.variants?.length?p.variants[0].sellPrice:p.sellPrice}" data-buy="${p.variants?.length?p.variants[0].buyPrice:p.buyPrice}" data-stock="${p.stock}" ${it.pid===p.id?'selected':''}>${esc(p.name)} (${p.stock} left) — ${cur(p.variants?.length?p.variants[0].sellPrice:p.sellPrice)}</option>`).join('')}
+              </select>
+            </div>
+            <div class="afG" style="margin:0"><label class="afL">Price (৳)</label>
+              <input class="afI" id="pprice_${i}" type="number" min="0" value="${it.price||''}" placeholder="0" oninput="setOI(${i},'price',this.value)" style="${it.pid&&it.price?'color:var(--green);font-weight:700':''}"/>
+            </div>
+            <div class="afG" style="margin:0"><label class="afL">Qty</label>
+              <input class="afI" id="pqty_${i}" type="number" min="1" value="${it.qty||1}" oninput="setOI(${i},'qty',this.value)"/>
+            </div>
+            <button class="btn bD bIco" onclick="rmOI(${i})" ${G.oItems.length===1?'disabled':''}>🗑️</button>
           </div>
-          <div class="afG" style="margin:0"><label class="afL">Price (৳)</label>
-            <input class="afI" id="pprice_${i}" type="number" min="0" value="${it.price||''}" placeholder="0" oninput="setOI(${i},'price',this.value)" style="${it.pid&&it.price?'color:var(--green);font-weight:700':''}"/>
-          </div>
-          <div class="afG" style="margin:0"><label class="afL">Qty</label>
-            <input class="afI" id="pqty_${i}" type="number" min="1" value="${it.qty||1}" oninput="setOI(${i},'qty',this.value)"/>
-          </div>
-          <button class="btn bD bIco" onclick="rmOI(${i})" ${G.oItems.length===1?'disabled':''}>🗑️</button>
+          ${it.variantName?`<div style="font-size:12px;color:var(--green);margin-top:4px">✅ ${esc(it.variantName)}</div>`:''}
+          <div id="pdetail_${i}"></div>
         </div>`).join('')}
       </div>
       <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
@@ -2334,12 +2494,69 @@ window.setOI=(i,field,val)=>{
   G.oItems[i][field]=val;
   if(field==='pid'&&val){
     const sel=$('psel_'+i);
-    if(sel){const opt=sel.querySelector(`option[value="${val}"]`);
-      if(opt){G.oItems[i].price=opt.dataset.price||'';
-        const pinp=$('pprice_'+i);if(pinp){pinp.value=opt.dataset.price||'';pinp.style.color='var(--green)';pinp.style.fontWeight='700';}
+    if(sel){
+      const opt=sel.querySelector(`option[value="${val}"]`);
+      if(opt){
+        G.oItems[i].price=opt.dataset.price||'';
+        G.oItems[i].variantName='';
+        const pinp=$('pprice_'+i);
+        if(pinp){pinp.value=opt.dataset.price||'';pinp.style.color='var(--green)';pinp.style.fontWeight='700';}
+        // Show product detail card (image + variants)
+        showProductDetail(i,val,opt.dataset);
       }
     }
   }
+  updTotal();
+};
+
+function showProductDetail(itemIdx,pid,dataset){
+  const detailDiv=$('pdetail_'+itemIdx);
+  if(!detailDiv)return;
+  // Fetch product to get variants and image
+  getDoc(BDoc('products',pid)).then(d=>{
+    if(!d.exists()){detailDiv.innerHTML='';return;}
+    const p=d.data();
+    const hasVariants=p.variants&&p.variants.length>0;
+    let html='<div style="padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-top:6px">';
+    // Image
+    if(p.imageUrl){
+      html+=`<img src="${esc(p.imageUrl)}" style="width:100%;max-height:120px;object-fit:contain;border-radius:8px;margin-bottom:8px;background:#fff" onerror="this.style.display='none'"/>`;
+    }
+    html+=`<div style="font-size:12px;color:var(--t2);margin-bottom:6px">📦 Available stock: <strong style="color:${Number(p.stock)>5?'var(--green)':'var(--red)'}"> ${p.stock}</strong></div>`;
+    // Variants
+    if(hasVariants){
+      html+=`<div style="font-size:12px;font-weight:600;margin-bottom:6px">🎨 Select Variant:</div>`;
+      html+=`<div style="display:flex;flex-wrap:wrap;gap:6px">`;
+      p.variants.forEach((v,vi)=>{
+        html+=`<button class="btn bS bSm" id="vbtn_${itemIdx}_${vi}" onclick="selectVariant(${itemIdx},'${vi}',${v.buyPrice},${v.sellPrice},${v.stock},'${esc(v.name)}')" style="font-size:12px;border-radius:20px">
+          ${esc(v.name)} (${cur(v.sellPrice)}) · ${v.stock} left
+        </button>`;
+      });
+      html+=`</div>`;
+      html+=`<div id="variantSel_${itemIdx}" style="font-size:12px;color:var(--green);margin-top:6px;font-weight:600"></div>`;
+    }
+    html+='</div>';
+    detailDiv.innerHTML=html;
+  }).catch(()=>{});
+}
+
+window.selectVariant=(itemIdx,vi,buyP,sellP,stock,name)=>{
+  G.oItems[itemIdx].price=sellP;
+  G.oItems[itemIdx].buyPrice=buyP;
+  G.oItems[itemIdx].variantName=name;
+  G.oItems[itemIdx].variantStock=stock;
+  // Update price input
+  const pinp=$('pprice_'+itemIdx);
+  if(pinp){pinp.value=sellP;pinp.style.color='var(--green)';pinp.style.fontWeight='700';}
+  // Highlight selected variant button
+  const container=$('pdetail_'+itemIdx);
+  if(container){
+    container.querySelectorAll('[id^="vbtn_'+itemIdx+'_"]').forEach(b=>b.style.background='');
+    const btn=$('vbtn_'+itemIdx+'_'+vi);
+    if(btn){btn.style.background='var(--acc)';btn.style.color='#fff';}
+  }
+  const sel=$('variantSel_'+itemIdx);
+  if(sel)sel.textContent=`✅ Selected: ${name} — Stock: ${stock}`;
   updTotal();
 };
 window.submitOrder=async()=>{
@@ -2359,9 +2576,9 @@ window.submitOrder=async()=>{
     let custId;
     if(!cSnap.empty){const cd=cSnap.docs[0];custId=cd.id;await updateDoc(BDoc('customers',custId),{name:f.cName,addr:f.cAddr,orders:(cd.data().orders||0)+1,spent:(cd.data().spent||0)+total,lastOrder:serverTimestamp()});}
     else{const r=await addDoc(BCol('customers'),{name:f.cName,phone:ordPhone,addr:f.cAddr,orders:1,spent:total,createdAt:serverTimestamp()});custId=r.id;}
-    const oItems=await Promise.all(validItems.map(async it=>{const pd=(await getDoc(BDoc('products',it.pid))).data();return{pid:it.pid,name:pd.name,nameBn:pd.nameBn||pd.name,qty:Number(it.qty),price:Number(it.price),buyPrice:Number(pd.buyPrice||0),lineTotal:Number(it.price)*Number(it.qty),profit:(Number(it.price)-Number(pd.buyPrice||0))*Number(it.qty)};}));
-    const oRef=await addDoc(BCol('orders'),{num,custId,cName:f.cName,cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:f.recvName||f.cName,cAddr:f.cAddr,payMethod:f.payMethod,delivery:del,subtotal:sub,total,status:'pending',payStatus:f.payMethod==='paid'?'paid':'pending',orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:oItems,createdBy:G.user?.uid,createdAt:serverTimestamp()});
-    for(const it of validItems){const pd=await getDoc(BDoc('products',it.pid));await updateDoc(BDoc('products',it.pid),{stock:Number(pd.data().stock)-Number(it.qty)});}
+    const oItems=await Promise.all(validItems.map(async it=>{const pd=(await getDoc(BDoc('products',it.pid))).data();return{pid:it.pid,name:pd.name+(it.variantName?` (${it.variantName})`:''),nameBn:(pd.nameBn||pd.name)+(it.variantName?` (${it.variantName})`:''),variantName:it.variantName||'',qty:Number(it.qty),price:Number(it.price),buyPrice:Number(it.buyPrice||pd.buyPrice||0),lineTotal:Number(it.price)*Number(it.qty),profit:(Number(it.price)-Number(it.buyPrice||pd.buyPrice||0))*Number(it.qty)};}));
+    const oRef=await addDoc(BCol('orders'),{num,custId,cName:f.cName,cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:f.recvName||f.cName,cAddr:f.cAddr,payMethod:f.payMethod,delivery:del,subtotal:sub,discount:disc,total,status:'pending',payStatus:f.payMethod==='paid'?'paid':'pending',orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:oItems,stockDeducted:false,createdBy:G.user?.uid,createdAt:serverTimestamp()});
+    // Stock deducted on 'completed' status, not at creation
     toast('Order created! 🎉');
     G.lastOrder={id:oRef.id,num,cName:f.cName,cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:f.recvName||f.cName,cAddr:f.cAddr,payMethod:f.payMethod,delivery:del,subtotal:sub,discount:disc,total,orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:oItems};
     G.oItems=[{pid:'',qty:1,price:''}];G.oForm=null;showReceipt(G.lastOrder);
@@ -2439,46 +2656,62 @@ window.downloadRcptImg=async()=>{
   const btn=$('dlImgBtn');
   if(btn){btn.disabled=true;btn.innerHTML='⏳ তৈরি হচ্ছে...';}
   try{
-    // Try html2canvas
-    if(!window.html2canvas){
-      await new Promise((res,rej)=>{
-        const s=document.createElement('script');
-        s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-        s.onload=res;
-        s.onerror=()=>rej(new Error('Library load failed'));
-        document.head.appendChild(s);
-      });
-    }
-    // Find the receipt element
     const el=document.getElementById('rcptContent');
-    if(!el){toast('Receipt element not found','err');return;}
-    // Capture with high resolution
-    const canvas=await window.html2canvas(el,{
-      scale:2,
-      backgroundColor:'#ffffff',
-      useCORS:true,
-      logging:false,
-      allowTaint:true,
-      imageTimeout:3000,
-      removeContainer:true,
-      foreignObjectRendering:false
+    if(!el){toast('Receipt not found','err');return;}
+    // Try html2canvas with timeout
+    const loadLib=()=>new Promise((res,rej)=>{
+      if(window.html2canvas)return res();
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload=res;s.onerror=rej;
+      document.head.appendChild(s);
     });
-    // Convert to blob for better compatibility
-    canvas.toBlob(blob=>{
-      if(!blob){toast('Image creation failed — try Print instead','err');return;}
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');
-      a.href=url;
-      a.download=`Drystan-Receipt-${G.lastOrder?.num||Date.now()}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(()=>URL.revokeObjectURL(url),5000);
-      toast('✅ PNG downloaded!','ok');
-    },'image/png',1.0);
+    try{
+      await Promise.race([loadLib(),new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),5000))]);
+    }catch{
+      // Fallback: open print window
+      toast('Library failed — opening print window. Use Ctrl+P → Save as PDF','info');
+      if(btn){btn.disabled=false;btn.innerHTML='📥 Download PNG';}
+      printRcpt();
+      return;
+    }
+    // Create a clean clone with computed styles (no CSS vars)
+    const clone=el.cloneNode(true);
+    // Apply computed background
+    clone.style.background='#ffffff';
+    clone.style.fontFamily='Arial,sans-serif';
+    clone.style.padding='24px';
+    clone.style.width=el.offsetWidth+'px';
+    const wrapper=document.createElement('div');
+    wrapper.style.cssText='position:fixed;top:-9999px;left:-9999px;background:#fff';
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
+    try{
+      const canvas=await window.html2canvas(wrapper,{
+        scale:2,backgroundColor:'#ffffff',
+        useCORS:true,logging:false,
+        allowTaint:true,foreignObjectRendering:false,
+        width:el.offsetWidth+48,
+        imageTimeout:3000
+      });
+      document.body.removeChild(wrapper);
+      canvas.toBlob(blob=>{
+        if(!blob){toast('❌ Blob failed — try Print','err');return;}
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;
+        a.download=`Drystan-Receipt-${G.lastOrder?.num||Date.now()}.png`;
+        document.body.appendChild(a);a.click();document.body.removeChild(a);
+        setTimeout(()=>URL.revokeObjectURL(url),5000);
+        toast('✅ PNG downloaded!','ok');
+      },'image/png',1.0);
+    }catch(e2){
+      try{document.body.removeChild(wrapper);}catch{}
+      throw e2;
+    }
   }catch(e){
-    console.error('PNG download error:',e);
-    toast('❌ PNG failed: '+e.message+' — Use Print instead','err');
+    toast('❌ PNG failed. Use 🖨️ Print → Save as PDF instead.','err');
+    console.warn('PNG error:',e);
   }finally{
     if(btn){btn.disabled=false;btn.innerHTML='📥 Download PNG';}
   }
@@ -2741,8 +2974,10 @@ async function viewOrder(id){
           <option value="pending" ${o.status==='pending'?'selected':''}>⏳ Pending</option>
           <option value="parcel_sent" ${o.status==='parcel_sent'?'selected':''}>🚚 Parcel Sent</option>
           <option value="completed" ${o.status==='completed'?'selected':''}>✅ Completed</option>
+          <option value="returned" ${o.status==='returned'?'selected':''}>↩️ Product Return</option>
           <option value="cancelled" ${o.status==='cancelled'?'selected':''}>❌ Cancelled</option>
         </select>
+        <div style="font-size:11px;color:var(--t2);margin-top:4px">⚠️ Stock deducted on "Completed". Restored on "Return" or "Cancelled".</div>
       </div>
       <div class="afG" style="margin:0"><label class="afL">Payment Status</label>
         <select class="afI" id="oPstSel">
@@ -2761,9 +2996,73 @@ async function viewOrder(id){
   $('ordMOvl').classList.add('open');
 }
 window.viewOrder=viewOrder;
-async function updOrdSt(id){try{await updateDoc(BDoc('orders',id),{status:$('oStSel').value,payStatus:$('oPstSel').value,updatedAt:serverTimestamp()});toast('Updated!');closeMov('ordMOvl');pgOrders();}catch(e){toast(e.message,'err');}}
+async function updOrdSt(id){
+  const newStatus=$('oStSel').value;
+  const newPayStatus=$('oPstSel').value;
+  try{
+    const d=await getDoc(BDoc('orders',id));
+    const o=d.data();
+    const oldStatus=o.status;
+    const stockDeducted=o.stockDeducted===true;
+
+    // Stock management based on status change
+    if(newStatus==='completed'&&!stockDeducted){
+      // Deduct stock when completing for the first time
+      for(const it of (o.items||[])){
+        try{
+          const pd=await getDoc(BDoc('products',it.pid));
+          if(pd.exists()){
+            const newStock=Math.max(0,Number(pd.data().stock||0)-Number(it.qty||1));
+            await updateDoc(BDoc('products',it.pid),{stock:newStock});
+          }
+        }catch{}
+      }
+      await updateDoc(BDoc('orders',id),{status:newStatus,payStatus:newPayStatus,stockDeducted:true,completedAt:serverTimestamp(),updatedAt:serverTimestamp()});
+      toast('✅ Order completed! Stock deducted.','ok');
+    } else if(newStatus==='returned'&&stockDeducted){
+      // Restore stock on return
+      for(const it of (o.items||[])){
+        try{
+          const pd=await getDoc(BDoc('products',it.pid));
+          if(pd.exists())await updateDoc(BDoc('products',it.pid),{stock:Number(pd.data().stock||0)+Number(it.qty||1)});
+        }catch{}
+      }
+      await updateDoc(BDoc('orders',id),{status:newStatus,payStatus:newPayStatus,stockDeducted:false,returnedAt:serverTimestamp(),updatedAt:serverTimestamp()});
+      toast('↩️ Order returned! Stock restored.','info');
+    } else if((newStatus==='cancelled')&&stockDeducted){
+      // Restore stock on cancel (if already deducted)
+      for(const it of (o.items||[])){
+        try{
+          const pd=await getDoc(BDoc('products',it.pid));
+          if(pd.exists())await updateDoc(BDoc('products',it.pid),{stock:Number(pd.data().stock||0)+Number(it.qty||1)});
+        }catch{}
+      }
+      await updateDoc(BDoc('orders',id),{status:newStatus,payStatus:newPayStatus,stockDeducted:false,updatedAt:serverTimestamp()});
+      toast('❌ Order cancelled, stock restored.','info');
+    } else {
+      await updateDoc(BDoc('orders',id),{status:newStatus,payStatus:newPayStatus,updatedAt:serverTimestamp()});
+      toast('✅ Status updated!','ok');
+    }
+    closeMov('ordMOvl');pgOrders();
+  }catch(e){toast(e.message,'err');}
+}
 window.updOrdSt=updOrdSt;
-async function delOrder(id){if(!confirm('Delete this order? Stock will be restored.'))return;try{const d=await getDoc(BDoc('orders',id));const o=d.data();if(o.status!=='cancelled'&&o.items)for(const it of o.items){const pd=await getDoc(BDoc('products',it.pid));if(pd.exists())await updateDoc(BDoc('products',it.pid),{stock:Number(pd.data().stock||0)+it.qty});}await deleteDoc(BDoc('orders',id));toast('Deleted, stock restored');pgOrders();}catch(e){toast(e.message,'err');}}
+async function delOrder(id){
+  if(!confirm('Delete this order?'))return;
+  try{
+    const d=await getDoc(BDoc('orders',id));
+    const o=d.data();
+    // Only restore stock if it was deducted (completed orders)
+    if(o.stockDeducted===true&&o.items){
+      for(const it of o.items){
+        try{const pd=await getDoc(BDoc('products',it.pid));if(pd.exists())await updateDoc(BDoc('products',it.pid),{stock:Number(pd.data().stock||0)+Number(it.qty||1)});}catch{}
+      }
+    }
+    await deleteDoc(BDoc('orders',id));
+    toast(o.stockDeducted?'Deleted, stock restored':'Deleted');
+    pgOrders();
+  }catch(e){toast(e.message,'err');}
+}
 window.delOrder=delOrder;
 
 // ══ CUSTOMERS ══
