@@ -10,7 +10,7 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
 <meta name="referrer" content="strict-origin-when-cross-origin"/>
 <meta http-equiv="X-Frame-Options" content="DENY"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasestorage.app https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://api.anthropic.com https://api.emailjs.com https://*.steadfast.com.bd https://fraudbd.com https://*.fraudbd.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.googleapis.com https://apis.google.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasestorage.app https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://api.anthropic.com https://api.emailjs.com https://*.steadfast.com.bd https://fraudbd.com https://*.fraudbd.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://www.recaptcha.net https://recaptcha.net; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"/>
 <title>Drystan – Business Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
@@ -2529,27 +2529,33 @@ window.doLogin=async()=>{
   if(!checkRateLimit()){btn.innerHTML='Sign In →';return;}
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Signing in...';
   try{
-    let email=null,userDoc=null;
-    if(u.includes('@')){
-      email=u;
-      // Verify this email belongs to an admin
-      const snap=await getDocs(query(Col('users'),where('email','==',u)));
-      if(!snap.empty){userDoc=snap.docs[0].data();}
-    } else {
-      const snap=await getDocs(query(Col('users'),where('username','==',u)));
-      if(!snap.empty){userDoc=snap.docs[0].data();email=userDoc.email;}
-      else if(u==='admin'){email='admin@drystan.app';}
-      else{err.style.display='flex';err.textContent='❌ Invalid username or password.';btn.disabled=false;btn.innerHTML='Sign In →';return;}
-    }
-    // BLOCK moderators from admin portal
-    if(userDoc&&userDoc.role==='moderator'){
-      err.style.display='flex';
-      err.innerHTML='❌ This is the <strong>Admin Portal</strong>. Moderators must use the <strong>👤 Moderator</strong> tab.';
-      btn.disabled=false;btn.innerHTML='Sign In →';return;
-    }
-    await signInWithEmailAndPassword(auth,email,p);
+    await Promise.race([
+      (async()=>{
+        let email=null,userDoc=null;
+        if(u.includes('@')){
+          email=u;
+          // Verify this email belongs to an admin
+          const snap=await getDocs(query(Col('users'),where('email','==',u)));
+          if(!snap.empty){userDoc=snap.docs[0].data();}
+        } else {
+          const snap=await getDocs(query(Col('users'),where('username','==',u)));
+          if(!snap.empty){userDoc=snap.docs[0].data();email=userDoc.email;}
+          else if(u==='admin'){email='admin@drystan.app';}
+          else{err.style.display='flex';err.textContent='❌ Invalid username or password.';btn.disabled=false;btn.innerHTML='Sign In →';return;}
+        }
+        // BLOCK moderators from admin portal
+        if(userDoc&&userDoc.role==='moderator'){
+          err.style.display='flex';
+          err.innerHTML='❌ This is the <strong>Admin Portal</strong>. Moderators must use the <strong>👤 Moderator</strong> tab.';
+          btn.disabled=false;btn.innerHTML='Sign In →';return;
+        }
+        if(!email)return; // already handled above (invalid username case)
+        await signInWithEmailAndPassword(auth,email,p);
+      })(),
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),20000))
+    ]);
   }catch(e){
-    const msg=e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'||e.code==='auth/user-not-found'?'Invalid username/email or password.':e.code==='auth/too-many-requests'?'Too many attempts. Try later.':e.message.includes('Invalid')?e.message:'Login failed.';
+    const msg=e.message==='timeout'?'নেটওয়ার্ক সমস্যা — আবার চেষ্টা করুন (Connection timeout)':e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'||e.code==='auth/user-not-found'?'Invalid username/email or password.':e.code==='auth/too-many-requests'?'Too many attempts. Try later.':e.message.includes('Invalid')?e.message:'Login failed.';
     err.style.display='flex';err.textContent='❌ '+msg;
     btn.disabled=false;btn.innerHTML='Sign In →';
   }
@@ -2593,9 +2599,14 @@ window.doModLogin=async()=>{
     }
     if(ud.role!=='moderator'){err.style.display='flex';err.textContent='❌ Invalid username or password.';btn.disabled=false;btn.innerHTML='Sign In as Moderator →';return;}
     // Verify password first by attempting sign in
-    try{await signInWithEmailAndPassword(auth,ud.email,p);}
+    try{
+      await Promise.race([
+        signInWithEmailAndPassword(auth,ud.email,p),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),20000))
+      ]);
+    }
     catch(e){
-      const msg=e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'?'Invalid username or password.':e.message;
+      const msg=e.message==='timeout'?'নেটওয়ার্ক সমস্যা — আবার চেষ্টা করুন':e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'?'Invalid username or password.':e.message;
       err.style.display='flex';err.textContent='❌ '+msg;btn.disabled=false;btn.innerHTML='Sign In as Moderator →';return;
     }
     // Password correct — now sign out and request admin approval
