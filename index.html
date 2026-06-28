@@ -1447,7 +1447,7 @@ window.olPickVariant=(idx)=>{
   <div class="mH"><h3>${esc(p.name)} — পছন্দ করুন</h3><button class="btn bS bIco" onclick="closeMov('olVariantOvl')">✕</button></div>
   <div class="mB" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px">
     ${p.variants.map((v,vi)=>{
-      const img=v.image||fallbackImg;
+      const img=(v.images&&v.images[0])||v.image||fallbackImg;
       const out=Number(v.stock||0)<=0;
       return `<div onclick="${out?'':`olAddVariantToCart(${idx},${vi})`}" style="cursor:${out?'default':'pointer'};background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;text-align:center;${out?'opacity:.5':''}">
         ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:70px;object-fit:cover;background:#fff"/>`:'<div style="width:100%;height:70px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:20px">🎨</div>'}
@@ -1462,7 +1462,7 @@ window.olAddVariantToCart=(idx,vi)=>{
   const p=(_olData.products||[])[idx];const v=p?.variants?.[vi];if(!v)return;
   if(Number(v.stock||0)<=0){toast('স্টক নেই','err');return;}
   const fallbackImg=(p.images&&p.images[0])||p.imageUrl||'';
-  const img=v.image||fallbackImg;
+  const img=(v.images&&v.images[0])||v.image||fallbackImg;
   const ex=_olCart.find(i=>i.idx===idx&&i.variantName===v.name);
   if(ex)ex.qty++;
   else _olCart.push({idx,name:p.name,price:Number(v.price||0),qty:1,image:img,variantName:v.name});
@@ -1759,7 +1759,7 @@ window.pubPickVariant=(idx)=>{
   <div class="mH"><h3>${esc(p.name)} — ভ্যারিয়েন্ট বাছুন</h3><button class="btn bS bIco" onclick="closeMov('pubCartOvl')">✕</button></div>
   <div class="mB">
     ${p.variants.map((v,vi)=>{
-      const img=v.image||fallbackImg;
+      const img=(v.images&&v.images[0])||v.image||fallbackImg;
       return `<button class="btn bS bFull" style="justify-content:flex-start;gap:10px;margin-bottom:8px;padding:10px;text-align:left" onclick="pubAddVariant(${idx},${vi})">
         ${img?`<img loading="lazy" src="${esc(img)}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0"/>`:'<div style="width:40px;height:40px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0">📦</div>'}
         <span style="flex:1">${esc(v.name)} ${Number(v.stock)<=0?'<span style=\"color:var(--red)\">(স্টক নেই)</span>':''}</span>
@@ -1773,7 +1773,7 @@ window.pubPickVariant=(idx)=>{
 window.pubAddVariant=(idx,vi)=>{
   const p=_pubProds[idx];const v=p.variants[vi];
   if(Number(v.stock)<=0){toast('এই ভ্যারিয়েন্টের স্টক নেই','err');return;}
-  const img=v.image||(p.images&&p.images[0])||p.imageUrl||'';
+  const img=(v.images&&v.images[0])||v.image||(p.images&&p.images[0])||p.imageUrl||'';
   const existing=_pubCart.find(i=>i.pid===p.id&&i.variantName===v.name);
   if(existing)existing.qty++;
   else _pubCart.push({pid:p.id,name:p.name,price:Number(v.sellPrice||0),qty:1,variantName:v.name,maxStock:Number(v.stock||99),image:img});
@@ -3437,6 +3437,7 @@ function renderProdsView(){
       </table></div>`}
     </div>
     <div class="mOvl" id="prodMOvl"><div class="modal" id="prodMod"></div></div>
+    <div class="mOvl" id="variantEditOvl" style="z-index:600"><div class="modal" id="variantEditMod"></div></div>
     <div class="mOvl" id="restockOvl"><div class="modal" id="restockMod"></div></div>`);
   }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
 }
@@ -3509,14 +3510,14 @@ async function openProdMod(id=null){
     <div class="afRow" style="margin-bottom:0">
       <div class="afG"><label class="afL">Product Name (EN) *</label><input class="afI" id="p_n" value="${esc(p?.name||'')}" placeholder="Product name"/></div>
       <div class="afG"><label class="afL">নাম (BN)</label><input class="afI" id="p_nb" value="${esc(p?.nameBn||'')}" placeholder="বাংলা নাম"/></div>
-      <div class="afG" style="grid-column:1/-1"><label class="afL">🖼️ Product Images <span style="color:var(--t3);font-size:10px">(একাধিক ছবি যোগ করতে পারেন — প্রথমটি মূল ছবি)</span></label>
+      <div class="afG" style="grid-column:1/-1"><label class="afL">🖼️ Main Thumbnail <span style="color:var(--t3);font-size:10px">(শুধু ১টি মূল ছবি — variant-ভিত্তিক ছবি নিচে variant-এ যুক্ত হবে)</span></label>
         <div id="p_imgDropzone" ondrop="prodImgDrop(event)" ondragover="event.preventDefault();this.style.borderColor='var(--acc)';this.style.background='rgba(99,102,241,.06)'" ondragleave="this.style.borderColor='var(--border)';this.style.background='var(--card)'"
           style="border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;background:var(--card);transition:all .2s"
           onclick="$('p_imgFile').click()">
-          <input type="file" id="p_imgFile" accept="image/*" multiple style="display:none" onchange="prodImgFilesSelected(this.files)"/>
+          <input type="file" id="p_imgFile" accept="image/*" style="display:none" onchange="prodImgFilesSelected(this.files)"/>
           <div style="font-size:24px">📷</div>
           <div style="font-size:13px;font-weight:600;margin-top:4px">ছবি টানুন এখানে বা ক্লিক করে বেছে নিন</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:2px">JPG, PNG · সর্বোচ্চ ১০MB · একাধিক বাছা যাবে</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px">JPG, PNG · সর্বোচ্চ ১০MB · নতুন ছবি বাছলে পুরোনোটি বদলে যাবে</div>
         </div>
         <div id="p_imgUploadProgress" style="display:none;font-size:12px;color:var(--acc2);margin-top:6px;font-weight:600"></div>
         <div id="p_imgUploadError" style="display:none;font-size:11px;color:var(--red);margin-top:6px;background:rgba(239,68,68,.08);padding:6px 10px;border-radius:6px"></div>
@@ -3625,13 +3626,14 @@ window.prodImgDrop=async(e)=>{
 window.prodImgFilesSelected=(files)=>{
   const list=[...files];
   if(list.length===0)return;
-  const validList=list.filter(f=>f.type&&f.type.startsWith('image/'));
-  if(_prodImages.length+validList.length>8){toast('সর্বোচ্চ ৮টি ছবি যোগ করা যাবে','err');return;}
+  const file=list.find(f=>f.type&&f.type.startsWith('image/'));
+  if(!file)return;
+  if(file.size>10*1024*1024){toast('❌ '+file.name+' — ১০MB এর বেশি বড়','err');return;}
   const errBox=$('p_imgUploadError');if(errBox)errBox.style.display='none';
-  for(const file of validList){
-    if(file.size>10*1024*1024){toast('❌ '+file.name+' — ১০MB এর বেশি বড়','err');continue;}
-    _prodImages.push({_pending:true,file,preview:URL.createObjectURL(file)});
-  }
+  // Only one main thumbnail allowed — replace whatever was there
+  const old=_prodImages[0];
+  if(old&&typeof old==='object'&&old._pending){try{URL.revokeObjectURL(old.preview);}catch{}}
+  _prodImages=[{_pending:true,file,preview:URL.createObjectURL(file)}];
   renderProdGallery();
   const fi=$('p_imgFile');if(fi)fi.value='';
 };
@@ -3640,9 +3642,9 @@ window.addProdImage=()=>{
   const url=inp.value.trim();
   if(!url)return;
   if(!/^https?:\/\//i.test(url)){toast('সঠিক URL দিন (https:// দিয়ে শুরু)','err');return;}
-  if(_prodImages.length>=8){toast('সর্বোচ্চ ৮টি ছবি যোগ করা যাবে','err');return;}
-  if(_prodImages.includes(url)){toast('এই ছবি ইতিমধ্যে আছে','err');return;}
-  _prodImages.push(url);
+  const old=_prodImages[0];
+  if(old&&typeof old==='object'&&old._pending){try{URL.revokeObjectURL(old.preview);}catch{}}
+  _prodImages=[url];
   inp.value='';
   renderProdGallery();
 };
@@ -3660,17 +3662,23 @@ window.toggleProdVariants=(on)=>{
 };
 
 window.addVariant=()=>{
-  _prodVariants.push({name:'',buyPrice:'',sellPrice:'',stock:'',image:''});
+  _prodVariants.push({name:'',buyPrice:'',sellPrice:'',stock:'',images:[],desc:''});
   renderVariantsList();
+  // Immediately open the editor for the new variant so the admin fills it in one flow
+  openVariantEditor(_prodVariants.length-1);
 };
 
 window.removeVariant=(i)=>{
+  const v=_prodVariants[i];
+  if(v&&Array.isArray(v.images)){
+    v.images.forEach(img=>{if(img&&typeof img==='object'&&img._pending){try{URL.revokeObjectURL(img.preview);}catch{}}});
+  }
   _prodVariants.splice(i,1);
   renderVariantsList();
 };
 
 window.updateVariant=(i,field,val)=>{
-  if(_prodVariants[i])_prodVariants[i][field]=field==='name'?val:Number(val)||0;
+  if(_prodVariants[i])_prodVariants[i][field]=field==='name'||field==='desc'?val:Number(val)||0;
 };
 
 function renderVariantsList(){
@@ -3679,47 +3687,132 @@ function renderVariantsList(){
     el.innerHTML=`<div style="text-align:center;padding:16px;color:var(--t2);font-size:13px">No variants yet. Click "Add Variant" to add color/size options.</div>`;
     return;
   }
-  el.innerHTML=_prodVariants.map((v,i)=>`
-  <div style="padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-bottom:8px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <span style="font-size:12px;font-weight:700;color:var(--t2)">Variant ${i+1}</span>
-      <button class="btn bD bSm bIco" onclick="removeVariant(${i})">🗑️</button>
-    </div>
-    <div style="display:flex;gap:10px">
-      <div onclick="$('vImgFile${i}').click()" onmouseover="this.style.borderColor='var(--acc)';this.style.background='rgba(99,102,241,.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg3)'" style="width:60px;flex-shrink:0;text-align:center">
-        <div style="width:50px;height:50px;border-radius:8px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;background:var(--bg3);margin:0 auto;position:relative" title="এই ভ্যারিয়েন্টের ছবি যুক্ত করতে ক্লিক করুন">
-          ${(()=>{const vimg=v.image;const isPend=vimg&&typeof vimg==='object'&&vimg._pending;const vsrc=isPend?vimg.preview:vimg;return vsrc?`<img loading="lazy" src="${esc(vsrc)}" style="width:100%;height:100%;object-fit:cover"/>${isPend?'<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(245,158,11,.9);font-size:6px;color:#fff;text-align:center">নতুন</div>':''}`:'<span style="font-size:18px">📷</span>';})()}
-        </div>
-        <div style="font-size:9px;color:var(--t3);margin-top:3px;cursor:pointer;line-height:1.3">${v.image?'বদলান':'ক্লিক করুন'}</div>
+  el.innerHTML=_prodVariants.map((v,i)=>{
+    const imgs=Array.isArray(v.images)?v.images:(v.image?[v.image]:[]); // backward-compat with old single-image products
+    const first=imgs[0];
+    const isPend=first&&typeof first==='object'&&first._pending;
+    const thumbSrc=isPend?first.preview:first;
+    const complete=v.name&&v.sellPrice;
+    return `
+    <div onclick="openVariantEditor(${i})" style="padding:10px 12px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:10px" onmouseover="this.style.borderColor='var(--acc)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="width:48px;height:48px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--bg3);display:flex;align-items:center;justify-content:center;position:relative">
+        ${thumbSrc?`<img loading="lazy" src="${esc(thumbSrc)}" style="width:100%;height:100%;object-fit:cover"/>`:'<span style="font-size:18px">📷</span>'}
+        ${imgs.length>1?`<div style="position:absolute;bottom:0;right:0;background:rgba(0,0,0,.65);color:#fff;font-size:8px;padding:1px 4px;border-radius:4px 0 0 0">${imgs.length}</div>`:''}
       </div>
-      <input type="file" id="vImgFile${i}" accept="image/*" style="display:none" onchange="updateVariantImage(${i},this.files[0])"/>
-      <div class="variantRow" style="flex:1;display:grid;grid-template-columns:1fr 80px 80px 60px;gap:8px">
-        <div class="afG" style="margin:0"><label class="afL">Name (Color/Size)</label>
-          <input class="afI" value="${esc(v.name||'')}" placeholder="e.g. Red, XL" oninput="updateVariant(${i},'name',this.value)"/>
-        </div>
-        <div class="afG" style="margin:0"><label class="afL">Buy ৳</label>
-          <input class="afI" type="number" min="0" value="${v.buyPrice||''}" placeholder="0" oninput="updateVariant(${i},'buyPrice',this.value)"/>
-        </div>
-        <div class="afG" style="margin:0"><label class="afL">Sell ৳</label>
-          <input class="afI" type="number" min="0" value="${v.sellPrice||''}" placeholder="0" oninput="updateVariant(${i},'sellPrice',this.value)"/>
-        </div>
-        <div class="afG" style="margin:0"><label class="afL">Stock</label>
-          <input class="afI" type="number" min="0" value="${v.stock??''}" placeholder="0" oninput="updateVariant(${i},'stock',this.value)"/>
-        </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;${complete?'':'color:var(--t3)'}">${v.name?esc(v.name):`Variant ${i+1} — ${complete?'':'⚠️ অসম্পূর্ণ, ক্লিক করে পূরণ করুন'}`}</div>
+        <div style="font-size:11px;color:var(--t2);margin-top:2px">${v.sellPrice?cur(v.sellPrice):'দাম নেই'} · স্টক: ${v.stock||0}</div>
       </div>
-    </div>
-  </div>`).join('');
+      <button class="btn bD bSm bIco" onclick="event.stopPropagation();removeVariant(${i})">🗑️</button>
+    </div>`;
+  }).join('');
 }
-window.updateVariantImage=(i,file)=>{
-  if(!file||!_prodVariants[i])return;
-  if(!file.type||!file.type.startsWith('image/')){toast('শুধু ছবি ফাইল আপলোড করা যাবে','err');return;}
-  if(file.size>10*1024*1024){toast('ছবি ১০MB এর বেশি বড় হতে পারবে না','err');return;}
-  // revoke any previous pending preview for this variant to avoid memory leak
-  const prev=_prodVariants[i].image;
-  if(prev&&typeof prev==='object'&&prev._pending){try{URL.revokeObjectURL(prev.preview);}catch{}}
-  _prodVariants[i].image={_pending:true,file,preview:URL.createObjectURL(file)};
+
+// ── VARIANT EDITOR POPUP (name, description, price, stock + its OWN multi-image gallery) ──
+let _variantEditIdx=null,_variantEditImages=[];
+window.openVariantEditor=(i)=>{
+  const v=_prodVariants[i];if(!v)return;
+  _variantEditIdx=i;
+  // Migrate old single-image variants to the images array on first open
+  _variantEditImages=Array.isArray(v.images)?[...v.images]:(v.image?[v.image]:[]);
+  $('variantEditMod').innerHTML=`
+  <div class="mH"><h3>🎨 ${v.name?esc(v.name):'নতুন ভ্যারিয়েন্ট'}</h3><button class="btn bS bIco" onclick="closeVariantEditor()">✕</button></div>
+  <div class="mB" style="max-height:74vh;overflow-y:auto">
+    <div class="afG"><label class="afL">নাম (Color/Size/Design) *</label><input class="afI" id="ve_name" value="${esc(v.name||'')}" placeholder="যেমন: লাল, XL"/></div>
+    <div class="afG"><label class="afL">বিবরণ <span style="font-size:10px;color:var(--t3)">(ঐচ্ছিক — গ্রাহক দেখতে পাবে)</span></label><textarea class="afI" id="ve_desc" rows="2" placeholder="এই ভ্যারিয়েন্ট সম্পর্কে বিস্তারিত">${esc(v.desc||'')}</textarea></div>
+    <div class="afRow">
+      <div class="afG" style="margin:0"><label class="afL">Buy ৳</label><input class="afI" type="number" min="0" id="ve_buy" value="${v.buyPrice||''}" placeholder="0"/></div>
+      <div class="afG" style="margin:0"><label class="afL">Sell ৳ *</label><input class="afI" type="number" min="0" id="ve_sell" value="${v.sellPrice||''}" placeholder="0"/></div>
+      <div class="afG" style="margin:0"><label class="afL">Stock</label><input class="afI" type="number" min="0" id="ve_stock" value="${v.stock??''}" placeholder="0"/></div>
+    </div>
+    <div class="divider"></div>
+    <div class="afG" style="margin-bottom:6px"><label class="afL">🖼️ এই ভ্যারিয়েন্টের ছবি <span style="color:var(--t3);font-size:10px">(একাধিক যোগ করতে পারেন — বিভিন্ন অ্যাঙ্গেল থেকে)</span></label>
+      <div id="ve_imgDropzone" ondrop="variantEditImgDrop(event)" ondragover="event.preventDefault();this.style.borderColor='var(--acc)';this.style.background='rgba(99,102,241,.06)'" ondragleave="this.style.borderColor='var(--border)';this.style.background='var(--card)'"
+        style="border:2px dashed var(--border);border-radius:10px;padding:14px;text-align:center;cursor:pointer;background:var(--card);transition:all .2s"
+        onclick="$('ve_imgFile').click()">
+        <input type="file" id="ve_imgFile" accept="image/*" multiple style="display:none" onchange="variantEditFilesSelected(this.files)"/>
+        <div style="font-size:20px">📷</div>
+        <div style="font-size:12px;font-weight:600;margin-top:3px">ছবি টানুন এখানে বা ক্লিক করে বেছে নিন</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:2px">একাধিক বাছা যাবে · সর্বোচ্চ ৮টি</div>
+      </div>
+      <div id="ve_imgGallery" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+    </div>
+    <div id="veErr" class="al aE" style="display:none"></div>
+  </div>
+  <div class="mF">
+    <button class="btn bS" onclick="closeVariantEditor()">বাতিল</button>
+    <button class="btn bP" onclick="saveVariantEditor()">💾 এই ভ্যারিয়েন্ট সেভ করুন</button>
+  </div>`;
+  renderVariantEditGallery();
+  $('variantEditOvl').classList.add('open');
+};
+window.closeVariantEditor=()=>{
+  // If this was a brand-new, never-saved variant and admin cancels, remove the empty placeholder
+  const v=_prodVariants[_variantEditIdx];
+  if(v&&!v.name&&!v.sellPrice&&(!v.images||v.images.length===0)){_prodVariants.splice(_variantEditIdx,1);}
+  closeMov('variantEditOvl');
+  _variantEditIdx=null;
   renderVariantsList();
-  toast('✅ ছবি বাছা হয়েছে — সেভ করলে আপলোড হবে');
+};
+function renderVariantEditGallery(){
+  const g=$('ve_imgGallery');if(!g)return;
+  if(_variantEditImages.length===0){g.innerHTML='<div style="font-size:11px;color:var(--t3);padding:4px">এখনো কোনো ছবি যোগ করা হয়নি</div>';return;}
+  g.innerHTML=_variantEditImages.map((item,i)=>{
+    const isPending=item&&typeof item==='object'&&item._pending;
+    const src=isPending?item.preview:item;
+    return `
+    <div style="position:relative;width:64px;height:64px;border-radius:8px;overflow:hidden;border:2px solid ${i===0?'var(--acc)':'var(--border)'}">
+      <img src="${esc(src)}" style="width:100%;height:100%;object-fit:cover;background:#fff"/>
+      ${i===0?'<div style="position:absolute;top:0;left:0;background:var(--acc);color:#fff;font-size:7px;padding:1px 4px;border-radius:0 0 5px 0">মূল</div>':''}
+      ${isPending?'<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(245,158,11,.9);color:#fff;font-size:6px;text-align:center">নতুন</div>':''}
+      <button type="button" onclick="removeVariantEditImage(${i})" style="position:absolute;top:1px;right:1px;width:16px;height:16px;border-radius:50%;background:rgba(239,68,68,.9);color:#fff;border:none;cursor:pointer;font-size:10px;line-height:1;display:flex;align-items:center;justify-content:center">×</button>
+      ${i!==0?`<button type="button" onclick="makeVariantEditMainImage(${i})" title="মূল ছবি করুন" style="position:absolute;bottom:${isPending?'12':'1'}px;left:1px;width:16px;height:16px;border-radius:50%;background:rgba(99,102,241,.9);color:#fff;border:none;cursor:pointer;font-size:9px;line-height:1;display:flex;align-items:center;justify-content:center">★</button>`:''}
+    </div>`;
+  }).join('');
+}
+window.variantEditImgDrop=(e)=>{
+  e.preventDefault();
+  e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.background='var(--card)';
+  const files=[...(e.dataTransfer?.files||[])].filter(f=>f.type.startsWith('image/'));
+  if(files.length)variantEditFilesSelected(files);
+};
+window.variantEditFilesSelected=(files)=>{
+  const list=[...files].filter(f=>f.type&&f.type.startsWith('image/'));
+  if(list.length===0)return;
+  if(_variantEditImages.length+list.length>8){toast('সর্বোচ্চ ৮টি ছবি যোগ করা যাবে','err');return;}
+  for(const file of list){
+    if(file.size>10*1024*1024){toast('❌ '+file.name+' — ১০MB এর বেশি বড়','err');continue;}
+    _variantEditImages.push({_pending:true,file,preview:URL.createObjectURL(file)});
+  }
+  renderVariantEditGallery();
+  const fi=$('ve_imgFile');if(fi)fi.value='';
+};
+window.removeVariantEditImage=(i)=>{
+  const item=_variantEditImages[i];
+  if(item&&typeof item==='object'&&item._pending){try{URL.revokeObjectURL(item.preview);}catch{}}
+  _variantEditImages.splice(i,1);
+  renderVariantEditGallery();
+};
+window.makeVariantEditMainImage=(i)=>{const[img]=_variantEditImages.splice(i,1);_variantEditImages.unshift(img);renderVariantEditGallery();};
+window.saveVariantEditor=()=>{
+  const i=_variantEditIdx;if(i===null||!_prodVariants[i])return;
+  const name=$('ve_name')?.value.trim()||'';
+  const sell=$('ve_sell')?.value||'';
+  const err=$('veErr');
+  if(!name){if(err){err.style.display='flex';err.textContent='❌ নাম দিন';}return;}
+  if(!Number(sell)){if(err){err.style.display='flex';err.textContent='❌ Sell price দিন';}return;}
+  _prodVariants[i]={
+    name,
+    desc:$('ve_desc')?.value.trim()||'',
+    buyPrice:Number($('ve_buy')?.value||0),
+    sellPrice:Number(sell),
+    stock:Number($('ve_stock')?.value||0),
+    images:[..._variantEditImages]
+  };
+  closeMov('variantEditOvl');
+  _variantEditIdx=null;
+  renderVariantsList();
+  toast('✅ ভ্যারিয়েন্ট সেভ হয়েছে');
 };
 
 async function saveProd(id){
@@ -3739,7 +3832,7 @@ async function saveProd(id){
     // ── Upload any pending (not-yet-uploaded) images NOW — only at the moment of actually saving.
     // This avoids wasting ImgBB storage on products that are abandoned mid-edit. ──
     const pendingImgCount=_prodImages.filter(x=>x&&typeof x==='object'&&x._pending).length;
-    const pendingVarCount=useVariants?_prodVariants.filter(v=>v.image&&typeof v.image==='object'&&v.image._pending).length:0;
+    const pendingVarCount=useVariants?_prodVariants.reduce((s,v)=>s+(Array.isArray(v.images)?v.images.filter(x=>x&&typeof x==='object'&&x._pending).length:0),0):0;
     const totalPending=pendingImgCount+pendingVarCount;
     if(totalPending>0){
       let done=0;
@@ -3756,11 +3849,15 @@ async function saveProd(id){
       }
       if(useVariants){
         for(const v of _prodVariants){
-          if(v.image&&typeof v.image==='object'&&v.image._pending){
-            const url=await uploadImageFile(v.image.file);
-            try{URL.revokeObjectURL(v.image.preview);}catch{}
-            v.image=url;
-            done++;setProgress();
+          if(!Array.isArray(v.images))continue;
+          for(let j=0;j<v.images.length;j++){
+            const img=v.images[j];
+            if(img&&typeof img==='object'&&img._pending){
+              const url=await uploadImageFile(img.file);
+              try{URL.revokeObjectURL(img.preview);}catch{}
+              v.images[j]=url;
+              done++;setProgress();
+            }
           }
         }
       }
@@ -4070,7 +4167,7 @@ function showProductDetail(itemIdx,pid,dataset){
       html+=`<div style="font-size:12px;font-weight:600;margin-bottom:6px">🎨 ভ্যারিয়েন্ট বাছুন:</div>`;
       html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px">`;
       p.variants.forEach((v,vi)=>{
-        const vimg=v.image||mainImg;
+        const vimg=(v.images&&v.images[0])||v.image||mainImg;
         html+=`<div id="vbtn_${itemIdx}_${vi}" onclick="selectVariant(${itemIdx},${vi},${Number(v.buyPrice)||0},${Number(v.sellPrice)||0},${Number(v.stock)||0},'${esc(v.name).replace(/'/g,"\\'")}')" style="cursor:pointer;background:var(--bg2);border:2px solid var(--border);border-radius:8px;overflow:hidden;text-align:center;transition:border-color .15s">
           ${vimg?`<img loading="lazy" src="${esc(vimg)}" style="width:100%;height:48px;object-fit:cover;background:#fff"/>`:'<div style="width:100%;height:48px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px">🎨</div>'}
           <div style="padding:4px 3px 0;font-size:10px;font-weight:600;line-height:1.2">${esc(v.name)}</div>
@@ -4697,7 +4794,7 @@ window.olToggleProd=(i)=>{
     _olSelProds.push({
       _idx:i,name:p.name,price:Number(price),images:p.images||[],imageUrl:p.imageUrl||'',
       soldOut:hasVar?p.variants.every(v=>Number(v.stock||0)<=0):Number(p.stock||0)<=0,
-      variants:hasVar?p.variants.map(v=>({name:v.name,price:Number(v.sellPrice||0),stock:Number(v.stock||0),image:(typeof v.image==='string'?v.image:'')})):[]
+      variants:hasVar?p.variants.map(v=>({name:v.name,price:Number(v.sellPrice||0),stock:Number(v.stock||0),images:(Array.isArray(v.images)?v.images.filter(x=>typeof x==='string'):(typeof v.image==='string'?[v.image]:[]))})):[]
     });
   }
   const c=$('olSelCount');if(c)c.textContent=_olSelProds.length;
