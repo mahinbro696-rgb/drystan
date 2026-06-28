@@ -1416,7 +1416,7 @@ function renderOrderLink(){
       <button class="btn bP" onclick="olOpenCheckout()" style="flex:1;max-width:220px">এগিয়ে যান →</button>
     </div>
   </div>
-  <div class="mOvl" id="olCheckoutOvl" onclick="if(event.target===this)closeMov('olCheckoutOvl')"><div class="modal" id="olCheckoutMod"></div></div>`;
+  <div class="mOvl" id="olCheckoutOvl"><div class="modal" id="olCheckoutMod"></div></div>`;
 }
 window.olAddToCart=(idx,btn)=>{
   const p=(_olData.products||[])[idx];if(!p)return;
@@ -3041,6 +3041,7 @@ function buildSidebar(){
     ...(G.modPerms?.products?[{p:'prods',ico:'box',lbl:'Products'}]:[]),
     ...(G.modPerms?.customers?[{p:'custs',ico:'users',lbl:'Customers'}]:[]),
     ...(G.modPerms?.reports?[{p:'reports',ico:'chart',lbl:'Reports'}]:[]),
+    ...(G.modPerms?.campaigns?[{p:'campaigns',ico:'target',lbl:'Campaigns'}]:[]),
   ];
   const items=isAdmin?adminNav:modNav;
 
@@ -3398,8 +3399,8 @@ function renderProdsView(){
         </tr>`).join('')}</tbody>
       </table></div>`}
     </div>
-    <div class="mOvl" id="prodMOvl" onclick="if(event.target===this)closeMov('prodMOvl')"><div class="modal" id="prodMod"></div></div>
-    <div class="mOvl" id="restockOvl" onclick="if(event.target===this)closeMov('restockOvl')"><div class="modal" id="restockMod"></div></div>`);
+    <div class="mOvl" id="prodMOvl"><div class="modal" id="prodMod"></div></div>
+    <div class="mOvl" id="restockOvl"><div class="modal" id="restockMod"></div></div>`);
   }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
 }
 
@@ -3641,8 +3642,11 @@ function renderVariantsList(){
       <button class="btn bD bSm bIco" onclick="removeVariant(${i})">🗑️</button>
     </div>
     <div style="display:flex;gap:10px">
-      <div onclick="$('vImgFile${i}').click()" style="width:50px;height:50px;border-radius:8px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;overflow:hidden;background:var(--bg3)" title="এই ভ্যারিয়েন্টের ছবি">
-        ${v.image?`<img loading="lazy" src="${esc(v.image)}" style="width:100%;height:100%;object-fit:cover"/>`:'<span style="font-size:18px">📷</span>'}
+      <div onclick="$('vImgFile${i}').click()" onmouseover="this.style.borderColor='var(--acc)';this.style.background='rgba(99,102,241,.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg3)'" style="width:60px;flex-shrink:0;text-align:center">
+        <div style="width:50px;height:50px;border-radius:8px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;background:var(--bg3);margin:0 auto" title="এই ভ্যারিয়েন্টের ছবি যুক্ত করতে ক্লিক করুন">
+          ${v.image?`<img loading="lazy" src="${esc(v.image)}" style="width:100%;height:100%;object-fit:cover"/>`:'<span style="font-size:18px">📷</span>'}
+        </div>
+        <div style="font-size:9px;color:var(--t3);margin-top:3px;cursor:pointer;line-height:1.3">${v.image?'বদলান':'ক্লিক করুন'}</div>
       </div>
       <input type="file" id="vImgFile${i}" accept="image/*" style="display:none" onchange="updateVariantImage(${i},this.files[0])"/>
       <div class="variantRow" style="flex:1;display:grid;grid-template-columns:1fr 80px 80px 60px;gap:8px">
@@ -4292,7 +4296,7 @@ async function pgTools(){
     <button class="btn bP bFull" onclick="openCreateOrderLink()">➕ নতুন অর্ডার লিংক তৈরি করুন</button>
     <div id="orderLinksList" style="margin-top:14px"></div>
   </div>
-  <div class="mOvl" id="createLinkOvl" onclick="if(event.target===this)closeMov('createLinkOvl')"><div class="modal mLg" id="createLinkMod"></div></div>
+  <div class="mOvl" id="createLinkOvl"><div class="modal mLg" id="createLinkMod"></div></div>
 
   <div class="g g2" style="gap:16px;margin-bottom:16px">
 
@@ -5081,7 +5085,7 @@ function renderOrdersView(){
         </tr>`).join('')}</tbody>
       </table></div>`}
     </div>
-    <div class="mOvl" id="ordMOvl" onclick="if(event.target===this)closeMov('ordMOvl')"><div class="modal mLg" id="ordMod"></div></div>`);
+    <div class="mOvl" id="ordMOvl"><div class="modal mLg" id="ordMod"></div></div>`);
   }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
 }
 async function viewOrder(id){
@@ -5302,7 +5306,7 @@ function renderCustsView(){
         </tr>`).join('')}</tbody>
       </table></div>`}
     </div>
-    <div class="mOvl" id="custMOvl" onclick="if(event.target===this)closeMov('custMOvl')"><div class="modal mLg" id="custMod"></div></div>`);
+    <div class="mOvl" id="custMOvl"><div class="modal mLg" id="custMod"></div></div>`);
   }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
 }
 async function viewCust(id){
@@ -5393,7 +5397,7 @@ async function pgCampaigns(){
       ${active.length?`<div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;margin:4px 0 10px">🟢 ${T('Active','চলমান')} (${active.length})</div>${active.map(cardFor).join('')}`:''}
       ${past.length?`<div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;margin:18px 0 10px">📚 ${T('History','ইতিহাস')} (${past.length})</div>${past.map(cardFor).join('')}`:''}
     `}
-    <div class="mOvl" id="campCreateOvl" onclick="if(event.target===this)closeMov('campCreateOvl')"><div class="modal mLg" id="campCreateMod"></div></div>
+    <div class="mOvl" id="campCreateOvl"><div class="modal mLg" id="campCreateMod"></div></div>
     <div class="mOvl" id="campDetailOvl" onclick="if(event.target===this)closeMov('campDetailOvl')"><div class="modal mLg" id="campDetailMod"></div></div>`);
   }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
 }
@@ -5869,6 +5873,7 @@ async function pgTeam(){
   try{
     const snap=await getDocs(Col('users'));
     const mods=snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.role==='moderator'&&(u.bizId===G.bizId||u.adminUid===G.bizId));
+    window._modsCache=mods;
     setC(`
     <div class="pH"><div><h1>Team & Moderators</h1><p>Manage your team members</p></div>
       <button class="btn bP" onclick="openAddMod()">➕ Add Moderator</button>
@@ -5885,14 +5890,15 @@ async function pgTeam(){
           <td style="font-size:13px;color:var(--t2)">${esc(u.email)}</td>
           <td style="font-size:13px">${esc(u.phone||'-')}</td>
           <td style="font-size:12px;color:var(--t3)">${u.createdAt?fdate(u.createdAt):'-'}</td>
-          <td><div style="display:flex;gap:5px">
+          <td><div style="display:flex;gap:5px;flex-wrap:wrap">
+            <button class="btn bP bSm" onclick="openEditMod('${u.id}')">✏️ Edit</button>
             <button class="btn bY bSm" onclick="resetModPw('${u.id}','${esc(u.username)}','${esc(u.bizId||'')}')">🔑 Reset PW</button>
             <button class="btn bD bSm" onclick="delMod('${u.id}','${esc(u.username)}')">🗑️ Remove</button>
           </div></td>
         </tr>`).join('')}</tbody>
       </table></div>`}
     </div>
-    <div class="mOvl" id="modMOvl" onclick="if(event.target===this)closeMov('modMOvl')"><div class="modal" id="modMod"></div></div>`);
+    <div class="mOvl" id="modMOvl"><div class="modal" id="modMod"></div></div>`);
   }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
 }
 window.openAddMod=()=>{
@@ -5925,6 +5931,9 @@ window.openAddMod=()=>{
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
           <input type="checkbox" id="perm_reports" style="width:16px;height:16px;accent-color:var(--acc)"/> 📊 Reports & Analytics দেখা
         </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="perm_campaigns" style="width:16px;height:16px;accent-color:var(--acc)"/> 🎯 Campaigns দেখা
+        </label>
       </div>
     </div>
     <div id="mdErr" class="al aE" style="display:none"></div>
@@ -5945,7 +5954,7 @@ window.saveMod=async()=>{
   if(!ex.empty){err.style.display='flex';err.textContent='❌ Username already taken.';return;}
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Creating...';
   const autoEmail=`mod.${username}.${G.bizId.slice(0,8)}@drystan.app`;
-  const perms={orders:true,products:!!$('perm_products')?.checked,customers:!!$('perm_customers')?.checked,reports:!!$('perm_reports')?.checked};
+  const perms={orders:true,products:!!$('perm_products')?.checked,customers:!!$('perm_customers')?.checked,reports:!!$('perm_reports')?.checked,campaigns:!!$('perm_campaigns')?.checked};
   try{
     // Use secondary Firebase app to avoid signing out current admin
     const {initializeApp:initApp2,getApp} = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
@@ -5966,6 +5975,54 @@ window.saveMod=async()=>{
   }catch(e){
     err.style.display='flex';err.textContent='❌ '+e.message;
     btn.disabled=false;btn.innerHTML='➕ Create Moderator';
+  }
+};
+window.openEditMod=(docId)=>{
+  const u=(window._modsCache||[]).find(m=>m.id===docId);
+  if(!u){toast('পাওয়া যায়নি','err');return;}
+  const p=u.permissions||{};
+  $('modMod').innerHTML=`
+  <div class="mH"><h3>✏️ ${esc(u.displayName||u.username)} — Permissions</h3><button class="btn bS bIco" onclick="closeMov('modMOvl')">✕</button></div>
+  <div class="mB">
+    <div class="al aI" style="font-size:12px">ℹ️ এই মডারেটরের <b>@${esc(u.username)}</b> এর অনুমতি যখনই ইচ্ছা বদলাতে পারবেন। পরিবর্তন সাথে সাথে কার্যকর হবে।</div>
+    <div class="afG">
+      <label class="afL">🔐 Role & Permissions</label>
+      <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border)">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" checked disabled style="width:16px;height:16px;accent-color:var(--acc)"/> 📋 Create & Manage Orders <span style="color:var(--t3);font-size:11px">(সবসময় চালু)</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="eperm_products" ${p.products?'checked':''} style="width:16px;height:16px;accent-color:var(--acc)"/> 📦 Products দেখা ও Edit করা
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="eperm_customers" ${p.customers?'checked':''} style="width:16px;height:16px;accent-color:var(--acc)"/> 👥 Customers দেখা
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="eperm_reports" ${p.reports?'checked':''} style="width:16px;height:16px;accent-color:var(--acc)"/> 📊 Reports & Analytics দেখা
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="eperm_campaigns" ${p.campaigns?'checked':''} style="width:16px;height:16px;accent-color:var(--acc)"/> 🎯 Campaigns দেখা
+        </label>
+      </div>
+    </div>
+    <div id="emErr" class="al aE" style="display:none"></div>
+  </div>
+  <div class="mF">
+    <button class="btn bS" onclick="closeMov('modMOvl')">Cancel</button>
+    <button class="btn bP" id="emBtn" onclick="saveModPerms('${docId}')">💾 Save Permissions</button>
+  </div>`;
+  $('modMOvl').classList.add('open');
+};
+window.saveModPerms=async(docId)=>{
+  const btn=$('emBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';}
+  const perms={orders:true,products:!!$('eperm_products')?.checked,customers:!!$('eperm_customers')?.checked,reports:!!$('eperm_reports')?.checked,campaigns:!!$('eperm_campaigns')?.checked};
+  try{
+    await updateDoc(Doc('users',docId),{permissions:perms});
+    toast('✅ Permissions updated!');
+    closeMov('modMOvl');pgTeam();
+  }catch(e){
+    const err=$('emErr');if(err){err.style.display='flex';err.textContent='❌ '+e.message;}
+    if(btn){btn.disabled=false;btn.innerHTML='💾 Save Permissions';}
   }
 };
 async function delMod(docId,username){if(!confirm(`Remove moderator "@${username}"?`))return;try{await deleteDoc(Doc('users',docId));toast('Removed');pgTeam();}catch(e){toast(e.message,'err');}}
@@ -6173,7 +6230,7 @@ async function pgAccount(){
           <button class="btn bP bFull" onclick="setupTOTP()">⚙️ Setup Google Authenticator</button>
           `}
         </div>
-        <div class="mOvl" id="totpMOvl" onclick="if(event.target===this)closeMov('totpMOvl')"><div class="modal" id="totpMod" style="max-width:420px"></div></div>
+        <div class="mOvl" id="totpMOvl"><div class="modal" id="totpMod" style="max-width:420px"></div></div>
         `:''}
         <div class="card" style="border-color:rgba(99,102,241,.2)">
           <div class="cardTitle">📊 Account Info</div>
