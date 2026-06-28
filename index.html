@@ -10,7 +10,7 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
 <meta name="referrer" content="strict-origin-when-cross-origin"/>
 <meta http-equiv="X-Frame-Options" content="DENY"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.googleapis.com https://apis.google.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasestorage.app https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://api.anthropic.com https://api.emailjs.com https://*.steadfast.com.bd https://fraudbd.com https://*.fraudbd.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://www.recaptcha.net https://recaptcha.net; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.googleapis.com https://apis.google.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasestorage.app https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://api.anthropic.com https://api.emailjs.com https://*.steadfast.com.bd https://fraudbd.com https://*.fraudbd.com https://api.imgbb.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://www.recaptcha.net https://recaptcha.net; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"/>
 <title>Drystan – Business Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
@@ -742,6 +742,7 @@ img{max-width:100%}
           <div style="font-size:12px;font-weight:700;color:#A855F7;margin-bottom:10px">🤖 AI Features (Claude API)</div>
           <div style="font-size:11px;color:var(--t2);margin-bottom:8px;line-height:1.6">AI Business Advisor, Product Description Writer ও Order Risk Analysis চালু করতে Anthropic API key দিন। key পাবেন: console.anthropic.com</div>
           <div class="afG"><label class="afL">Anthropic API Key</label><input class="afI" id="ow_aikey" type="password" placeholder="sk-ant-..."/></div>
+          <div class="afG"><label class="afL">🖼️ ImgBB API Key <span style="font-size:10px;color:var(--t3)">(ছবি আপলোডের জন্য — api.imgbb.com থেকে ফ্রি নিন)</span></label><input class="afI" id="ow_imgbbkey" type="password" placeholder="ImgBB API key"/></div>
         </div>
         <button class="btn bFull" style="background:linear-gradient(135deg,#F97316,#EA580C);color:#fff;padding:12px" onclick="ownerSave()">💾 Save Global Settings</button>
 
@@ -1714,14 +1715,18 @@ window.pubAddToCart=(idx)=>{
 
 window.pubPickVariant=(idx)=>{
   const p=_pubProds[idx];if(!p)return;
+  const fallbackImg=(p.images&&p.images[0])||p.imageUrl||'';
   $('pubCartMod').innerHTML=`
   <div class="mH"><h3>${esc(p.name)} — ভ্যারিয়েন্ট বাছুন</h3><button class="btn bS bIco" onclick="closeMov('pubCartOvl')">✕</button></div>
   <div class="mB">
-    ${p.variants.map((v,vi)=>`
-      <button class="btn bS bFull" style="justify-content:space-between;margin-bottom:8px;padding:12px" onclick="pubAddVariant(${idx},${vi})">
-        <span>${esc(v.name)} ${Number(v.stock)<=0?'<span style=\"color:var(--red)\">(স্টক নেই)</span>':''}</span>
+    ${p.variants.map((v,vi)=>{
+      const img=v.image||fallbackImg;
+      return `<button class="btn bS bFull" style="justify-content:flex-start;gap:10px;margin-bottom:8px;padding:10px;text-align:left" onclick="pubAddVariant(${idx},${vi})">
+        ${img?`<img loading="lazy" src="${esc(img)}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0"/>`:'<div style="width:40px;height:40px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0">📦</div>'}
+        <span style="flex:1">${esc(v.name)} ${Number(v.stock)<=0?'<span style=\"color:var(--red)\">(স্টক নেই)</span>':''}</span>
         <strong style="color:var(--green)">${cur(v.sellPrice)}</strong>
-      </button>`).join('')}
+      </button>`;
+    }).join('')}
   </div>`;
   $('pubCartOvl').classList.add('open');
 };
@@ -1729,9 +1734,10 @@ window.pubPickVariant=(idx)=>{
 window.pubAddVariant=(idx,vi)=>{
   const p=_pubProds[idx];const v=p.variants[vi];
   if(Number(v.stock)<=0){toast('এই ভ্যারিয়েন্টের স্টক নেই','err');return;}
+  const img=v.image||(p.images&&p.images[0])||p.imageUrl||'';
   const existing=_pubCart.find(i=>i.pid===p.id&&i.variantName===v.name);
   if(existing)existing.qty++;
-  else _pubCart.push({pid:p.id,name:p.name,price:Number(v.sellPrice||0),qty:1,variantName:v.name,maxStock:Number(v.stock||99)});
+  else _pubCart.push({pid:p.id,name:p.name,price:Number(v.sellPrice||0),qty:1,variantName:v.name,maxStock:Number(v.stock||99),image:img});
   closeMov('pubCartOvl');
   toast('✅ কার্টে যোগ হয়েছে');
   renderPublicShop();
@@ -1862,6 +1868,7 @@ async function loadOwnerData(){
     if($('ow_supportEmail'))$('ow_supportEmail').value=cfg.supportEmail||'';
     if($('ow_whatsapp'))$('ow_whatsapp').value=cfg.supportWhatsapp||'';
     if($('ow_aikey'))$('ow_aikey').value=cfg.aiApiKey||'';
+    if($('ow_imgbbkey'))$('ow_imgbbkey').value=cfg.imgbbKey||'';
   }catch{}
 }
 let _ownerTries=0,_ownerLockUntil=0;
@@ -2294,7 +2301,7 @@ window.saveBroadcast=async()=>{
 };
 window.ownerSave=async()=>{
   try{
-    const data={siteName:$('ow_sitename').value.trim(),ejsKey:$('ow_ejk').value.trim(),ejsService:$('ow_ejs').value.trim(),ejsTemplate:$('ow_ejt').value.trim(),siteTheme:$('ow_theme').value,supportPhone:$('ow_support')?.value.trim()||'',supportEmail:$('ow_supportEmail')?.value.trim()||'',supportWhatsapp:$('ow_whatsapp')?.value.trim()||'',aiApiKey:$('ow_aikey')?.value.trim()||'',updatedAt:serverTimestamp()};
+    const data={siteName:$('ow_sitename').value.trim(),ejsKey:$('ow_ejk').value.trim(),ejsService:$('ow_ejs').value.trim(),ejsTemplate:$('ow_ejt').value.trim(),siteTheme:$('ow_theme').value,supportPhone:$('ow_support')?.value.trim()||'',supportEmail:$('ow_supportEmail')?.value.trim()||'',supportWhatsapp:$('ow_whatsapp')?.value.trim()||'',aiApiKey:$('ow_aikey')?.value.trim()||'',imgbbKey:$('ow_imgbbkey')?.value.trim()||'',updatedAt:serverTimestamp()};
     await setDoc(GCfg(),data,{merge:true});
     localStorage.removeItem('dry_colortheme'); // let the new global theme take effect
     G.gcfg=G.gcfg||{};G.gcfg.siteTheme=data.siteTheme;
@@ -3463,10 +3470,22 @@ async function openProdMod(id=null){
       <div class="afG"><label class="afL">Product Name (EN) *</label><input class="afI" id="p_n" value="${esc(p?.name||'')}" placeholder="Product name"/></div>
       <div class="afG"><label class="afL">নাম (BN)</label><input class="afI" id="p_nb" value="${esc(p?.nameBn||'')}" placeholder="বাংলা নাম"/></div>
       <div class="afG" style="grid-column:1/-1"><label class="afL">🖼️ Product Images <span style="color:var(--t3);font-size:10px">(একাধিক ছবি যোগ করতে পারেন — প্রথমটি মূল ছবি)</span></label>
-        <div style="display:flex;gap:6px">
-          <input class="afI" id="p_img" placeholder="https://... ছবির লিংক দিন" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addProdImage()}"/>
-          <button type="button" class="btn bS bSm" onclick="addProdImage()">➕ যোগ</button>
+        <div id="p_imgDropzone" ondrop="prodImgDrop(event)" ondragover="event.preventDefault();this.style.borderColor='var(--acc)';this.style.background='rgba(99,102,241,.06)'" ondragleave="this.style.borderColor='var(--border)';this.style.background='var(--card)'"
+          style="border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;background:var(--card);transition:all .2s"
+          onclick="$('p_imgFile').click()">
+          <input type="file" id="p_imgFile" accept="image/*" multiple style="display:none" onchange="prodImgFilesSelected(this.files)"/>
+          <div style="font-size:24px">📷</div>
+          <div style="font-size:13px;font-weight:600;margin-top:4px">ছবি টানুন এখানে বা ক্লিক করে বেছে নিন</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px">JPG, PNG · সর্বোচ্চ ১০MB · একাধিক বাছা যাবে</div>
         </div>
+        <div id="p_imgUploadProgress" style="display:none;font-size:12px;color:var(--acc2);margin-top:6px;font-weight:600"></div>
+        <details style="margin-top:8px">
+          <summary style="font-size:11px;color:var(--t3);cursor:pointer">অথবা ছবির লিংক যুক্ত করুন (ঐচ্ছিক)</summary>
+          <div style="display:flex;gap:6px;margin-top:6px">
+            <input class="afI" id="p_img" placeholder="https://... ছবির লিংক দিন" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addProdImage()}"/>
+            <button type="button" class="btn bS bSm" onclick="addProdImage()">➕ যোগ</button>
+          </div>
+        </details>
         <div id="p_imgGallery" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
       </div>
       <div class="afG"><label class="afL">Category</label><input class="afI" id="p_cat" value="${esc(p?.cat||'General')}"/></div>
@@ -3527,6 +3546,47 @@ function renderProdGallery(){
       ${i!==0?`<button type="button" onclick="makeMainImage(${i})" title="মূল ছবি করুন" style="position:absolute;bottom:2px;left:2px;width:18px;height:18px;border-radius:50%;background:rgba(99,102,241,.9);color:#fff;border:none;cursor:pointer;font-size:10px;line-height:1;display:flex;align-items:center;justify-content:center">★</button>`:''}
     </div>`).join('');
 }
+// ── IMAGE UPLOAD (ImgBB — no link typing needed) ──
+async function uploadImageFile(file){
+  const key=G.gcfg?.imgbbKey;
+  if(!key){toast('⚠️ ছবি আপলোড এখনো সেটআপ করা হয়নি। মালিককে জানান।','err');throw new Error('সেটআপ করা নেই');}
+  if(!file.type||!file.type.startsWith('image/')){throw new Error('শুধু ছবি ফাইল আপলোড করা যাবে');}
+  if(file.size>10*1024*1024){throw new Error('ছবি ১০MB এর বেশি বড় হতে পারবে না');}
+  const base64=await new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(String(r.result).split(',')[1]);
+    r.onerror=()=>rej(new Error('ফাইল পড়া যায়নি'));
+    r.readAsDataURL(file);
+  });
+  const form=new FormData();
+  form.append('image',base64);
+  const resp=await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(key)}`,{method:'POST',body:form});
+  const data=await resp.json().catch(()=>null);
+  if(!data||!data.success)throw new Error(data?.error?.message||'আপলোড ব্যর্থ হয়েছে');
+  return data.data.url;
+}
+window.prodImgDrop=async(e)=>{
+  e.preventDefault();
+  e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.background='var(--card)';
+  const files=[...(e.dataTransfer?.files||[])].filter(f=>f.type.startsWith('image/'));
+  if(files.length)await prodImgFilesSelected(files);
+};
+window.prodImgFilesSelected=async(files)=>{
+  const list=[...files];
+  if(list.length===0)return;
+  if(_prodImages.length+list.length>8){toast('সর্বোচ্চ ৮টি ছবি যোগ করা যাবে','err');return;}
+  const prog=$('p_imgUploadProgress');
+  for(let i=0;i<list.length;i++){
+    if(prog){prog.style.display='block';prog.textContent=`⏳ আপলোড হচ্ছে... (${i+1}/${list.length})`;}
+    try{
+      const url=await uploadImageFile(list[i]);
+      _prodImages.push(url);
+      renderProdGallery();
+    }catch(err){toast('❌ '+(err.message||'আপলোড ব্যর্থ'),'err');}
+  }
+  if(prog)prog.style.display='none';
+  const fi=$('p_imgFile');if(fi)fi.value='';
+};
 window.addProdImage=()=>{
   const inp=$('p_img');if(!inp)return;
   const url=inp.value.trim();
@@ -3548,7 +3608,7 @@ window.toggleProdVariants=(on)=>{
 };
 
 window.addVariant=()=>{
-  _prodVariants.push({name:'',buyPrice:'',sellPrice:'',stock:0});
+  _prodVariants.push({name:'',buyPrice:'',sellPrice:'',stock:0,image:''});
   renderVariantsList();
 };
 
@@ -3573,22 +3633,38 @@ function renderVariantsList(){
       <span style="font-size:12px;font-weight:700;color:var(--t2)">Variant ${i+1}</span>
       <button class="btn bD bSm bIco" onclick="removeVariant(${i})">🗑️</button>
     </div>
-    <div class="variantRow" style="display:grid;grid-template-columns:1fr 90px 90px 70px;gap:8px">
-      <div class="afG" style="margin:0"><label class="afL">Name (Color/Size)</label>
-        <input class="afI" value="${esc(v.name||'')}" placeholder="e.g. Red, XL" oninput="updateVariant(${i},'name',this.value)"/>
+    <div style="display:flex;gap:10px">
+      <div onclick="$('vImgFile${i}').click()" style="width:50px;height:50px;border-radius:8px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;overflow:hidden;background:var(--bg3)" title="এই ভ্যারিয়েন্টের ছবি">
+        ${v.image?`<img loading="lazy" src="${esc(v.image)}" style="width:100%;height:100%;object-fit:cover"/>`:'<span style="font-size:18px">📷</span>'}
       </div>
-      <div class="afG" style="margin:0"><label class="afL">Buy ৳</label>
-        <input class="afI" type="number" min="0" value="${v.buyPrice||''}" placeholder="0" oninput="updateVariant(${i},'buyPrice',this.value)"/>
-      </div>
-      <div class="afG" style="margin:0"><label class="afL">Sell ৳</label>
-        <input class="afI" type="number" min="0" value="${v.sellPrice||''}" placeholder="0" oninput="updateVariant(${i},'sellPrice',this.value)"/>
-      </div>
-      <div class="afG" style="margin:0"><label class="afL">Stock</label>
-        <input class="afI" type="number" min="0" value="${v.stock||0}" oninput="updateVariant(${i},'stock',this.value)"/>
+      <input type="file" id="vImgFile${i}" accept="image/*" style="display:none" onchange="updateVariantImage(${i},this.files[0])"/>
+      <div class="variantRow" style="flex:1;display:grid;grid-template-columns:1fr 80px 80px 60px;gap:8px">
+        <div class="afG" style="margin:0"><label class="afL">Name (Color/Size)</label>
+          <input class="afI" value="${esc(v.name||'')}" placeholder="e.g. Red, XL" oninput="updateVariant(${i},'name',this.value)"/>
+        </div>
+        <div class="afG" style="margin:0"><label class="afL">Buy ৳</label>
+          <input class="afI" type="number" min="0" value="${v.buyPrice||''}" placeholder="0" oninput="updateVariant(${i},'buyPrice',this.value)"/>
+        </div>
+        <div class="afG" style="margin:0"><label class="afL">Sell ৳</label>
+          <input class="afI" type="number" min="0" value="${v.sellPrice||''}" placeholder="0" oninput="updateVariant(${i},'sellPrice',this.value)"/>
+        </div>
+        <div class="afG" style="margin:0"><label class="afL">Stock</label>
+          <input class="afI" type="number" min="0" value="${v.stock||0}" oninput="updateVariant(${i},'stock',this.value)"/>
+        </div>
       </div>
     </div>
   </div>`).join('');
 }
+window.updateVariantImage=async(i,file)=>{
+  if(!file||!_prodVariants[i])return;
+  toast('⏳ ছবি আপলোড হচ্ছে...','info');
+  try{
+    const url=await uploadImageFile(file);
+    _prodVariants[i].image=url;
+    renderVariantsList();
+    toast('✅ ভ্যারিয়েন্টের ছবি যুক্ত হয়েছে');
+  }catch(e){toast('❌ '+(e.message||'আপলোড ব্যর্থ'),'err');}
+};
 
 async function saveProd(id){
   const btn=$('pSvBtn');btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';
