@@ -1388,7 +1388,9 @@ function renderOrderLink(){
       <div class="pubGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
         ${prods.map((p,i)=>{
           const imgs=(p.images&&p.images.length)?p.images:(p.imageUrl?[p.imageUrl]:[]);
-          const soldOut=p.soldOut===true;
+          const hasVar=p.variants&&p.variants.length>0;
+          const soldOut=hasVar?p.variants.every(v=>Number(v.stock||0)<=0):p.soldOut===true;
+          const displayPrice=hasVar?p.variants[0].price:p.price;
           return `<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;position:relative;${soldOut?'opacity:.55':''}">
             <div style="position:relative;cursor:${imgs.length>1?'pointer':'default'}" ${imgs.length>1?`onclick="olViewImages(${i})"`:''}>
               ${imgs[0]?`<img loading="lazy" src="${esc(imgs[0])}" style="width:100%;height:140px;object-fit:cover;background:#fff"/>`:`<div style="width:100%;height:140px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:34px">📦</div>`}
@@ -1397,8 +1399,9 @@ function renderOrderLink(){
             </div>
             <div style="padding:10px">
               <div style="font-weight:600;font-size:13px;margin-bottom:3px;min-height:34px;line-height:1.3">${esc(p.name)}</div>
-              <div style="color:var(--green);font-weight:800;font-size:16px;margin-bottom:8px">${cur(p.price)}</div>
+              <div style="color:var(--green);font-weight:800;font-size:16px;margin-bottom:8px">${hasVar?'থেকে ':''}${cur(displayPrice)}${hasVar?` <span style="font-size:10px;color:var(--t3);font-weight:400">(${p.variants.length} রকম)</span>`:''}</div>
               ${soldOut?`<button class="btn bSm bFull" disabled style="font-size:12px;opacity:.6">স্টক শেষ</button>`
+              :hasVar?`<button class="btn bP bSm bFull" onclick="olPickVariant(${i})" style="font-size:12px">🎨 পছন্দ করুন</button>`
               :`<button class="btn bP bSm bFull" onclick="olAddToCart(${i},this)" style="font-size:12px">➕ কার্টে যোগ</button>`}
             </div>
           </div>`;
@@ -1416,7 +1419,8 @@ function renderOrderLink(){
       <button class="btn bP" onclick="olOpenCheckout()" style="flex:1;max-width:220px">এগিয়ে যান →</button>
     </div>
   </div>
-  <div class="mOvl" id="olCheckoutOvl"><div class="modal" id="olCheckoutMod"></div></div>`;
+  <div class="mOvl" id="olCheckoutOvl"><div class="modal" id="olCheckoutMod"></div></div>
+  <div class="mOvl" id="olVariantOvl"><div class="modal" id="olVariantMod"></div></div>`;
 }
 window.olAddToCart=(idx,btn)=>{
   const p=(_olData.products||[])[idx];if(!p)return;
@@ -1432,6 +1436,39 @@ window.olAddToCart=(idx,btn)=>{
   }
   // Update cart bar with bump animation
   const bar=$('olCartBar');if(bar){bar.style.display='block';}
+  const cc=$('olCartCount'),ct=$('olCartTotal');
+  if(cc){cc.textContent=olCartCount();cc.style.transform='scale(1.4)';setTimeout(()=>cc.style.transform='',250);}
+  if(ct)ct.textContent=cur(olCartTotal());
+};
+window.olPickVariant=(idx)=>{
+  const p=(_olData.products||[])[idx];if(!p||!p.variants)return;
+  const fallbackImg=(p.images&&p.images[0])||p.imageUrl||'';
+  $('olVariantMod').innerHTML=`
+  <div class="mH"><h3>${esc(p.name)} — পছন্দ করুন</h3><button class="btn bS bIco" onclick="closeMov('olVariantOvl')">✕</button></div>
+  <div class="mB" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px">
+    ${p.variants.map((v,vi)=>{
+      const img=v.image||fallbackImg;
+      const out=Number(v.stock||0)<=0;
+      return `<div onclick="${out?'':`olAddVariantToCart(${idx},${vi})`}" style="cursor:${out?'default':'pointer'};background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;text-align:center;${out?'opacity:.5':''}">
+        ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:70px;object-fit:cover;background:#fff"/>`:'<div style="width:100%;height:70px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:20px">🎨</div>'}
+        <div style="padding:6px 4px;font-size:11px;font-weight:600">${esc(v.name)}</div>
+        <div style="padding:0 4px 6px;font-size:11px;color:${out?'var(--red)':'var(--green)'};font-weight:700">${out?'স্টক নেই':cur(v.price)}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+  $('olVariantOvl').classList.add('open');
+};
+window.olAddVariantToCart=(idx,vi)=>{
+  const p=(_olData.products||[])[idx];const v=p?.variants?.[vi];if(!v)return;
+  if(Number(v.stock||0)<=0){toast('স্টক নেই','err');return;}
+  const fallbackImg=(p.images&&p.images[0])||p.imageUrl||'';
+  const img=v.image||fallbackImg;
+  const ex=_olCart.find(i=>i.idx===idx&&i.variantName===v.name);
+  if(ex)ex.qty++;
+  else _olCart.push({idx,name:p.name,price:Number(v.price||0),qty:1,image:img,variantName:v.name});
+  closeMov('olVariantOvl');
+  toast('✅ কার্টে যোগ হয়েছে');
+  const bar=$('olCartBar');if(bar)bar.style.display='block';
   const cc=$('olCartCount'),ct=$('olCartTotal');
   if(cc){cc.textContent=olCartCount();cc.style.transform='scale(1.4)';setTimeout(()=>cc.style.transform='',250);}
   if(ct)ct.textContent=cur(olCartTotal());
@@ -1470,7 +1507,7 @@ window.olOpenCheckout=()=>{
     <div style="margin-bottom:16px">
       ${_olCart.map((it,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
         ${it.image?`<img src="${esc(it.image)}" style="width:42px;height:42px;border-radius:8px;object-fit:cover"/>`:'<div style="width:42px;height:42px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center">📦</div>'}
-        <div style="flex:1"><div style="font-size:13px;font-weight:600">${esc(it.name)}</div><div style="font-size:12px;color:var(--t2)">${cur(it.price)} × ${it.qty}</div></div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:600">${esc(it.name)}</div>${it.variantName?`<div style="font-size:11px;color:var(--green)">🎨 ${esc(it.variantName)}</div>`:''}<div style="font-size:12px;color:var(--t2)">${cur(it.price)} × ${it.qty}</div></div>
         <div style="display:flex;align-items:center;gap:6px">
           <button onclick="olQty(${i},-1)" style="width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--t1);cursor:pointer;font-size:14px">−</button>
           <span style="min-width:20px;text-align:center;font-weight:600">${it.qty}</span>
@@ -1524,7 +1561,7 @@ window.olConfirmOrder=async()=>{
     const sub=olCartTotal();
     const total=sub+delivery;
     const num='ORD-'+Date.now().toString().slice(-8);
-    const items=_olCart.map(it=>({name:it.name,nameBn:it.name,qty:it.qty,price:it.price,buyPrice:0,lineTotal:it.price*it.qty,profit:0}));
+    const items=_olCart.map(it=>({name:it.name+(it.variantName?` (${it.variantName})`:''),nameBn:it.name+(it.variantName?` (${it.variantName})`:''),variantName:it.variantName||'',qty:it.qty,price:it.price,buyPrice:0,lineTotal:it.price*it.qty,profit:0}));
     // 1. Save order to database (backup so seller always sees it)
     await addDoc(collection(db,'businesses',_olBiz,'orders'),{
       num,cName:name,cPhone:phone,ordererPhone:phone,recvName:name,recvPhone:phone,cAddr:addr,
@@ -1540,7 +1577,7 @@ window.olConfirmOrder=async()=>{
     // 3. Open customer's WhatsApp with a ready message to the seller's business number
     const waBiz=(_olCfg.bizWhatsapp||_olCfg.bizPhone||'').replace(/[^0-9]/g,'');
     const waNum=waBiz.startsWith('0')?'88'+waBiz:(waBiz.startsWith('88')?waBiz:'88'+waBiz);
-    const itemLines=_olCart.map(it=>`• ${it.name} × ${it.qty} = ${cur(it.price*it.qty)}`).join('\n');
+    const itemLines=_olCart.map(it=>`• ${it.name}${it.variantName?' ('+it.variantName+')':''} × ${it.qty} = ${cur(it.price*it.qty)}`).join('\n');
     const msg=`🛒 *নতুন অর্ডার*\n\n👤 নাম: ${name}\n📞 ফোন: ${phone}\n📍 ঠিকানা: ${addr}\n\n${itemLines}\n\nপণ্য: ${cur(sub)}\nডেলিভারি: ${cur(delivery)}\n*সর্বমোট: ${cur(total)}*\n\nঅর্ডার নং: ${num}`;
     // Build contact buttons based on what the seller has configured
     const fbUser=(_olCfg.fbPageUser||'').trim().replace(/^@/,'').replace(/^(https?:\/\/)?(www\.)?(m\.me\/|messenger\.com\/t\/|facebook\.com\/)/i,'').replace(/\/$/,'');
@@ -3513,7 +3550,7 @@ async function openProdMod(id=null){
       <div class="afRow">
         <div class="afG" style="margin:0"><label class="afL">Buy Price (৳) *</label><input class="afI" type="number" id="p_b" min="0" value="${p?.buyPrice||''}"/></div>
         <div class="afG" style="margin:0"><label class="afL">Sell Price (৳) *</label><input class="afI" type="number" id="p_s" min="0" value="${p?.sellPrice||''}"/></div>
-        <div class="afG" style="margin:0"><label class="afL">Stock *</label><input class="afI" type="number" id="p_st" min="0" value="${p?.stock??0}"/></div>
+        <div class="afG" style="margin:0"><label class="afL">Stock *</label><input class="afI" type="number" id="p_st" min="0" value="${p?.stock??''}" placeholder="0"/></div>
       </div>
     </div>
 
@@ -3543,13 +3580,18 @@ window.openProdMod=openProdMod;
 function renderProdGallery(){
   const g=$('p_imgGallery');if(!g)return;
   if(_prodImages.length===0){g.innerHTML='<div style="font-size:11px;color:var(--t3);padding:4px">এখনো কোনো ছবি যোগ করা হয়নি</div>';return;}
-  g.innerHTML=_prodImages.map((url,i)=>`
+  g.innerHTML=_prodImages.map((item,i)=>{
+    const isPending=item&&typeof item==='object'&&item._pending;
+    const src=isPending?item.preview:item;
+    return `
     <div style="position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:2px solid ${i===0?'var(--acc)':'var(--border)'}">
-      <img src="${esc(url)}" style="width:100%;height:100%;object-fit:cover;background:#fff" onerror="this.parentElement.style.opacity='.4';this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2272%22 height=%2272%22%3E%3Crect fill=%22%23ccc%22 width=%2272%22 height=%2272%22/%3E%3C/svg%3E'"/>
+      <img src="${esc(src)}" style="width:100%;height:100%;object-fit:cover;background:#fff" onerror="this.parentElement.style.opacity='.4';this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2272%22 height=%2272%22%3E%3Crect fill=%22%23ccc%22 width=%2272%22 height=%2272%22/%3E%3C/svg%3E'"/>
       ${i===0?'<div style="position:absolute;top:0;left:0;background:var(--acc);color:#fff;font-size:8px;padding:1px 5px;border-radius:0 0 6px 0">মূল</div>':''}
+      ${isPending?'<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(245,158,11,.9);color:#fff;font-size:7px;text-align:center;padding:1px 0">সেভে আপলোড হবে</div>':''}
       <button type="button" onclick="removeProdImage(${i})" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(239,68,68,.9);color:#fff;border:none;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center">×</button>
-      ${i!==0?`<button type="button" onclick="makeMainImage(${i})" title="মূল ছবি করুন" style="position:absolute;bottom:2px;left:2px;width:18px;height:18px;border-radius:50%;background:rgba(99,102,241,.9);color:#fff;border:none;cursor:pointer;font-size:10px;line-height:1;display:flex;align-items:center;justify-content:center">★</button>`:''}
-    </div>`).join('');
+      ${i!==0?`<button type="button" onclick="makeMainImage(${i})" title="মূল ছবি করুন" style="position:absolute;bottom:${isPending?'13':'2'}px;left:2px;width:18px;height:18px;border-radius:50%;background:rgba(99,102,241,.9);color:#fff;border:none;cursor:pointer;font-size:10px;line-height:1;display:flex;align-items:center;justify-content:center">★</button>`:''}
+    </div>`;
+  }).join('');
 }
 // ── IMAGE UPLOAD (ImgBB — no link typing needed) ──
 async function uploadImageFile(file){
@@ -3580,24 +3622,17 @@ window.prodImgDrop=async(e)=>{
   const files=[...(e.dataTransfer?.files||[])].filter(f=>f.type.startsWith('image/'));
   if(files.length)await prodImgFilesSelected(files);
 };
-window.prodImgFilesSelected=async(files)=>{
+window.prodImgFilesSelected=(files)=>{
   const list=[...files];
   if(list.length===0)return;
-  if(_prodImages.length+list.length>8){toast('সর্বোচ্চ ৮টি ছবি যোগ করা যাবে','err');return;}
-  const prog=$('p_imgUploadProgress');
+  const validList=list.filter(f=>f.type&&f.type.startsWith('image/'));
+  if(_prodImages.length+validList.length>8){toast('সর্বোচ্চ ৮টি ছবি যোগ করা যাবে','err');return;}
   const errBox=$('p_imgUploadError');if(errBox)errBox.style.display='none';
-  for(let i=0;i<list.length;i++){
-    if(prog){prog.style.display='block';prog.textContent=`⏳ আপলোড হচ্ছে... (${i+1}/${list.length})`;}
-    try{
-      const url=await uploadImageFile(list[i]);
-      _prodImages.push(url);
-      renderProdGallery();
-    }catch(err){
-      toast('❌ '+(err.message||'আপলোড ব্যর্থ'),'err');
-      if(errBox){errBox.style.display='block';errBox.innerHTML='❌ '+esc(err.message||'আপলোড ব্যর্থ')+(err.message?.includes('সেটআপ')?'<br><b>সমাধান:</b> Owner Panel → Settings → ImgBB API Key সেভ করুন, তারপর logout করে আবার login করুন।':'');}
-    }
+  for(const file of validList){
+    if(file.size>10*1024*1024){toast('❌ '+file.name+' — ১০MB এর বেশি বড়','err');continue;}
+    _prodImages.push({_pending:true,file,preview:URL.createObjectURL(file)});
   }
-  if(prog)prog.style.display='none';
+  renderProdGallery();
   const fi=$('p_imgFile');if(fi)fi.value='';
 };
 window.addProdImage=()=>{
@@ -3611,7 +3646,11 @@ window.addProdImage=()=>{
   inp.value='';
   renderProdGallery();
 };
-window.removeProdImage=(i)=>{_prodImages.splice(i,1);renderProdGallery();};
+window.removeProdImage=(i)=>{
+  const item=_prodImages[i];
+  if(item&&typeof item==='object'&&item._pending){try{URL.revokeObjectURL(item.preview);}catch{}}
+  _prodImages.splice(i,1);renderProdGallery();
+};
 window.makeMainImage=(i)=>{const[img]=_prodImages.splice(i,1);_prodImages.unshift(img);renderProdGallery();toast('✅ মূল ছবি পরিবর্তন হয়েছে');};
 
 window.toggleProdVariants=(on)=>{
@@ -3621,7 +3660,7 @@ window.toggleProdVariants=(on)=>{
 };
 
 window.addVariant=()=>{
-  _prodVariants.push({name:'',buyPrice:'',sellPrice:'',stock:0,image:''});
+  _prodVariants.push({name:'',buyPrice:'',sellPrice:'',stock:'',image:''});
   renderVariantsList();
 };
 
@@ -3648,8 +3687,8 @@ function renderVariantsList(){
     </div>
     <div style="display:flex;gap:10px">
       <div onclick="$('vImgFile${i}').click()" onmouseover="this.style.borderColor='var(--acc)';this.style.background='rgba(99,102,241,.08)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--bg3)'" style="width:60px;flex-shrink:0;text-align:center">
-        <div style="width:50px;height:50px;border-radius:8px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;background:var(--bg3);margin:0 auto" title="এই ভ্যারিয়েন্টের ছবি যুক্ত করতে ক্লিক করুন">
-          ${v.image?`<img loading="lazy" src="${esc(v.image)}" style="width:100%;height:100%;object-fit:cover"/>`:'<span style="font-size:18px">📷</span>'}
+        <div style="width:50px;height:50px;border-radius:8px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;background:var(--bg3);margin:0 auto;position:relative" title="এই ভ্যারিয়েন্টের ছবি যুক্ত করতে ক্লিক করুন">
+          ${(()=>{const vimg=v.image;const isPend=vimg&&typeof vimg==='object'&&vimg._pending;const vsrc=isPend?vimg.preview:vimg;return vsrc?`<img loading="lazy" src="${esc(vsrc)}" style="width:100%;height:100%;object-fit:cover"/>${isPend?'<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(245,158,11,.9);font-size:6px;color:#fff;text-align:center">নতুন</div>':''}`:'<span style="font-size:18px">📷</span>';})()}
         </div>
         <div style="font-size:9px;color:var(--t3);margin-top:3px;cursor:pointer;line-height:1.3">${v.image?'বদলান':'ক্লিক করুন'}</div>
       </div>
@@ -3665,36 +3704,70 @@ function renderVariantsList(){
           <input class="afI" type="number" min="0" value="${v.sellPrice||''}" placeholder="0" oninput="updateVariant(${i},'sellPrice',this.value)"/>
         </div>
         <div class="afG" style="margin:0"><label class="afL">Stock</label>
-          <input class="afI" type="number" min="0" value="${v.stock||0}" oninput="updateVariant(${i},'stock',this.value)"/>
+          <input class="afI" type="number" min="0" value="${v.stock??''}" placeholder="0" oninput="updateVariant(${i},'stock',this.value)"/>
         </div>
       </div>
     </div>
   </div>`).join('');
 }
-window.updateVariantImage=async(i,file)=>{
+window.updateVariantImage=(i,file)=>{
   if(!file||!_prodVariants[i])return;
-  const errBox=$('vImgErr');if(errBox)errBox.style.display='none';
-  toast('⏳ ছবি আপলোড হচ্ছে...','info');
-  try{
-    const url=await uploadImageFile(file);
-    _prodVariants[i].image=url;
-    renderVariantsList();
-    toast('✅ ভ্যারিয়েন্টের ছবি যুক্ত হয়েছে');
-  }catch(e){
-    toast('❌ '+(e.message||'আপলোড ব্যর্থ'),'err');
-    if(errBox){
-      errBox.style.display='block';
-      errBox.innerHTML='❌ '+esc(e.message||'আপলোড ব্যর্থ')+(e.message?.includes('সেটআপ')?'<br><b>সমাধান:</b> ১) Owner Panel খুলুন ২) Settings → 🖼️ ImgBB API Key বক্সে key দিয়ে Save করুন ৩) এই পপ-আপ বন্ধ করে আবার ছবি বাছুন (এখন পুনরায় চেষ্টা করলেই কাজ করবে — লগআউট লাগবে না)':'');
-    }
-  }
+  if(!file.type||!file.type.startsWith('image/')){toast('শুধু ছবি ফাইল আপলোড করা যাবে','err');return;}
+  if(file.size>10*1024*1024){toast('ছবি ১০MB এর বেশি বড় হতে পারবে না','err');return;}
+  // revoke any previous pending preview for this variant to avoid memory leak
+  const prev=_prodVariants[i].image;
+  if(prev&&typeof prev==='object'&&prev._pending){try{URL.revokeObjectURL(prev.preview);}catch{}}
+  _prodVariants[i].image={_pending:true,file,preview:URL.createObjectURL(file)};
+  renderVariantsList();
+  toast('✅ ছবি বাছা হয়েছে — সেভ করলে আপলোড হবে');
 };
 
 async function saveProd(id){
   const btn=$('pSvBtn');btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';
   try{
+    const name=$('p_n')?.value.trim()||'';
+    if(!name){toast('Product name required','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
     const useVariants=$('p_useVariants')?.checked&&_prodVariants.length>0;
+    if(useVariants){
+      for(const v of _prodVariants){
+        if(!v.name||!v.sellPrice){toast('All variants need name and sell price','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
+      }
+    }else if(!Number($('p_s')?.value||0)){
+      toast('Sell price required','err');btn.disabled=false;btn.innerHTML='💾 Save';return;
+    }
+
+    // ── Upload any pending (not-yet-uploaded) images NOW — only at the moment of actually saving.
+    // This avoids wasting ImgBB storage on products that are abandoned mid-edit. ──
+    const pendingImgCount=_prodImages.filter(x=>x&&typeof x==='object'&&x._pending).length;
+    const pendingVarCount=useVariants?_prodVariants.filter(v=>v.image&&typeof v.image==='object'&&v.image._pending).length:0;
+    const totalPending=pendingImgCount+pendingVarCount;
+    if(totalPending>0){
+      let done=0;
+      const setProgress=()=>{btn.innerHTML=`<div class="spin spinSm"></div> ছবি আপলোড হচ্ছে... (${done}/${totalPending})`;};
+      setProgress();
+      for(let i=0;i<_prodImages.length;i++){
+        const item=_prodImages[i];
+        if(item&&typeof item==='object'&&item._pending){
+          const url=await uploadImageFile(item.file);
+          try{URL.revokeObjectURL(item.preview);}catch{}
+          _prodImages[i]=url;
+          done++;setProgress();
+        }
+      }
+      if(useVariants){
+        for(const v of _prodVariants){
+          if(v.image&&typeof v.image==='object'&&v.image._pending){
+            const url=await uploadImageFile(v.image.file);
+            try{URL.revokeObjectURL(v.image.preview);}catch{}
+            v.image=url;
+            done++;setProgress();
+          }
+        }
+      }
+    }
+
     let data={
-      name:$('p_n')?.value.trim()||'',
+      name,
       nameBn:$('p_nb')?.value.trim()||'',
       images:[..._prodImages],
       imageUrl:_prodImages[0]||'',
@@ -3703,13 +3776,8 @@ async function saveProd(id){
       desc:$('p_desc')?.value.trim()||'',
       active:true
     };
-    if(!data.name){toast('Product name required','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
 
     if(useVariants){
-      // Validate variants
-      for(const v of _prodVariants){
-        if(!v.name||!v.sellPrice){toast('All variants need name and sell price','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
-      }
       data.variants=_prodVariants;
       // Total stock from variants
       data.stock=_prodVariants.reduce((s,v)=>s+Number(v.stock||0),0);
@@ -3721,7 +3789,6 @@ async function saveProd(id){
       data.sellPrice=Number($('p_s')?.value||0);
       data.stock=Number($('p_st')?.value||0);
       data.variants=[];
-      if(!data.sellPrice){toast('Sell price required','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
     }
 
     if(id)await updateDoc(BDoc('products',id),{...data,updatedAt:serverTimestamp()});
@@ -3754,6 +3821,7 @@ async function pgNewOrder(){
   try{
     const snap=await getDocs(query(BCol('products'),where('active','==',true)));
     const prods=snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>Number(p.stock)>0);
+    window._opProdsCache=prods;
     if(!G.oForm)G.oForm={cName:'',ordererPhone:'',recvPhone:'',recvName:'',cAddr:'',payMethod:'cod',delivery:G.cfg.delCOD||'150',rLang:G.lang,orderDate:today(),delivDate:plus3(),notes:'',discount:0};
     const f=G.oForm;
     const sub=G.oItems.reduce((s,it)=>s+(Number(it.price||0)*Number(it.qty||1)),0);
@@ -3830,6 +3898,12 @@ async function pgNewOrder(){
     </div>
 
     <div class="card" style="margin-bottom:16px">
+      <div class="cardTitle">🖼️ পণ্য বাছুন <span style="font-size:11px;color:var(--t3);font-weight:400">— ক্লিক করলে নিচে যুক্ত হবে</span></div>
+      <input class="afI" id="opSearchBox" placeholder="🔍 পণ্যের নাম লিখে খুঁজুন..." oninput="filterProductPicker(this.value)" style="margin-bottom:12px"/>
+      <div id="productPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px;max-height:360px;overflow-y:auto;padding:2px"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <div class="cardTitle" style="margin:0">📦 Products</div>
         <button class="btn bS bSm" onclick="addOI()">+ Add Item</button>
@@ -3869,8 +3943,40 @@ async function pgNewOrder(){
       <button class="btn bS" onclick="G.oForm=null;G.oItems=[{pid:'',qty:1,price:''}];pgNewOrder()">🔄 Reset</button>
       <button class="btn bP" id="subOBtn" onclick="submitOrder()" style="min-width:200px;padding:12px">✅ Create Order & Receipt</button>
     </div>`);
+    renderProductPickerGrid();
   }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
 }
+// ── VISUAL PRODUCT PICKER (animated thumbnail grid for Create Order) ──
+function renderProductPickerGrid(filter=''){
+  const grid=$('productPickerGrid');if(!grid)return;
+  const prods=window._opProdsCache||[];
+  const q=filter.trim().toLowerCase();
+  const list=q?prods.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.nameBn||'').includes(filter.trim())):prods;
+  if(list.length===0){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--t3);font-size:12px;padding:20px">কোনো পণ্য পাওয়া যায়নি</div>';return;}
+  grid.innerHTML=list.map((p,i)=>{
+    const img=(p.images&&p.images[0])||p.imageUrl||'';
+    const price=p.variants?.length?p.variants[0].sellPrice:p.sellPrice;
+    const extraVariants=p.variants?.length>1?p.variants.length-1:0;
+    return `<div onclick="addProductToOrder('${p.id}')" onmouseover="this.style.transform='translateY(-3px)';this.style.borderColor='var(--acc)'" onmouseout="this.style.transform='';this.style.borderColor='var(--border)'" style="cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;animation:fadeUp .35s ease both;animation-delay:${Math.min(i*0.03,0.6)}s;transition:transform .15s,border-color .15s">
+      ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:78px;object-fit:cover;background:#fff"/>`:`<div style="width:100%;height:78px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:22px">📦</div>`}
+      <div style="padding:7px">
+        <div style="font-size:11px;font-weight:600;line-height:1.3;margin-bottom:3px;min-height:28px">${esc(p.name)}</div>
+        <div style="font-size:12px;color:var(--green);font-weight:800">${cur(price)}${extraVariants?` <span style="font-size:9px;color:var(--t3);font-weight:400">+${extraVariants}</span>`:''}</div>
+        <div style="font-size:9px;color:var(--t3);margin-top:2px">স্টক: ${p.stock}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+window.filterProductPicker=(val)=>renderProductPickerGrid(val);
+window.addProductToOrder=async(pid)=>{
+  G.oItems.push({pid:'',qty:1,price:''});
+  const idx=G.oItems.length-1;
+  await pgNewOrder();
+  const sel=$('psel_'+idx);
+  if(sel){sel.value=pid;setOI(idx,'pid',pid);}
+  toast('✅ যুক্ত হয়েছে — নিচে দেখুন');
+  setTimeout(()=>$('psel_'+idx)?.scrollIntoView({behavior:'smooth',block:'center'}),150);
+};
 
 // ── SMART PASTE ──
 window.doSmartPaste=()=>{
@@ -3952,20 +4058,24 @@ function showProductDetail(itemIdx,pid,dataset){
     if(!d.exists()){detailDiv.innerHTML='';return;}
     const p=d.data();
     const hasVariants=p.variants&&p.variants.length>0;
+    const mainImg=(p.images&&p.images[0])||p.imageUrl||'';
     let html='<div style="padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-top:6px">';
     // Image
-    if(p.imageUrl){
-      html+=`<img loading="lazy" src="${esc(p.imageUrl)}" style="width:100%;max-height:120px;object-fit:contain;border-radius:8px;margin-bottom:8px;background:#fff" onerror="this.style.display='none'"/>`;
+    if(mainImg&&!hasVariants){
+      html+=`<img loading="lazy" src="${esc(mainImg)}" style="width:100%;max-height:120px;object-fit:contain;border-radius:8px;margin-bottom:8px;background:#fff" onerror="this.style.display='none'"/>`;
     }
     html+=`<div style="font-size:12px;color:var(--t2);margin-bottom:6px">📦 Available stock: <strong style="color:${Number(p.stock)>5?'var(--green)':'var(--red)'}"> ${p.stock}</strong></div>`;
-    // Variants
+    // Variants — shown as thumbnail+price cards so the admin can see color/design at a glance
     if(hasVariants){
-      html+=`<div style="font-size:12px;font-weight:600;margin-bottom:6px">🎨 Select Variant:</div>`;
-      html+=`<div style="display:flex;flex-wrap:wrap;gap:6px">`;
+      html+=`<div style="font-size:12px;font-weight:600;margin-bottom:6px">🎨 ভ্যারিয়েন্ট বাছুন:</div>`;
+      html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px">`;
       p.variants.forEach((v,vi)=>{
-        html+=`<button class="btn bS bSm" id="vbtn_${itemIdx}_${vi}" onclick="selectVariant(${itemIdx},'${vi}',${v.buyPrice},${v.sellPrice},${v.stock},'${esc(v.name)}')" style="font-size:12px;border-radius:20px">
-          ${esc(v.name)} (${cur(v.sellPrice)}) · ${v.stock} left
-        </button>`;
+        const vimg=v.image||mainImg;
+        html+=`<div id="vbtn_${itemIdx}_${vi}" onclick="selectVariant(${itemIdx},${vi},${Number(v.buyPrice)||0},${Number(v.sellPrice)||0},${Number(v.stock)||0},'${esc(v.name).replace(/'/g,"\\'")}')" style="cursor:pointer;background:var(--bg2);border:2px solid var(--border);border-radius:8px;overflow:hidden;text-align:center;transition:border-color .15s">
+          ${vimg?`<img loading="lazy" src="${esc(vimg)}" style="width:100%;height:48px;object-fit:cover;background:#fff"/>`:'<div style="width:100%;height:48px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px">🎨</div>'}
+          <div style="padding:4px 3px 0;font-size:10px;font-weight:600;line-height:1.2">${esc(v.name)}</div>
+          <div style="padding:0 3px 4px;font-size:10px;color:var(--green);font-weight:700">${cur(v.sellPrice)}</div>
+        </div>`;
       });
       html+=`</div>`;
       html+=`<div id="variantSel_${itemIdx}" style="font-size:12px;color:var(--green);margin-top:6px;font-weight:600"></div>`;
@@ -3983,12 +4093,12 @@ window.selectVariant=(itemIdx,vi,buyP,sellP,stock,name)=>{
   // Update price input
   const pinp=$('pprice_'+itemIdx);
   if(pinp){pinp.value=sellP;pinp.style.color='var(--green)';pinp.style.fontWeight='700';}
-  // Highlight selected variant button
+  // Highlight selected variant card (border, so the thumbnail stays visible)
   const container=$('pdetail_'+itemIdx);
   if(container){
-    container.querySelectorAll('[id^="vbtn_'+itemIdx+'_"]').forEach(b=>b.style.background='');
+    container.querySelectorAll('[id^="vbtn_'+itemIdx+'_"]').forEach(b=>b.style.borderColor='var(--border)');
     const btn=$('vbtn_'+itemIdx+'_'+vi);
-    if(btn){btn.style.background='var(--acc)';btn.style.color='#fff';}
+    if(btn)btn.style.borderColor='var(--acc)';
   }
   const sel=$('variantSel_'+itemIdx);
   if(sel)sel.textContent=`✅ Selected: ${name} — Stock: ${stock}`;
@@ -4559,10 +4669,11 @@ window.openCreateOrderLink=async()=>{
         ${prods.map((p,i)=>{
           const img=(p.images&&p.images[0])||p.imageUrl||'';
           const price=p.variants?.length?p.variants[0].sellPrice:p.sellPrice;
+          const vCount=p.variants?.length||0;
           return `<label style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer">
             <input type="checkbox" data-pidx="${i}" onchange="olToggleProd(${i})" style="width:16px;height:16px;accent-color:var(--acc)"/>
             ${img?`<img loading="lazy" src="${esc(img)}" style="width:38px;height:38px;border-radius:6px;object-fit:cover"/>`:'<div style="width:38px;height:38px;border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center">📦</div>'}
-            <div style="flex:1"><div style="font-size:13px;font-weight:600">${esc(p.name)}</div><div style="font-size:11px;color:var(--green);font-weight:700">${cur(price)} · স্টক: ${p.stock||0}</div></div>
+            <div style="flex:1"><div style="font-size:13px;font-weight:600">${esc(p.name)}${vCount?` <span style="font-size:10px;color:var(--t3);font-weight:400">(${vCount} ভ্যারিয়েন্ট)</span>`:''}</div><div style="font-size:11px;color:var(--green);font-weight:700">${cur(price)} · স্টক: ${p.stock||0}</div></div>
           </label>`;
         }).join('')}
       </div>`}
@@ -4581,8 +4692,13 @@ window.olToggleProd=(i)=>{
   const ex=_olSelProds.findIndex(x=>x._idx===i);
   if(ex>=0)_olSelProds.splice(ex,1);
   else{
-    const price=p.variants?.length?p.variants[0].sellPrice:p.sellPrice;
-    _olSelProds.push({_idx:i,name:p.name,price:Number(price),images:p.images||[],imageUrl:p.imageUrl||'',soldOut:Number(p.stock||0)<=0});
+    const hasVar=p.variants&&p.variants.length>0;
+    const price=hasVar?p.variants[0].sellPrice:p.sellPrice;
+    _olSelProds.push({
+      _idx:i,name:p.name,price:Number(price),images:p.images||[],imageUrl:p.imageUrl||'',
+      soldOut:hasVar?p.variants.every(v=>Number(v.stock||0)<=0):Number(p.stock||0)<=0,
+      variants:hasVar?p.variants.map(v=>({name:v.name,price:Number(v.sellPrice||0),stock:Number(v.stock||0),image:(typeof v.image==='string'?v.image:'')})):[]
+    });
   }
   const c=$('olSelCount');if(c)c.textContent=_olSelProds.length;
 };
@@ -4592,7 +4708,7 @@ window.saveOrderLink=async()=>{
   const btn=$('olCreateBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';}
   try{
     // Strip internal _idx before saving
-    const products=_olSelProds.map(p=>({name:p.name,price:p.price,images:p.images,imageUrl:p.imageUrl,soldOut:p.soldOut}));
+    const products=_olSelProds.map(p=>({name:p.name,price:p.price,images:p.images,imageUrl:p.imageUrl,soldOut:p.soldOut,variants:p.variants||[]}));
     const ref=await addDoc(BCol('orderLinks'),{
       title,products,status:'active',
       bizName:G.cfg.bizName||'',delivery:Number(G.cfg.delCOD||150),
