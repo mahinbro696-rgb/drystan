@@ -2306,7 +2306,7 @@ window.ownerSave=async()=>{
     const data={siteName:$('ow_sitename').value.trim(),ejsKey:$('ow_ejk').value.trim(),ejsService:$('ow_ejs').value.trim(),ejsTemplate:$('ow_ejt').value.trim(),siteTheme:$('ow_theme').value,supportPhone:$('ow_support')?.value.trim()||'',supportEmail:$('ow_supportEmail')?.value.trim()||'',supportWhatsapp:$('ow_whatsapp')?.value.trim()||'',aiApiKey:$('ow_aikey')?.value.trim()||'',imgbbKey:$('ow_imgbbkey')?.value.trim()||'',updatedAt:serverTimestamp()};
     await setDoc(GCfg(),data,{merge:true});
     localStorage.removeItem('dry_colortheme'); // let the new global theme take effect
-    G.gcfg=G.gcfg||{};G.gcfg.siteTheme=data.siteTheme;
+    G.gcfg={...G.gcfg,...data}; // refresh ALL fields in memory immediately (fixes stale imgbbKey/aiApiKey without needing relogin)
     toast('✅ Global settings saved!');
   }catch(e){toast(e.message,'err');}
 };
@@ -3521,6 +3521,7 @@ async function openProdMod(id=null){
     <div id="p_variantMode" style="display:${hasVariants?'block':'none'}">
       <div id="variantsList"></div>
       <button class="btn bS bSm" onclick="addVariant()" style="margin-top:8px">➕ Add Variant</button>
+      <div id="vImgErr" style="display:none;font-size:11px;color:var(--red);margin-top:8px;background:rgba(239,68,68,.08);padding:8px 10px;border-radius:6px"></div>
     </div>
 
     ${p&&!hasVariants?`<div style="padding:10px;background:var(--card);border-radius:8px;font-size:12px;margin-top:10px;color:var(--t2)">
@@ -3552,7 +3553,11 @@ function renderProdGallery(){
 }
 // ── IMAGE UPLOAD (ImgBB — no link typing needed) ──
 async function uploadImageFile(file){
-  const key=G.gcfg?.imgbbKey;
+  let key=G.gcfg?.imgbbKey;
+  // Fallback: if not in memory (e.g. owner just saved it in another session, or page never refreshed), check Firestore directly
+  if(!key){
+    try{const gd=await getDoc(GCfg());if(gd.exists()){G.gcfg={...G.gcfg,...gd.data()};key=G.gcfg.imgbbKey;}}catch{}
+  }
   if(!key){toast('⚠️ ছবি আপলোড এখনো সেটআপ করা হয়নি। মালিককে জানান।','err');throw new Error('সেটআপ করা নেই');}
   if(!file.type||!file.type.startsWith('image/')){throw new Error('শুধু ছবি ফাইল আপলোড করা যাবে');}
   if(file.size>10*1024*1024){throw new Error('ছবি ১০MB এর বেশি বড় হতে পারবে না');}
@@ -3668,6 +3673,7 @@ function renderVariantsList(){
 }
 window.updateVariantImage=async(i,file)=>{
   if(!file||!_prodVariants[i])return;
+  const errBox=$('vImgErr');if(errBox)errBox.style.display='none';
   toast('⏳ ছবি আপলোড হচ্ছে...','info');
   try{
     const url=await uploadImageFile(file);
@@ -3676,8 +3682,9 @@ window.updateVariantImage=async(i,file)=>{
     toast('✅ ভ্যারিয়েন্টের ছবি যুক্ত হয়েছে');
   }catch(e){
     toast('❌ '+(e.message||'আপলোড ব্যর্থ'),'err');
-    if(e.message?.includes('সেটআপ')){
-      alert('⚠️ ছবি আপলোড এখনো সেটআপ করা হয়নি।\n\nসমাধান:\n1) Owner Panel খুলুন\n2) Settings → 🖼️ ImgBB API Key বক্সে key দিয়ে Save করুন\n3) তারপর logout করে আবার login করুন (নতুন key লোড হওয়ার জন্য)');
+    if(errBox){
+      errBox.style.display='block';
+      errBox.innerHTML='❌ '+esc(e.message||'আপলোড ব্যর্থ')+(e.message?.includes('সেটআপ')?'<br><b>সমাধান:</b> ১) Owner Panel খুলুন ২) Settings → 🖼️ ImgBB API Key বক্সে key দিয়ে Save করুন ৩) এই পপ-আপ বন্ধ করে আবার ছবি বাছুন (এখন পুনরায় চেষ্টা করলেই কাজ করবে — লগআউট লাগবে না)':'');
     }
   }
 };
