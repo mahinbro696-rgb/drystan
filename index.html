@@ -545,7 +545,7 @@ tbody tr:last-child td{border:none}
 #rcptPrintArea{display:none}
 
 /* OWNER PANEL */
-#ownerWrap{position:fixed;inset:0;background:rgba(7,10,18,.95);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:16px;z-index:9000;overflow-y:auto}
+#ownerWrap{position:fixed;inset:0;background:rgba(7,10,18,.95);backdrop-filter:blur(10px);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:9000;overflow-y:auto}
 #ownerWrap.show{display:flex}
 .ownerCard{background:var(--bg2);border:1px solid rgba(249,115,22,.3);border-radius:20px;padding:32px;width:100%;max-width:580px;box-shadow:0 0 80px rgba(249,115,22,.1);animation:scaleIn .3s ease}
 
@@ -1119,6 +1119,8 @@ const fdate=d=>{if(!d)return'';const dt=d?.toDate?d.toDate():new Date(d);return 
 const today=()=>new Date().toISOString().slice(0,10);
 const plus3=()=>{const d=new Date();d.setDate(d.getDate()+3);return d.toISOString().slice(0,10);};
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// Global translation helper — works on every page (G.lang is read live, so no local redeclaration needed)
+const T=(en,bn)=>G.lang==='bn'?bn:en;
 const $=id=>document.getElementById(id);
 const Col=n=>collection(db,n);
 const Doc=(n,id)=>doc(db,n,id);
@@ -3479,6 +3481,7 @@ async function openProdMod(id=null){
           <div style="font-size:11px;color:var(--t3);margin-top:2px">JPG, PNG · সর্বোচ্চ ১০MB · একাধিক বাছা যাবে</div>
         </div>
         <div id="p_imgUploadProgress" style="display:none;font-size:12px;color:var(--acc2);margin-top:6px;font-weight:600"></div>
+        <div id="p_imgUploadError" style="display:none;font-size:11px;color:var(--red);margin-top:6px;background:rgba(239,68,68,.08);padding:6px 10px;border-radius:6px"></div>
         <details style="margin-top:8px">
           <summary style="font-size:11px;color:var(--t3);cursor:pointer">অথবা ছবির লিংক যুক্ত করুন (ঐচ্ছিক)</summary>
           <div style="display:flex;gap:6px;margin-top:6px">
@@ -3576,13 +3579,17 @@ window.prodImgFilesSelected=async(files)=>{
   if(list.length===0)return;
   if(_prodImages.length+list.length>8){toast('সর্বোচ্চ ৮টি ছবি যোগ করা যাবে','err');return;}
   const prog=$('p_imgUploadProgress');
+  const errBox=$('p_imgUploadError');if(errBox)errBox.style.display='none';
   for(let i=0;i<list.length;i++){
     if(prog){prog.style.display='block';prog.textContent=`⏳ আপলোড হচ্ছে... (${i+1}/${list.length})`;}
     try{
       const url=await uploadImageFile(list[i]);
       _prodImages.push(url);
       renderProdGallery();
-    }catch(err){toast('❌ '+(err.message||'আপলোড ব্যর্থ'),'err');}
+    }catch(err){
+      toast('❌ '+(err.message||'আপলোড ব্যর্থ'),'err');
+      if(errBox){errBox.style.display='block';errBox.innerHTML='❌ '+esc(err.message||'আপলোড ব্যর্থ')+(err.message?.includes('সেটআপ')?'<br><b>সমাধান:</b> Owner Panel → Settings → ImgBB API Key সেভ করুন, তারপর logout করে আবার login করুন।':'');}
+    }
   }
   if(prog)prog.style.display='none';
   const fi=$('p_imgFile');if(fi)fi.value='';
@@ -3663,7 +3670,12 @@ window.updateVariantImage=async(i,file)=>{
     _prodVariants[i].image=url;
     renderVariantsList();
     toast('✅ ভ্যারিয়েন্টের ছবি যুক্ত হয়েছে');
-  }catch(e){toast('❌ '+(e.message||'আপলোড ব্যর্থ'),'err');}
+  }catch(e){
+    toast('❌ '+(e.message||'আপলোড ব্যর্থ'),'err');
+    if(e.message?.includes('সেটআপ')){
+      alert('⚠️ ছবি আপলোড এখনো সেটআপ করা হয়নি।\n\nসমাধান:\n1) Owner Panel খুলুন\n2) Settings → 🖼️ ImgBB API Key বক্সে key দিয়ে Save করুন\n3) তারপর logout করে আবার login করুন (নতুন key লোড হওয়ার জন্য)');
+    }
+  }
 };
 
 async function saveProd(id){
@@ -4217,8 +4229,30 @@ async function pgTools(){
   setC(`
   <div class="pH"><div><h1>🛠️ Business Tools</h1><p>Useful tools for your business</p></div></div>
 
+  <!-- TOOLS HUB — click a tile to open only that tool -->
+  <div id="toolsHub" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px">
+    ${[
+      {id:'shop',ico:'🌐',label:'Public Online Shop',clr:'99,102,241'},
+      {id:'orderlink',ico:'🔗',label:'কাস্টম অর্ডার লিংক',clr:'168,85,247'},
+      {id:'steadfast',ico:'🚚',label:'Steadfast Courier',clr:'16,185,129'},
+      {id:'redx',ico:'🔴',label:'RedX Courier',clr:'220,38,38'},
+      {id:'pathao',ico:'🟠',label:'Pathao Courier',clr:'229,57,53'},
+      {id:'calc',ico:'🧮',label:'Business Calculator',clr:'99,102,241'},
+      {id:'stockval',ico:'📊',label:'Stock Value',clr:'99,102,241'},
+      {id:'fraud',ico:'🛡️',label:'Fraud Check',clr:'239,68,68'},
+      {id:'expense',ico:'💸',label:'Expense Log',clr:'245,158,11'},
+      {id:'coupon',ico:'🏷️',label:'Coupon Codes',clr:'168,85,247'},
+      {id:'export',ico:'📤',label:'Export Data',clr:'99,102,241'},
+    ].map(t=>`
+      <div onclick="toolsGoTo('${t.id}')" style="cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 10px;text-align:center;transition:all .2s" onmouseover="this.style.borderColor='rgba(${t.clr},.5)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+        <div style="font-size:28px;margin-bottom:8px">${t.ico}</div>
+        <div style="font-size:12px;font-weight:600;line-height:1.3">${t.label}</div>
+      </div>`).join('')}
+  </div>
+  <button id="toolsBackBtn" onclick="toolsBackToHub()" style="display:none;margin-bottom:16px" class="btn bS bSm">← Business Tools</button>
+
   <!-- PUBLIC ONLINE SHOP -->
-  <div class="card" style="border:1px solid rgba(99,102,241,.3);background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(168,85,247,.05));margin-bottom:16px">
+  <div class="card" id="toolSec_shop" style="border:1px solid rgba(99,102,241,.3);background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(168,85,247,.05));margin-bottom:16px">
     <div class="cardTitle">🌐 Public Online Shop <span style="font-size:11px;color:var(--green);font-weight:700;background:rgba(16,185,129,.12);padding:2px 8px;border-radius:20px;margin-left:6px">নতুন</span></div>
     <div class="al aI" style="font-size:12px;margin-bottom:14px">
       🔗 এই লিংকটি Facebook, WhatsApp বা যেকোনো জায়গায় শেয়ার করুন। আপনার গ্রাহক <b>নিজেই</b> পণ্য দেখে অর্ডার করতে পারবে — অর্ডার সরাসরি আপনার Orders পেজে চলে আসবে (📌 "পাবলিক অর্ডার" ট্যাগসহ)।
@@ -4250,7 +4284,7 @@ async function pgTools(){
   </div>
 
   <!-- CUSTOM ORDER LINK -->
-  <div class="card" style="border:1px solid rgba(168,85,247,.3);background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(99,102,241,.05));margin-bottom:16px">
+  <div class="card" id="toolSec_orderlink" style="border:1px solid rgba(168,85,247,.3);background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(99,102,241,.05));margin-bottom:16px">
     <div class="cardTitle">🔗 কাস্টম অর্ডার লিংক <span style="font-size:11px;color:var(--purple);font-weight:700;background:rgba(168,85,247,.12);padding:2px 8px;border-radius:20px;margin-left:6px">নতুন</span></div>
     <div class="al aI" style="font-size:12px;margin-bottom:14px">
       🎯 নির্দিষ্ট কয়েকটি পণ্য বেছে একটি লিংক তৈরি করুন। গ্রাহক লিংকে ঢুকে শুধু <b>সেই পণ্যগুলো</b> দেখবে, পছন্দমতো কার্টে যোগ করবে, ঠিকানা দিয়ে কনফার্ম করবে। অর্ডার আপনার Orders পেজে আসবে + গ্রাহকের WhatsApp খুলে যাবে। <b>প্রতিটি লিংক একবার ব্যবহারযোগ্য।</b>
@@ -4263,7 +4297,7 @@ async function pgTools(){
   <div class="g g2" style="gap:16px;margin-bottom:16px">
 
     <!-- STEADFAST COURIER INTEGRATION -->
-    <div class="card" style="border-color:rgba(16,185,129,.25)">
+    <div class="card" id="toolSec_steadfast" style="border-color:rgba(16,185,129,.25)">
       <div class="cardTitle">🚚 Steadfast Courier Integration</div>
       <div class="al aI" style="font-size:12px;margin-bottom:14px">
         📦 Steadfast API দিয়ে orders automatically courier এ পাঠানো যাবে। API key লাগবে।<br/>
@@ -4282,7 +4316,7 @@ async function pgTools(){
     </div>
 
     <!-- REDX COURIER -->
-    <div class="card" style="border-color:rgba(220,38,38,.22)">
+    <div class="card" id="toolSec_redx" style="border-color:rgba(220,38,38,.22)">
       <div class="cardTitle">🔴 RedX Courier</div>
       <div class="al aI" style="font-size:12px;margin-bottom:12px">
         RedX দিয়ে ডেলিভারি করতে — order data এক ক্লিকে কপি করে RedX merchant panel-এ paste করুন, অথবা API token দিয়ে সরাসরি পাঠান।
@@ -4297,7 +4331,7 @@ async function pgTools(){
     </div>
 
     <!-- PATHAO COURIER -->
-    <div class="card" style="border-color:rgba(229,57,53,.22)">
+    <div class="card" id="toolSec_pathao" style="border-color:rgba(229,57,53,.22)">
       <div class="cardTitle">🟠 Pathao Courier</div>
       <div class="al aI" style="font-size:12px;margin-bottom:12px">
         Pathao দিয়ে ডেলিভারি করতে — order data এক ক্লিকে কপি করে Pathao merchant panel-এ paste করুন। (Pathao API-তে OAuth লাগে, তাই manual copy সবচেয়ে নির্ভরযোগ্য।)
@@ -4308,7 +4342,7 @@ async function pgTools(){
     </div>
 
     <!-- BUSINESS CALCULATOR -->
-    <div class="card">
+    <div class="card" id="toolSec_calc">
       <div class="cardTitle">🧮 Business Calculator</div>
       <div class="afG"><label class="afL">Buy Price (৳)</label><input class="afI" type="number" id="calc_buy" placeholder="0" oninput="calcProfit()"/></div>
       <div class="afG"><label class="afL">Sell Price (৳)</label><input class="afI" type="number" id="calc_sell" placeholder="0" oninput="calcProfit()"/></div>
@@ -4321,14 +4355,14 @@ async function pgTools(){
     </div>
 
     <!-- STOCK VALUE CALCULATOR -->
-    <div class="card">
+    <div class="card" id="toolSec_stockval">
       <div class="cardTitle">📊 Current Stock Value</div>
       <button class="btn bS bFull" onclick="calcStockValue()" id="stockCalcBtn">Calculate Stock Value</button>
       <div id="stockResult" style="margin-top:12px"></div>
     </div>
 
     <!-- COURIER FRAUD CHECK -->
-    <div class="card" style="border-color:rgba(239,68,68,.25)">
+    <div class="card" id="toolSec_fraud" style="border-color:rgba(239,68,68,.25)">
       <div class="cardTitle">🛡️ Courier Fraud Check</div>
       <div class="al aI" style="font-size:12px;margin-bottom:12px">
         গ্রাহকের ফোন নম্বর দিয়ে কুরিয়ার delivery history যাচাই করুন — কত অর্ডার সফল, কত return/cancel। COD fraud এড়াতে সাহায্য করে।
@@ -4345,7 +4379,7 @@ async function pgTools(){
   </div>
 
   <!-- EXPENSE / CASH LOG -->
-  <div class="card" style="margin-bottom:16px;border-color:rgba(245,158,11,.25)">
+  <div class="card" id="toolSec_expense" style="margin-bottom:16px;border-color:rgba(245,158,11,.25)">
     <div class="cardTitle">💸 Expense / Cash Log <span style="font-size:11px;color:var(--t3);font-weight:400">— খরচ লিখুন, আসল লাভ দেখুন</span></div>
     <div class="al aI" style="font-size:12px;margin-bottom:14px">
       ব্যবসার খরচ (যেমন: পণ্য কেনা, marketing, প্যাকেজিং, যাতায়াত) এখানে লিখুন। তাহলে আপনার <b>আসল net profit</b> = (লাভ − খরচ) হিসাব করা যাবে।
@@ -4374,7 +4408,7 @@ async function pgTools(){
   </div>
 
   <!-- COUPON / DISCOUNT CODES -->
-  <div class="card" style="margin-bottom:16px;border-color:rgba(168,85,247,.25)">
+  <div class="card" id="toolSec_coupon" style="margin-bottom:16px;border-color:rgba(168,85,247,.25)">
     <div class="cardTitle">🏷️ Coupon / Discount Codes <span style="font-size:11px;color:var(--t3);font-weight:400">— ছাড়ের কোড বানান</span></div>
     <div class="al aI" style="font-size:12px;margin-bottom:14px">
       ছাড়ের কোড তৈরি করুন (যেমন <b>EID20</b>)। অর্ডার তৈরির সময় বা পাবলিক শপে গ্রাহক এই কোড ব্যবহার করে ছাড় পাবে।
@@ -4393,7 +4427,7 @@ async function pgTools(){
     <div id="cpnList" style="margin-top:14px"></div>
   </div>
 
-  <div class="card" style="margin-bottom:16px">
+  <div class="card" id="toolSec_export" style="margin-bottom:16px">
     <div class="cardTitle">📤 Export Data</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn bS" onclick="exportOrders()">📋 Export Orders CSV</button>
@@ -4405,7 +4439,23 @@ async function pgTools(){
   loadExpenses();
   loadCoupons();
   loadOrderLinks();
+  toolsBackToHub(); // start on the hub menu — sections open only when a tile is clicked
 }
+const TOOL_SECTION_IDS=['toolSec_shop','toolSec_orderlink','toolSec_steadfast','toolSec_redx','toolSec_pathao','toolSec_calc','toolSec_stockval','toolSec_fraud','toolSec_expense','toolSec_coupon','toolSec_export'];
+window.toolsGoTo=(key)=>{
+  const target=$('toolSec_'+key);
+  if(!target)return;
+  const hub=$('toolsHub');if(hub)hub.style.display='none';
+  const back=$('toolsBackBtn');if(back)back.style.display='inline-flex';
+  TOOL_SECTION_IDS.forEach(id=>{const el=$(id);if(el)el.style.display='none';});
+  target.style.display='block';
+  target.scrollIntoView({behavior:'smooth',block:'start'});
+};
+window.toolsBackToHub=()=>{
+  const hub=$('toolsHub');if(hub)hub.style.display='grid';
+  const back=$('toolsBackBtn');if(back)back.style.display='none';
+  TOOL_SECTION_IDS.forEach(id=>{const el=$(id);if(el)el.style.display='none';});
+};
 
 // ── COUPONS ──
 async function loadCoupons(){
