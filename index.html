@@ -3335,13 +3335,29 @@ async function pgDash(){
         </div>`:''}
         <div class="card" style="border-color:rgba(99,102,241,.2)">
           <div class="cardTitle">⚡ ${T('Quick Actions','দ্রুত কাজ')}</div>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            <button class="btn bP bFull bSm" onclick="nav('newOrder')">➕ ${T('Create Order','অর্ডার তৈরি')}</button>
-            <button class="btn bS bFull bSm" onclick="nav('prods')">📦 ${T('Manage Products','পণ্য ব্যবস্থাপনা')}</button>
-            <button class="btn bS bFull bSm" onclick="nav('reports')">📊 ${T('View Reports','রিপোর্ট দেখুন')}</button>
-            <button class="btn bS bFull bSm" onclick="nav('tools')">🛠️ ${T('Business Tools','ব্যবসার সরঞ্জাম')}</button>
-            ${aiEnabled()?`<button class="btn bFull bSm" style="background:linear-gradient(135deg,#A855F7,#7C3AED);color:#fff" onclick='aiAdvisor(${esc(JSON.stringify({rev:totalRev,profit:netProfit,monthRev,monthProfit,orders:orders.length,pending,lowStock:lowStock.map(p=>p.name).slice(0,5),topProd:recent.slice(0,3).map(o=>o.cName)})).replace(/'/g,"&#39;")})'>🤖 ${T('AI Advisor','এআই পরামর্শ')}</button>`:''}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div onclick="nav('newOrder')" class="qaCard" style="cursor:pointer;background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(139,92,246,.06));border:1px solid rgba(99,102,241,.25);border-radius:14px;padding:14px;transition:all .2s" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 20px rgba(99,102,241,.2)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+              <div style="width:34px;height:34px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px">➕</div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:3px">${T('Create Order','অর্ডার তৈরি')}</div>
+              <div style="font-size:11px;color:var(--t2)">${pending>0?`🟡 ${pending} ${T('pending','অপেক্ষমান')}`:T('Start a new order','নতুন অর্ডার শুরু করুন')}</div>
+            </div>
+            <div onclick="nav('prods')" class="qaCard" style="cursor:pointer;background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(245,158,11,.04));border:1px solid rgba(245,158,11,.25);border-radius:14px;padding:14px;transition:all .2s" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 20px rgba(245,158,11,.2)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+              <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#F59E0B,#F97316);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px">📦</div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:3px">${T('Products','পণ্য')}</div>
+              <div style="font-size:11px;color:${lowStock.length>0?'var(--red)':'var(--t2)'}">${lowStock.length>0?`⚠️ ${lowStock.length} ${T('low stock','কম স্টক')}`:`✅ ${prods.length} ${T('active','সক্রিয়')}`}</div>
+            </div>
+            <div onclick="nav('reports')" class="qaCard" style="cursor:pointer;background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(16,185,129,.04));border:1px solid rgba(16,185,129,.25);border-radius:14px;padding:14px;transition:all .2s" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 20px rgba(16,185,129,.2)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+              <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#10B981,#059669);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px">📊</div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:3px">${T('Reports','রিপোর্ট')}</div>
+              <div style="font-size:11px;color:var(--t2)">${T('This month','এই মাসে')}: <strong style="color:var(--green)">${cur(monthRev)}</strong></div>
+            </div>
+            <div onclick="nav('tools')" class="qaCard" style="cursor:pointer;background:linear-gradient(135deg,rgba(168,85,247,.12),rgba(168,85,247,.04));border:1px solid rgba(168,85,247,.25);border-radius:14px;padding:14px;transition:all .2s" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 20px rgba(168,85,247,.2)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+              <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#A855F7,#7C3AED);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px">🛠️</div>
+              <div style="font-size:13px;font-weight:700;margin-bottom:3px">${T('Tools','সরঞ্জাম')}</div>
+              <div style="font-size:11px;color:var(--t2)">${T('Shop, courier & more','শপ, কুরিয়ার ও আরও')}</div>
+            </div>
           </div>
+          ${aiEnabled()?`<button class="btn bFull bSm" style="margin-top:10px;background:linear-gradient(135deg,#A855F7,#7C3AED);color:#fff" onclick='aiAdvisor(${esc(JSON.stringify({rev:totalRev,profit:netProfit,monthRev,monthProfit,orders:orders.length,pending,lowStock:lowStock.map(p=>p.name).slice(0,5),topProd:recent.slice(0,3).map(o=>o.cName)})).replace(/'/g,"&#39;")})'>🤖 ${T('AI Advisor','এআই পরামর্শ')}</button>`:''}
         </div>
         <div class="card" style="border-color:rgba(16,185,129,.2)">
           <div class="cardTitle">📈 ${T('Quick Stats','দ্রুত পরিসংখ্যান')}</div>
