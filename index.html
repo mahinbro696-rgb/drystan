@@ -1135,7 +1135,7 @@ const G={
   theme:localStorage.getItem('dry_theme')||'dark',
   user:null, role:null, bizId:null, cfg:{}, gcfg:{},
   page:'dash', lastOrder:null,
-  oItems:[{pid:'',qty:1,price:''}], oForm:null,
+  oItems:[], oForm:null,
 };
 
 // TOAST
@@ -3012,7 +3012,7 @@ window.nav=p=>{
   G.page=p;closeSB();
   document.querySelectorAll('.nItem').forEach(n=>n.classList.toggle('active',n.dataset.p===p));
   $('pgTitle').textContent=pgTitles[p]||p;
-  if(p!=='newOrder'){G.lastOrder=null;G.oItems=[{pid:'',qty:1,price:''}];G.oForm=null;}
+  if(p!=='newOrder'){G.lastOrder=null;G.oItems=[];G.oForm=null;}
   _gSearchData=null; // refresh global-search cache after navigation (data may have changed)
   renderPage();
 };
@@ -3347,7 +3347,7 @@ async function pgDash(){
           <div class="cardTitle">📈 ${T('Quick Stats','দ্রুত পরিসংখ্যান')}</div>
           <div style="font-size:13px;line-height:2.5;color:var(--t2)">
             <div>${T('Avg order value','গড় অর্ডার মূল্য')}: <strong style="color:var(--t1)">${cur(active.length?totalRev/active.length:0)}</strong></div>
-            <div>${T('Completed rate','সম্পন্নের হার')}: <strong style="color:var(--green)">${orders.length?((completed/orders.length)*100).toFixed(0):0}%</strong></div>
+            <div>${T('Completed rate','সম্পন্নের হার')}: <strong style="color:var(--green)">${orders.length?((completed_orders.length/orders.length)*100).toFixed(0):0}%</strong></div>
             <div>${T('Products in stock','স্টকে পণ্য')}: <strong style="color:var(--t1)">${prods.length}</strong></div>
           </div>
         </div>
@@ -3995,39 +3995,16 @@ async function pgNewOrder(){
     </div>
 
     <div class="card" style="margin-bottom:16px">
-      <div class="cardTitle">🖼️ পণ্য বাছুন <span style="font-size:11px;color:var(--t3);font-weight:400">— ক্লিক করলে নিচে যুক্ত হবে</span></div>
-      <input class="afI" id="opSearchBox" placeholder="🔍 পণ্যের নাম লিখে খুঁজুন..." oninput="filterProductPicker(this.value)" style="margin-bottom:12px"/>
-      <div id="productPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px;max-height:360px;overflow-y:auto;padding:2px"></div>
-    </div>
-
-    <div class="card" style="margin-bottom:16px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div class="cardTitle" style="margin:0">📦 Products</div>
-        <button class="btn bS bSm" onclick="addOI()">+ Add Item</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div class="cardTitle" style="margin:0">📦 পণ্য বাছুন</div>
+        <button class="btn bP bSm" onclick="opShowProductGrid()" id="opAddMoreBtn" style="display:none">➕ আরও পণ্য যোগ করুন</button>
       </div>
-      <div id="oiWrap">
-        ${G.oItems.map((it,i)=>`
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px">
-          <div class="orderItemRow" style="display:grid;grid-template-columns:2fr 110px 80px auto;gap:8px;align-items:end">
-            <div class="afG" style="margin:0"><label class="afL">Product</label>
-              <select class="afI" id="psel_${i}" onchange="setOI(${i},'pid',this.value)">
-                <option value="">Select product...</option>
-                ${prods.map(p=>`<option value="${p.id}" data-price="${p.variants?.length?p.variants[0].sellPrice:p.sellPrice}" data-buy="${p.variants?.length?p.variants[0].buyPrice:p.buyPrice}" data-stock="${p.stock}" ${it.pid===p.id?'selected':''}>${esc(p.name)} (${p.stock} left) — ${cur(p.variants?.length?p.variants[0].sellPrice:p.sellPrice)}</option>`).join('')}
-              </select>
-            </div>
-            <div class="afG" style="margin:0"><label class="afL">Price (৳)</label>
-              <input class="afI" id="pprice_${i}" type="number" min="0" value="${it.price||''}" placeholder="0" oninput="setOI(${i},'price',this.value)" style="${it.pid&&it.price?'color:var(--green);font-weight:700':''}"/>
-            </div>
-            <div class="afG" style="margin:0"><label class="afL">Qty</label>
-              <input class="afI" id="pqty_${i}" type="number" min="1" value="${it.qty||1}" oninput="setOI(${i},'qty',this.value)"/>
-            </div>
-            <button class="btn bD bIco" onclick="rmOI(${i})" ${G.oItems.length===1?'disabled':''}>🗑️</button>
-          </div>
-          ${it.variantName?`<div style="font-size:12px;color:var(--green);margin-top:4px">✅ ${esc(it.variantName)}</div>`:''}
-          <div id="pdetail_${i}"></div>
-        </div>`).join('')}
+      <div id="opBrowseArea">
+        <input class="afI" id="opSearchBox" placeholder="🔍 পণ্যের নাম লিখে খুঁজুন..." oninput="filterProductPicker(this.value)" style="margin-bottom:12px"/>
+        <div id="productPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px;max-height:380px;overflow-y:auto;padding:2px"></div>
       </div>
-      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+      <div id="opSelectedItems" style="margin-top:6px"></div>
+      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:14px">
         <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-bottom:6px" id="subRow"><span>Subtotal</span><span style="font-weight:600">${cur(sub)}</span></div>
         ${disc>0?`<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--green);margin-bottom:6px"><span>Discount</span><span style="font-weight:600">- ${cur(disc)}</span></div>`:''}
         <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-bottom:10px" id="delRow"><span>Delivery</span><span style="font-weight:600">${cur(del)}</span></div>
@@ -4037,13 +4014,27 @@ async function pgNewOrder(){
       </div>
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
-      <button class="btn bS" onclick="G.oForm=null;G.oItems=[{pid:'',qty:1,price:''}];pgNewOrder()">🔄 Reset</button>
+      <button class="btn bS" onclick="G.oForm=null;G.oItems=[];pgNewOrder()">🔄 Reset</button>
       <button class="btn bP" id="subOBtn" onclick="submitOrder()" style="min-width:200px;padding:12px">✅ Create Order & Receipt</button>
     </div>`);
     renderProductPickerGrid();
+    renderSelectedItems();
+    // If returning to this page with items already in cart, show the "add more" collapsed state
+    if(G.oItems.length>0){
+      const ba=$('opBrowseArea');const ab=$('opAddMoreBtn');
+      if(ba)ba.style.display='none';
+      if(ab)ab.style.display='inline-flex';
+    }
   }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
 }
 // ── VISUAL PRODUCT PICKER (animated thumbnail grid for Create Order) ──
+// ── Real-time available stock: total stock minus what's already in this order's cart ──
+function opAvailable(pid,variantName){
+  const p=(window._opProdsCache||[]).find(x=>x.id===pid);if(!p)return 0;
+  const stockTotal=variantName?(p.variants?.find(v=>v.name===variantName)?.stock||0):Number(p.stock||0);
+  const used=G.oItems.filter(it=>it.pid===pid&&(it.variantName||'')===(variantName||'')).reduce((s,it)=>s+Number(it.qty||0),0);
+  return Math.max(0,stockTotal-used);
+}
 function renderProductPickerGrid(filter=''){
   const grid=$('productPickerGrid');if(!grid)return;
   const prods=window._opProdsCache||[];
@@ -4052,27 +4043,127 @@ function renderProductPickerGrid(filter=''){
   if(list.length===0){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--t3);font-size:12px;padding:20px">কোনো পণ্য পাওয়া যায়নি</div>';return;}
   grid.innerHTML=list.map((p,i)=>{
     const img=(p.images&&p.images[0])||p.imageUrl||'';
-    const price=p.variants?.length?p.variants[0].sellPrice:p.sellPrice;
-    const extraVariants=p.variants?.length>1?p.variants.length-1:0;
-    return `<div onclick="addProductToOrder('${p.id}')" onmouseover="this.style.transform='translateY(-3px)';this.style.borderColor='var(--acc)'" onmouseout="this.style.transform='';this.style.borderColor='var(--border)'" style="cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;animation:fadeUp .35s ease both;animation-delay:${Math.min(i*0.03,0.6)}s;transition:transform .15s,border-color .15s">
+    const hasVar=p.variants&&p.variants.length>0;
+    const price=hasVar?p.variants[0].sellPrice:p.sellPrice;
+    const avail=hasVar?p.variants.reduce((s,v)=>s+opAvailable(p.id,v.name),0):opAvailable(p.id,'');
+    const extraVariants=hasVar&&p.variants.length>1?p.variants.length-1:0;
+    return `<div onclick="opPickProduct('${p.id}')" onmouseover="this.style.transform='translateY(-3px)';this.style.borderColor='var(--acc)'" onmouseout="this.style.transform='';this.style.borderColor='var(--border)'" style="cursor:${avail>0?'pointer':'default'};background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;animation:fadeUp .35s ease both;animation-delay:${Math.min(i*0.03,0.6)}s;transition:transform .15s,border-color .15s;${avail<=0?'opacity:.5':''}">
       ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:78px;object-fit:cover;background:#fff"/>`:`<div style="width:100%;height:78px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:22px">📦</div>`}
       <div style="padding:7px">
         <div style="font-size:11px;font-weight:600;line-height:1.3;margin-bottom:3px;min-height:28px">${esc(p.name)}</div>
         <div style="font-size:12px;color:var(--green);font-weight:800">${cur(price)}${extraVariants?` <span style="font-size:9px;color:var(--t3);font-weight:400">+${extraVariants}</span>`:''}</div>
-        <div style="font-size:9px;color:var(--t3);margin-top:2px">স্টক: ${p.stock}</div>
+        <div style="font-size:9px;color:${avail>0?'var(--t3)':'var(--red)'};margin-top:2px">${avail>0?'স্টক: '+avail:'স্টক শেষ'}</div>
       </div>
     </div>`;
   }).join('');
 }
 window.filterProductPicker=(val)=>renderProductPickerGrid(val);
-window.addProductToOrder=async(pid)=>{
-  G.oItems.push({pid:'',qty:1,price:''});
-  const idx=G.oItems.length-1;
-  await pgNewOrder();
-  const sel=$('psel_'+idx);
-  if(sel){sel.value=pid;setOI(idx,'pid',pid);}
-  toast('✅ যুক্ত হয়েছে — নিচে দেখুন');
-  setTimeout(()=>$('psel_'+idx)?.scrollIntoView({behavior:'smooth',block:'center'}),150);
+
+// Clicking a product card: show its variants (with animation) right in the same grid, or add directly if no variants
+window.opPickProduct=(pid)=>{
+  const p=(window._opProdsCache||[]).find(x=>x.id===pid);if(!p)return;
+  if(opAvailable(pid,p.variants?.length?p.variants[0].name:'')<=0&&!(p.variants&&p.variants.length>1))
+    {} // fallthrough — still allow opening variant view even if first variant is out, other variants may have stock
+  if(p.variants&&p.variants.length>0){
+    renderVariantPickerForOrder(pid);
+  }else{
+    if(opAvailable(pid,'')<=0){toast('স্টক নেই','err');return;}
+    opAddItem(pid,null);
+    toast('✅ যুক্ত হয়েছে');
+  }
+};
+function renderVariantPickerForOrder(pid){
+  const p=(window._opProdsCache||[]).find(x=>x.id===pid);if(!p)return;
+  const grid=$('productPickerGrid');if(!grid)return;
+  const mainImg=(p.images&&p.images[0])||p.imageUrl||'';
+  grid.style.gridTemplateColumns='repeat(auto-fill,minmax(100px,1fr))';
+  grid.innerHTML=`<div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <button onclick="opShowProductGridInline()" class="btn bS bSm" style="font-size:11px">← সব পণ্য</button>
+      <span style="font-size:12px;font-weight:700">${esc(p.name)} — ভ্যারিয়েন্ট বাছুন</span>
+    </div>` +
+    p.variants.map((v,vi)=>{
+      const img=(v.images&&v.images[0])||v.image||mainImg;
+      const avail=opAvailable(pid,v.name);
+      const inCart=G.oItems.find(it=>it.pid===pid&&it.variantName===v.name);
+      return `<div onclick="${avail>0?`opPickVariantForOrder('${pid}',${vi})`:''}" style="cursor:${avail>0?'pointer':'default'};background:var(--card);border:2px solid ${inCart?'var(--green)':'var(--border)'};border-radius:12px;overflow:hidden;animation:fadeUp .3s ease both;animation-delay:${Math.min(vi*0.04,0.4)}s;${avail<=0?'opacity:.5':''}">
+        ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:78px;object-fit:cover;background:#fff"/>`:`<div style="width:100%;height:78px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:22px">🎨</div>`}
+        <div style="padding:7px">
+          <div style="font-size:11px;font-weight:600;line-height:1.3;margin-bottom:2px">${esc(v.name)}${inCart?` <span style="color:var(--green)">✓${inCart.qty>1?' ×'+inCart.qty:''}</span>`:''}</div>
+          <div style="font-size:12px;color:var(--green);font-weight:800">${cur(v.sellPrice)}</div>
+          <div style="font-size:9px;color:${avail>0?'var(--t3)':'var(--red)'};margin-top:2px">${avail>0?'স্টক: '+avail:'স্টক শেষ'}</div>
+        </div>
+      </div>`;
+    }).join('');
+}
+window.opShowProductGridInline=()=>{renderProductPickerGrid($('opSearchBox')?.value||'');};
+window.opShowProductGrid=()=>{
+  $('opBrowseArea').style.display='block';
+  $('opAddMoreBtn').style.display='none';
+  renderProductPickerGrid($('opSearchBox')?.value||'');
+  $('opBrowseArea').scrollIntoView({behavior:'smooth',block:'start'});
+};
+window.opPickVariantForOrder=(pid,vi)=>{
+  const p=(window._opProdsCache||[]).find(x=>x.id===pid);const v=p?.variants?.[vi];if(!v)return;
+  if(opAvailable(pid,v.name)<=0){toast('স্টক নেই','err');return;}
+  opAddItem(pid,vi);
+  toast('✅ '+v.name+' যুক্ত হয়েছে');
+  renderVariantPickerForOrder(pid); // refresh to show updated real-time stock + checkmark
+};
+function opAddItem(pid,variantIdx){
+  const p=(window._opProdsCache||[]).find(x=>x.id===pid);if(!p)return;
+  const hasVar=variantIdx!==null&&variantIdx!==undefined&&p.variants;
+  const v=hasVar?p.variants[variantIdx]:null;
+  const variantName=v?v.name:'';
+  const price=v?Number(v.sellPrice||0):Number(p.sellPrice||0);
+  const buyPrice=v?Number(v.buyPrice||0):Number(p.buyPrice||0);
+  const existing=G.oItems.find(it=>it.pid===pid&&(it.variantName||'')===variantName);
+  if(existing)existing.qty=Number(existing.qty||1)+1;
+  else G.oItems.push({pid,qty:1,price,buyPrice,variantName});
+  renderSelectedItems();
+  updTotal();
+  // After first item, collapse the browse grid behind a prominent "add more" button
+  $('opBrowseArea').style.display='none';
+  $('opAddMoreBtn').style.display='inline-flex';
+}
+function renderSelectedItems(){
+  const el=$('opSelectedItems');if(!el)return;
+  const prods=window._opProdsCache||[];
+  if(G.oItems.length===0){el.innerHTML='';return;}
+  el.innerHTML=G.oItems.map((it,i)=>{
+    const p=prods.find(x=>x.id===it.pid);
+    const img=p?((p.images&&p.images[0])||p.imageUrl||''):'';
+    const variantImg=(it.variantName&&p?.variants)?((p.variants.find(v=>v.name===it.variantName)?.images||[])[0]||p.variants.find(v=>v.name===it.variantName)?.image):null;
+    const thumb=variantImg||img;
+    const avail=opAvailable(it.pid,it.variantName||'');
+    return `<div style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:8px;animation:fadeUp .25s ease both">
+      ${thumb?`<img loading="lazy" src="${esc(thumb)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0"/>`:'<div style="width:44px;height:44px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0">📦</div>'}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600">${esc(p?.name||'পণ্য')}${it.variantName?` <span style="color:var(--green);font-size:11px">(${esc(it.variantName)})</span>`:''}</div>
+        <div style="font-size:12px;color:var(--t2)">${cur(it.price)} × ${it.qty} = <strong>${cur(it.price*it.qty)}</strong></div>
+        ${avail<=0?'<div style="font-size:10px;color:var(--red);margin-top:1px">⚠️ আরও স্টক নেই</div>':''}
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <button onclick="opChangeQty(${i},-1)" style="width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--t1);cursor:pointer;font-size:14px">−</button>
+        <span style="min-width:22px;text-align:center;font-weight:700;font-size:13px">${it.qty}</span>
+        <button onclick="opChangeQty(${i},1)" ${avail<=0?'disabled style="opacity:.4"':''} style="width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--t1);cursor:pointer;font-size:14px">+</button>
+        <button onclick="opRemoveItem(${i})" style="width:26px;height:26px;border-radius:6px;border:none;background:rgba(239,68,68,.15);color:var(--red);cursor:pointer;font-size:12px;margin-left:4px">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+window.opChangeQty=(i,delta)=>{
+  const it=G.oItems[i];if(!it)return;
+  if(delta>0&&opAvailable(it.pid,it.variantName||'')<=0){toast('আরও স্টক নেই','err');return;}
+  it.qty=Number(it.qty||1)+delta;
+  if(it.qty<=0){G.oItems.splice(i,1);}
+  renderSelectedItems();updTotal();
+  // If a variant picker happens to be open for this product, refresh it too
+  if($('productPickerGrid')?.innerHTML.includes('সব পণ্য'))renderVariantPickerForOrder(it.pid);
+};
+window.opRemoveItem=(i)=>{
+  G.oItems.splice(i,1);
+  renderSelectedItems();updTotal();
+  if(G.oItems.length===0)opShowProductGrid();
 };
 
 // ── SMART PASTE ──
@@ -4229,11 +4320,23 @@ window.submitOrder=async()=>{
     if(!cSnap.empty){const cd=cSnap.docs[0];custId=cd.id;await updateDoc(BDoc('customers',custId),{name:f.cName,addr:f.cAddr,orders:(cd.data().orders||0)+1,spent:(cd.data().spent||0)+total,lastOrder:serverTimestamp()});}
     else{const r=await addDoc(BCol('customers'),{name:f.cName,phone:ordPhone,addr:f.cAddr,orders:1,spent:total,createdAt:serverTimestamp()});custId=r.id;}
     const oItems=await Promise.all(validItems.map(async it=>{const pd=(await getDoc(BDoc('products',it.pid))).data();return{pid:it.pid,name:pd.name+(it.variantName?` (${it.variantName})`:''),nameBn:(pd.nameBn||pd.name)+(it.variantName?` (${it.variantName})`:''),variantName:it.variantName||'',qty:Number(it.qty),price:Number(it.price),buyPrice:Number(it.buyPrice||pd.buyPrice||0),lineTotal:Number(it.price)*Number(it.qty),profit:(Number(it.price)-Number(it.buyPrice||pd.buyPrice||0))*Number(it.qty)};}));
-    const oRef=await addDoc(BCol('orders'),{num,custId,cName:f.cName,cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:f.recvName||f.cName,cAddr:f.cAddr,payMethod:f.payMethod,delivery:del,subtotal:sub,discount:disc,total,status:'pending',payStatus:f.payMethod==='paid'?'paid':'pending',orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:oItems,stockDeducted:false,createdBy:G.user?.uid,createdAt:serverTimestamp()});
-    // Stock deducted on 'completed' status, not at creation
+    // Stock timing: admin-chosen in Settings — deduct now (creation) or later (on Completed status)
+    const deductNow=G.cfg.stockDeductTiming==='creation';
+    const oRef=await addDoc(BCol('orders'),{num,custId,cName:f.cName,cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:f.recvName||f.cName,cAddr:f.cAddr,payMethod:f.payMethod,delivery:del,subtotal:sub,discount:disc,total,status:'pending',payStatus:f.payMethod==='paid'?'paid':'pending',orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:oItems,stockDeducted:deductNow,createdBy:G.user?.uid,createdAt:serverTimestamp()});
+    if(deductNow){
+      for(const it of oItems){
+        try{
+          const pd=await getDoc(BDoc('products',it.pid));
+          if(pd.exists()){
+            const newStock=Math.max(0,Number(pd.data().stock||0)-Number(it.qty||1));
+            await updateDoc(BDoc('products',it.pid),{stock:newStock});
+          }
+        }catch{}
+      }
+    }
     toast('Order created! 🎉');
     G.lastOrder={id:oRef.id,num,cName:f.cName,cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:f.recvName||f.cName,cAddr:f.cAddr,payMethod:f.payMethod,delivery:del,subtotal:sub,discount:disc,total,orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:oItems};
-    G.oItems=[{pid:'',qty:1,price:''}];G.oForm=null;showReceipt(G.lastOrder);
+    G.oItems=[];G.oForm=null;showReceipt(G.lastOrder);
   }catch(e){toast(e.message,'err');btn.disabled=false;btn.innerHTML='✅ Create Order & Receipt';}
 };
 
@@ -6306,6 +6409,13 @@ async function pgCfg(){
         <div class="card" style="border-color:rgba(16,185,129,.2)">
           <div class="cardTitle">🔔 Notifications & Preferences</div>
           <div class="afG"><label class="afL">Low Stock Alert Level</label><input class="afI" type="number" id="s_alert" value="${cfg.alertAt||5}" min="1"/></div>
+          <div class="afG"><label class="afL">📦 স্টক কখন কমবে?</label>
+            <select class="afI" id="s_stockTiming">
+              <option value="completion" ${(cfg.stockDeductTiming||'completion')==='completion'?'selected':''}>✅ অর্ডার সম্পন্ন (Completed) হলে স্টক কমবে</option>
+              <option value="creation" ${cfg.stockDeductTiming==='creation'?'selected':''}>🆕 অর্ডার তৈরির সাথে সাথে স্টক কমবে</option>
+            </select>
+            <div style="font-size:11px;color:var(--t3);margin-top:4px">যেকোনোটাই বাছুন — অর্ডার বাতিল/ফেরত হলে স্টক স্বয়ংক্রিয়ভাবে ফিরে আসবে।</div>
+          </div>
           <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--card);border-radius:10px">
             <div><div style="font-size:13px;font-weight:600">Show profit on receipt</div><div style="font-size:11px;color:var(--t2)">Hidden from customers by default</div></div>
             <label class="toggle"><input type="checkbox" id="s_showProfit" ${cfg.showProfit?'checked':''}/><span class="toggleSlider"></span></label>
@@ -6354,7 +6464,7 @@ window.saveCfg=async()=>{
   try{const data={bizName:$('s_n').value.trim(),bizNameBn:$('s_nb').value.trim(),bizAddr:$('s_addr').value.trim(),bizPhone:$('s_ph').value.trim(),delCOD:Number($('s_dc').value)||150,delPaid:Number($('s_dp').value)||0,footerEn:$('s_fe').value.trim(),footerBn:$('s_fb').value.trim()};await setDoc(BCfg(),data,{merge:true});G.cfg={...G.cfg,...data};$('bizNm').textContent=G.lang==='bn'?(data.bizNameBn||data.bizName):data.bizName;toast('Settings saved! ✅');}catch(e){toast(e.message,'err');}
 };
 window.savePref=async()=>{
-  try{const data={alertAt:Number($('s_alert').value)||5,showProfit:$('s_showProfit').checked};await setDoc(BCfg(),data,{merge:true});G.cfg={...G.cfg,...data};toast('Preferences saved! ✅');}catch(e){toast(e.message,'err');}
+  try{const data={alertAt:Number($('s_alert').value)||5,showProfit:$('s_showProfit').checked,stockDeductTiming:$('s_stockTiming')?.value||'completion'};await setDoc(BCfg(),data,{merge:true});G.cfg={...G.cfg,...data};toast('Preferences saved! ✅');}catch(e){toast(e.message,'err');}
 };
 
 // ══ MY ACCOUNT ══
