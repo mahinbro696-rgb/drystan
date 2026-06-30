@@ -4816,7 +4816,7 @@ async function pgTools(){
         <div class="afG" style="margin:0"><label class="afL">ঢাকার ভিতরে ডেলিভারি (৳)</label><input class="afI" type="number" id="shop_delin" value="${G.cfg.delivIn||60}" placeholder="60"/></div>
         <div class="afG" style="margin:0"><label class="afL">ঢাকার বাইরে ডেলিভারি (৳)</label><input class="afI" type="number" id="shop_delout" value="${G.cfg.delivOut||120}" placeholder="120"/></div>
       </div>
-      <div class="afG"><label class="afL">দোকানের লোগো URL (ঐচ্ছিক)</label><input class="afI" id="shop_logo" value="${esc(G.cfg.bizLogo||'')}" placeholder="https://..."/></div>
+      <div class="al aI" style="font-size:11px;margin-bottom:10px">💡 দোকানের লোগো এখন <b>Settings → Business Information</b> থেকে আপলোড করুন (সরাসরি ছবি বেছে — লিংকের দরকার নেই)।</div>
       <div class="afG"><label class="afL">দোকানের নোটিশ (ঐচ্ছিক)</label><input class="afI" id="shop_note" value="${esc(G.cfg.publicNote||'')}" placeholder="যেমন: ফ্রি ডেলিভারি ১০০০৳+ অর্ডারে"/></div>
       <div class="gridStack2" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="afG" style="margin:0"><label class="afL">💬 WhatsApp নম্বর</label><input class="afI" id="shop_wa" value="${esc(G.cfg.bizWhatsapp||'')}" placeholder="01XXXXXXXXX"/></div>
@@ -5474,12 +5474,11 @@ window.saveShopSettings=async()=>{
   try{
     const delivIn=Number($('shop_delin')?.value)||60;
     const delivOut=Number($('shop_delout')?.value)||120;
-    const bizLogo=$('shop_logo')?.value.trim()||'';
     const publicNote=$('shop_note')?.value.trim()||'';
     const bizWhatsapp=$('shop_wa')?.value.trim()||'';
     const fbPageUser=$('shop_fb')?.value.trim().replace(/^@/,'')||'';
-    await setDoc(BCfg(),{delivIn,delivOut,bizLogo,publicNote,bizWhatsapp,fbPageUser},{merge:true});
-    G.cfg.delivIn=delivIn;G.cfg.delivOut=delivOut;G.cfg.bizLogo=bizLogo;G.cfg.publicNote=publicNote;G.cfg.bizWhatsapp=bizWhatsapp;G.cfg.fbPageUser=fbPageUser;
+    await setDoc(BCfg(),{delivIn,delivOut,publicNote,bizWhatsapp,fbPageUser},{merge:true});
+    G.cfg.delivIn=delivIn;G.cfg.delivOut=delivOut;G.cfg.publicNote=publicNote;G.cfg.bizWhatsapp=bizWhatsapp;G.cfg.fbPageUser=fbPageUser;
     toast('✅ দোকানের সেটিংস সেভ হয়েছে!');
   }catch(e){toast(e.message,'err');}
 };
@@ -6725,6 +6724,21 @@ async function pgCfg(){
       <div style="display:flex;flex-direction:column;gap:14px">
         <div class="card" id="cfgSec_bizinfo">
           <div class="cardTitle">🏢 Business Information</div>
+          <div class="afG"><label class="afL">🖼️ ব্যবসার লোগো/থাম্বনেইল <span style="font-size:10px;color:var(--t3)">(অর্ডার রসিদ ও পাবলিক শপে দেখাবে — শুধু Admin বদলাতে পারবে)</span></label>
+            <div style="display:flex;gap:12px;align-items:center">
+              <div id="bizLogoPreview" style="width:70px;height:70px;border-radius:14px;overflow:hidden;flex-shrink:0;background:var(--bg3);display:flex;align-items:center;justify-content:center;border:1px solid var(--border)">
+                ${cfg.bizLogo?`<img src="${esc(cfg.bizLogo)}" style="width:100%;height:100%;object-fit:cover"/>`:'<span style="font-size:26px">🏪</span>'}
+              </div>
+              <div style="flex:1" id="bizLogoDropzone" ondrop="bizLogoDrop(event)" ondragover="event.preventDefault();this.style.borderColor='var(--acc)';this.style.background='rgba(99,102,241,.06)'" ondragleave="this.style.borderColor='var(--border)';this.style.background='var(--card)'"
+                style="border:2px dashed var(--border);border-radius:10px;padding:12px;text-align:center;cursor:pointer;background:var(--card);transition:all .2s"
+                onclick="$('bizLogoFile').click()">
+                <input type="file" id="bizLogoFile" accept="image/*" style="display:none" onchange="bizLogoFilesSelected(this.files)"/>
+                <div style="font-size:12px;font-weight:600">ছবি টানুন বা ক্লিক করুন</div>
+                <div style="font-size:10px;color:var(--t3);margin-top:2px">JPG, PNG · সর্বোচ্চ ১০MB</div>
+              </div>
+            </div>
+            <div id="bizLogoErr" style="display:none;font-size:11px;color:var(--red);margin-top:6px;background:rgba(239,68,68,.08);padding:6px 10px;border-radius:6px"></div>
+          </div>
           <div class="afG"><label class="afL">Business Name (EN)</label><input class="afI" id="s_n" value="${esc(cfg.bizName||'')}"/></div>
           <div class="afG"><label class="afL">ব্যবসার নাম (BN)</label><input class="afI" id="s_nb" value="${esc(cfg.bizNameBn||'')}"/></div>
           <div class="afG"><label class="afL">Address</label><textarea class="afI" id="s_addr" rows="2">${esc(cfg.bizAddr||'')}</textarea></div>
@@ -6741,7 +6755,7 @@ async function pgCfg(){
             <div class="afG"><label class="afL">Footer (EN)</label><input class="afI" id="s_fe" value="${esc(cfg.footerEn||'Thank you for your order!')}"/></div>
             <div class="afG"><label class="afL">Footer (BN)</label><input class="afI" id="s_fb" value="${esc(cfg.footerBn||'আপনার অর্ডারের জন্য ধন্যবাদ!')}"/></div>
           </div>
-          <button class="btn bP bFull" onclick="saveCfg()">💾 Save Settings</button>
+          <button class="btn bP bFull" onclick="saveCfg(this)">💾 Save Settings</button>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:14px">
@@ -6832,8 +6846,42 @@ window.saveReceiptPreset=async()=>{
     toast('✅ রসিদের ডিজাইন সেভ হয়েছে!');
   }catch(e){toast(e.message,'err');}
 };
-window.saveCfg=async()=>{
-  try{const data={bizName:$('s_n').value.trim(),bizNameBn:$('s_nb').value.trim(),bizAddr:$('s_addr').value.trim(),bizPhone:$('s_ph').value.trim(),delCOD:Number($('s_dc').value)||150,delPaid:Number($('s_dp').value)||0,footerEn:$('s_fe').value.trim(),footerBn:$('s_fb').value.trim()};await setDoc(BCfg(),data,{merge:true});G.cfg={...G.cfg,...data};$('bizNm').textContent=G.lang==='bn'?(data.bizNameBn||data.bizName):data.bizName;toast('Settings saved! ✅');}catch(e){toast(e.message,'err');}
+let _bizLogoPending=null; // {file, preview} — uploaded only when Save Settings is clicked
+window.bizLogoDrop=(e)=>{
+  e.preventDefault();
+  e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.background='var(--card)';
+  const file=[...(e.dataTransfer?.files||[])].find(f=>f.type.startsWith('image/'));
+  if(file)bizLogoFilesSelected([file]);
+};
+window.bizLogoFilesSelected=(files)=>{
+  const file=[...files][0];if(!file)return;
+  if(!file.type||!file.type.startsWith('image/')){toast('শুধু ছবি ফাইল আপলোড করা যাবে','err');return;}
+  if(file.size>10*1024*1024){toast('ছবি ১০MB এর বেশি বড় হতে পারবে না','err');return;}
+  if(_bizLogoPending?.preview){try{URL.revokeObjectURL(_bizLogoPending.preview);}catch{}}
+  _bizLogoPending={file,preview:URL.createObjectURL(file)};
+  const pv=$('bizLogoPreview');if(pv)pv.innerHTML=`<img src="${_bizLogoPending.preview}" style="width:100%;height:100%;object-fit:cover"/>`;
+  const err=$('bizLogoErr');if(err)err.style.display='none';
+};
+window.saveCfg=async(btn)=>{
+  try{
+    let bizLogo=G.cfg.bizLogo||'';
+    if(_bizLogoPending){
+      if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> লোগো আপলোড হচ্ছে...';}
+      try{
+        bizLogo=await uploadImageFile(_bizLogoPending.file);
+        try{URL.revokeObjectURL(_bizLogoPending.preview);}catch{}
+        _bizLogoPending=null;
+      }catch(err){
+        const errBox=$('bizLogoErr');
+        if(errBox){errBox.style.display='block';errBox.innerHTML='❌ '+esc(err.message||'লোগো আপলোড ব্যর্থ')+(err.message?.includes('সেটআপ')?'<br><b>সমাধান:</b> Owner Panel → Settings → ImgBB API Key সেভ করুন।':'');}
+        if(btn){btn.disabled=false;btn.innerHTML='💾 Save Settings';}
+        return; // Don't save other fields if logo upload failed — admin can retry
+      }
+    }
+    const data={bizName:$('s_n').value.trim(),bizNameBn:$('s_nb').value.trim(),bizAddr:$('s_addr').value.trim(),bizPhone:$('s_ph').value.trim(),delCOD:Number($('s_dc').value)||150,delPaid:Number($('s_dp').value)||0,footerEn:$('s_fe').value.trim(),footerBn:$('s_fb').value.trim(),bizLogo};
+    await setDoc(BCfg(),data,{merge:true});G.cfg={...G.cfg,...data};$('bizNm').textContent=G.lang==='bn'?(data.bizNameBn||data.bizName):data.bizName;toast('Settings saved! ✅');
+    if(btn){btn.disabled=false;btn.innerHTML='💾 Save Settings';}
+  }catch(e){toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='💾 Save Settings';}}
 };
 window.savePref=async()=>{
   try{const data={alertAt:Number($('s_alert').value)||5,showProfit:$('s_showProfit').checked,stockDeductTiming:$('s_stockTiming')?.value||'completion',parcelDeadlineDays:Number($('s_parcelDays')?.value)||3};await setDoc(BCfg(),data,{merge:true});G.cfg={...G.cfg,...data};toast('Preferences saved! ✅');}catch(e){toast(e.message,'err');}
