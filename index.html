@@ -254,6 +254,8 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:
 @keyframes pulseGlow{0%,100%{opacity:1}50%{opacity:.55}}
 @keyframes rowGlowRed{0%,100%{background:rgba(239,68,68,.04)}50%{background:rgba(239,68,68,.13)}}
 @keyframes rowGlowAmber{0%,100%{background:rgba(245,158,11,.05)}50%{background:rgba(245,158,11,.15)}}
+@keyframes olSlideDown{from{opacity:0;max-height:0;transform:translateY(-8px)}to{opacity:1;max-height:600px;transform:translateY(0)}}
+@keyframes olPopIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes scaleIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -1340,7 +1342,7 @@ async function loadOrderLink(bizId,linkId){
   host.innerHTML='<div style="display:flex;align-items:center;justify-content:center;min-height:100vh"><div class="spin"></div></div>';
   try{
     // Reset state fresh for THIS link (prevents any cross-link mixing)
-    _olBiz=bizId;_olId=linkId;_olCart=[];_olData=null;_olCfg=null;
+    _olBiz=bizId;_olId=linkId;_olCart=[];_olData=null;_olCfg=null;_olOpenCardIdx=null;_olSelectedVariant={};
     const linkDoc=await getDoc(doc(db,'businesses',bizId,'orderLinks',linkId));
     if(!linkDoc.exists()){
       host.innerHTML=olMessage('🔗','লিংকটি পাওয়া যায়নি','এই অর্ডার লিংকটি সঠিক নয় অথবা মুছে ফেলা হয়েছে।');
@@ -1395,8 +1397,8 @@ function renderOrderLink(){
           const hasVar=p.variants&&p.variants.length>0;
           const soldOut=hasVar?p.variants.every(v=>Number(v.stock||0)<=0):p.soldOut===true;
           const displayPrice=hasVar?p.variants[0].price:p.price;
-          return `<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;position:relative;${soldOut?'opacity:.55':''}">
-            <div style="position:relative;cursor:${imgs.length>1?'pointer':'default'}" ${imgs.length>1?`onclick="olViewImages(${i})"`:''}>
+          return `<div id="olProdCard_${i}" style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;position:relative;transition:border-color .2s;${soldOut?'opacity:.55':''}">
+            <div style="position:relative;cursor:pointer" onclick="${hasVar?`olToggleInlineVariants(${i})`:imgs.length>1?`olViewImages(${i})`:''}">
               ${imgs[0]?`<img loading="lazy" src="${esc(imgs[0])}" style="width:100%;height:140px;object-fit:cover;background:#fff"/>`:`<div style="width:100%;height:140px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:34px">📦</div>`}
               ${imgs.length>1?`<div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.65);color:#fff;font-size:10px;padding:2px 8px;border-radius:20px">📷 ${imgs.length}</div>`:''}
               ${soldOut?`<div style="position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center"><span style="background:#EF4444;color:#fff;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;transform:rotate(-8deg)">😔 স্টক শেষ</span></div>`:''}
@@ -1405,9 +1407,10 @@ function renderOrderLink(){
               <div style="font-weight:600;font-size:13px;margin-bottom:3px;min-height:34px;line-height:1.3">${esc(p.name)}</div>
               <div style="color:var(--green);font-weight:800;font-size:16px;margin-bottom:8px">${hasVar?'থেকে ':''}${cur(displayPrice)}${hasVar?` <span style="font-size:10px;color:var(--t3);font-weight:400">(${p.variants.length} রকম)</span>`:''}</div>
               ${soldOut?`<button class="btn bSm bFull" disabled style="font-size:12px;opacity:.6">স্টক শেষ</button>`
-              :hasVar?`<button class="btn bP bSm bFull" onclick="olPickVariant(${i})" style="font-size:12px">🎨 পছন্দ করুন</button>`
+              :hasVar?`<button class="btn bP bSm bFull" id="olPickBtn_${i}" onclick="olToggleInlineVariants(${i})" style="font-size:12px">🎨 পছন্দ করুন</button>`
               :`<button class="btn bP bSm bFull" onclick="olAddToCart(${i},this)" style="font-size:12px">➕ কার্টে যোগ</button>`}
             </div>
+            <div id="olInlineVariants_${i}" style="display:none"></div>
           </div>`;
         }).join('')}
       </div>
@@ -1444,42 +1447,111 @@ window.olAddToCart=(idx,btn)=>{
   if(cc){cc.textContent=olCartCount();cc.style.transform='scale(1.4)';setTimeout(()=>cc.style.transform='',250);}
   if(ct)ct.textContent=cur(olCartTotal());
 };
-window.olPickVariant=(idx)=>{
-  const p=(_olData.products||[])[idx];if(!p||!p.variants)return;
-  const fallbackImg=(p.images&&p.images[0])||p.imageUrl||'';
-  $('olVariantMod').innerHTML=`
-  <div class="mH"><h3>${esc(p.name)} — পছন্দ করুন</h3><button class="btn bS bIco" onclick="closeMov('olVariantOvl')">✕</button></div>
-  <div class="mB" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px">
-    ${p.variants.map((v,vi)=>{
-      const img=(v.images&&v.images[0])||v.image||fallbackImg;
-      const out=Number(v.stock||0)<=0;
-      return `<div onclick="${out?'':`olAddVariantToCart(${idx},${vi})`}" style="cursor:${out?'default':'pointer'};background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;text-align:center;${out?'opacity:.5':''}">
-        ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:70px;object-fit:cover;background:#fff"/>`:'<div style="width:100%;height:70px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:20px">🎨</div>'}
-        <div style="padding:6px 4px;font-size:11px;font-weight:600">${esc(v.name)}</div>
-        <div style="padding:0 4px 6px;font-size:11px;color:${out?'var(--red)':'var(--green)'};font-weight:700">${out?'স্টক নেই':cur(v.price)}</div>
-      </div>`;
-    }).join('')}
-  </div>`;
-  $('olVariantOvl').classList.add('open');
+// ── Inline variant browsing: thumbnail click → small variant gallery slides open below ──
+// → click a variant → it animates larger showing title/price/offer/stock → click image → full zoom
+let _olOpenCardIdx=null,_olSelectedVariant={};
+window.olToggleInlineVariants=(idx)=>{
+  const panel=$('olInlineVariants_'+idx);if(!panel)return;
+  // Close any other open panel first (only one open at a time keeps it clean on mobile)
+  if(_olOpenCardIdx!==null&&_olOpenCardIdx!==idx){
+    const prev=$('olInlineVariants_'+_olOpenCardIdx);
+    if(prev){prev.style.display='none';prev.innerHTML='';}
+  }
+  if(panel.style.display==='block'){
+    panel.style.display='none';panel.innerHTML='';_olOpenCardIdx=null;return;
+  }
+  _olOpenCardIdx=idx;
+  olRenderVariantStrip(idx);
+  panel.style.display='block';
+  setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'nearest'}),100);
 };
+function olRenderVariantStrip(idx){
+  const p=(_olData.products||[])[idx];if(!p||!p.variants)return;
+  const panel=$('olInlineVariants_'+idx);if(!panel)return;
+  const fallbackImg=(p.images&&p.images[0])||p.imageUrl||'';
+  const selectedVi=_olSelectedVariant[idx];
+  panel.innerHTML=`
+    <div style="padding:10px;border-top:1px dashed var(--border);background:rgba(99,102,241,.04)">
+      <div style="font-size:11px;color:var(--t3);font-weight:600;margin-bottom:8px">🎨 একটি পছন্দ করুন:</div>
+      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">
+        ${p.variants.map((v,vi)=>{
+          const img=(v.images&&v.images[0])||v.image||fallbackImg;
+          const out=Number(v.stock||0)<=0;
+          const isSelected=selectedVi===vi;
+          return `<div onclick="${out?'':`olSelectVariant(${idx},${vi})`}" style="cursor:${out?'default':'pointer'};flex-shrink:0;width:62px;text-align:center;animation:olPopIn .25s ease both;animation-delay:${Math.min(vi*0.04,0.3)}s">
+            <div style="width:62px;height:62px;border-radius:10px;overflow:hidden;border:2px solid ${isSelected?'var(--acc)':'var(--border)'};${out?'opacity:.45':''}">
+              ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:100%;object-fit:cover;background:#fff"/>`:'<div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px">🎨</div>'}
+            </div>
+            <div style="font-size:9px;margin-top:3px;color:${out?'var(--red)':'var(--t2)'};font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${out?'স্টক নেই':esc(v.name)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div id="olVariantDetail_${idx}" style="margin-top:10px"></div>
+    </div>`;
+  if(selectedVi!==undefined)olShowVariantDetail(idx,selectedVi);
+}
+window.olSelectVariant=(idx,vi)=>{
+  _olSelectedVariant[idx]=vi;
+  olRenderVariantStrip(idx); // re-render strip to show the new selection border, then show detail
+  setTimeout(()=>olShowVariantDetail(idx,vi),50);
+};
+function olShowVariantDetail(idx,vi){
+  const p=(_olData.products||[])[idx];const v=p?.variants?.[vi];if(!v)return;
+  const box=$('olVariantDetail_'+idx);if(!box)return;
+  const fallbackImg=(p.images&&p.images[0])||p.imageUrl||'';
+  const img=(v.images&&v.images[0])||v.image||fallbackImg;
+  const out=Number(v.stock||0)<=0;
+  const hasOffer=v.offerPrice>0&&v.offerPrice<v.price;
+  const discountPct=hasOffer?Math.round((1-v.offerPrice/v.price)*100):0;
+  box.innerHTML=`
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;animation:olPopIn .3s ease both;display:flex;gap:12px">
+      <div onclick="olViewImages(${idx},${vi})" style="cursor:zoom-in;width:84px;height:84px;border-radius:10px;overflow:hidden;flex-shrink:0;position:relative">
+        ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:100%;object-fit:cover;background:#fff"/>`:'<div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:24px">🎨</div>'}
+        <div style="position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;font-size:9px;padding:1px 5px;border-radius:6px">🔍</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:14px;margin-bottom:2px">${esc(p.name)} <span style="color:var(--acc2)">— ${esc(v.name)}</span></div>
+        ${v.desc?`<div style="font-size:11px;color:var(--t2);margin-bottom:6px;line-height:1.4">${esc(v.desc)}</div>`:''}
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+          ${hasOffer?`<span style="font-size:17px;font-weight:800;color:var(--green)">${cur(v.offerPrice)}</span><span style="font-size:12px;color:var(--t3);text-decoration:line-through">${cur(v.price)}</span><span style="font-size:10px;background:rgba(239,68,68,.15);color:var(--red);font-weight:700;padding:1px 6px;border-radius:8px">-${discountPct}%</span>`
+          :`<span style="font-size:17px;font-weight:800;color:var(--green)">${cur(v.price)}</span>`}
+        </div>
+        <div style="font-size:10px;color:${out?'var(--red)':'var(--t3)'};margin-bottom:8px">${out?'😔 স্টক নেই':'স্টক আছে: '+v.stock}</div>
+        <button class="btn bP bSm bFull" ${out?'disabled style="opacity:.5"':`onclick="olAddVariantToCart(${idx},${vi})"`}>${out?'স্টক নেই':'➕ কার্টে যোগ করুন'}</button>
+      </div>
+    </div>`;
+}
 window.olAddVariantToCart=(idx,vi)=>{
   const p=(_olData.products||[])[idx];const v=p?.variants?.[vi];if(!v)return;
   if(Number(v.stock||0)<=0){toast('স্টক নেই','err');return;}
   const fallbackImg=(p.images&&p.images[0])||p.imageUrl||'';
   const img=(v.images&&v.images[0])||v.image||fallbackImg;
+  const effectivePrice=(v.offerPrice>0&&v.offerPrice<v.price)?Number(v.offerPrice):Number(v.price||0);
   const ex=_olCart.find(i=>i.idx===idx&&i.variantName===v.name);
   if(ex)ex.qty++;
-  else _olCart.push({idx,name:p.name,price:Number(v.price||0),qty:1,image:img,variantName:v.name});
-  closeMov('olVariantOvl');
+  else _olCart.push({idx,name:p.name,price:effectivePrice,qty:1,image:img,variantName:v.name});
   toast('✅ কার্টে যোগ হয়েছে');
+  // Collapse the inline variant panel back to the thumbnail view
+  const panel=$('olInlineVariants_'+idx);if(panel){panel.style.display='none';panel.innerHTML='';}
+  _olOpenCardIdx=null;
+  const card=$('olProdCard_'+idx);
+  if(card){card.style.borderColor='var(--green)';setTimeout(()=>card.style.borderColor='',700);}
   const bar=$('olCartBar');if(bar)bar.style.display='block';
   const cc=$('olCartCount'),ct=$('olCartTotal');
   if(cc){cc.textContent=olCartCount();cc.style.transform='scale(1.4)';setTimeout(()=>cc.style.transform='',250);}
   if(ct)ct.textContent=cur(olCartTotal());
 };
-window.olViewImages=(idx)=>{
+window.olViewImages=(idx,vi)=>{
   const p=(_olData.products||[])[idx];if(!p)return;
-  const imgs=(p.images&&p.images.length)?p.images:(p.imageUrl?[p.imageUrl]:[]);
+  let imgs,title;
+  if(vi!==undefined&&p.variants&&p.variants[vi]){
+    const v=p.variants[vi];
+    imgs=(v.images&&v.images.length)?v.images:(v.image?[v.image]:((p.images&&p.images.length)?p.images:(p.imageUrl?[p.imageUrl]:[])));
+    title=`${p.name} — ${v.name}`;
+  }else{
+    imgs=(p.images&&p.images.length)?p.images:(p.imageUrl?[p.imageUrl]:[]);
+    title=p.name;
+  }
   if(!imgs.length)return;
   let host=$('olImgViewer');
   if(!host){host=document.createElement('div');host.id='olImgViewer';document.body.appendChild(host);}
@@ -1487,8 +1559,8 @@ window.olViewImages=(idx)=>{
   let cur2=0;
   const render=()=>{
     host.innerHTML=`<button onclick="document.getElementById('olImgViewer').remove()" style="position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;border:none;font-size:20px;cursor:pointer">×</button>
-      <div style="color:#fff;font-size:14px;margin-bottom:12px;font-weight:600">${esc(p.name)}</div>
-      <img src="${esc(imgs[cur2])}" style="max-width:90vw;max-height:68vh;object-fit:contain;border-radius:12px"/>
+      <div style="color:#fff;font-size:14px;margin-bottom:12px;font-weight:600">${esc(title)}</div>
+      <img src="${esc(imgs[cur2])}" style="max-width:90vw;max-height:68vh;object-fit:contain;border-radius:12px;animation:olPopIn .2s ease"/>
       <div style="display:flex;gap:8px;margin-top:16px;align-items:center">
         ${imgs.length>1?`<button id="olPrev" style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;border:none;font-size:20px;cursor:pointer">‹</button>`:''}
         <div style="color:#fff;font-size:13px">${cur2+1} / ${imgs.length}</div>
@@ -3751,8 +3823,11 @@ window.openVariantEditor=(i)=>{
     <div class="afG"><label class="afL">বিবরণ <span style="font-size:10px;color:var(--t3)">(ঐচ্ছিক — গ্রাহক দেখতে পাবে)</span></label><textarea class="afI" id="ve_desc" rows="2" placeholder="এই ভ্যারিয়েন্ট সম্পর্কে বিস্তারিত">${esc(v.desc||'')}</textarea></div>
     <div class="afRow">
       <div class="afG" style="margin:0"><label class="afL">Buy ৳</label><input class="afI" type="number" min="0" id="ve_buy" value="${v.buyPrice||''}" placeholder="0"/></div>
-      <div class="afG" style="margin:0"><label class="afL">Sell ৳ *</label><input class="afI" type="number" min="0" id="ve_sell" value="${v.sellPrice||''}" placeholder="0"/></div>
+      <div class="afG" style="margin:0"><label class="afL">মূল দাম (Sell ৳) *</label><input class="afI" type="number" min="0" id="ve_sell" value="${v.sellPrice||''}" placeholder="0" oninput="veValidateOffer()"/></div>
       <div class="afG" style="margin:0"><label class="afL">Stock</label><input class="afI" type="number" min="0" id="ve_stock" value="${v.stock??''}" placeholder="0"/></div>
+    </div>
+    <div class="afG"><label class="afL">🏷️ অফার দাম <span style="font-size:10px;color:var(--t3)">(ঐচ্ছিক — দিলে মূল দামে কাটাছেঁড়া দেখাবে)</span></label><input class="afI" type="number" min="0" id="ve_offer" value="${v.offerPrice||''}" placeholder="যেমন: ৪৫০ (মূল দামের চেয়ে কম হতে হবে)" oninput="veValidateOffer()"/>
+      <div id="veOfferErr" style="display:none;font-size:11px;color:var(--red);margin-top:4px">⚠️ অফার দাম মূল দামের চেয়ে কম হতে হবে</div>
     </div>
     <div class="divider"></div>
     <div class="afG" style="margin-bottom:6px"><label class="afL">🖼️ এই ভ্যারিয়েন্টের ছবি <span style="color:var(--t3);font-size:10px">(একাধিক যোগ করতে পারেন — বিভিন্ন অ্যাঙ্গেল থেকে)</span></label>
@@ -3823,18 +3898,27 @@ window.removeVariantEditImage=(i)=>{
   renderVariantEditGallery();
 };
 window.makeVariantEditMainImage=(i)=>{const[img]=_variantEditImages.splice(i,1);_variantEditImages.unshift(img);renderVariantEditGallery();};
+window.veValidateOffer=()=>{
+  const sell=Number($('ve_sell')?.value||0);
+  const offer=Number($('ve_offer')?.value||0);
+  const err=$('veOfferErr');
+  if(err)err.style.display=(offer>0&&offer>=sell)?'block':'none';
+};
 window.saveVariantEditor=()=>{
   const i=_variantEditIdx;if(i===null||!_prodVariants[i])return;
   const name=$('ve_name')?.value.trim()||'';
   const sell=$('ve_sell')?.value||'';
+  const offer=Number($('ve_offer')?.value||0);
   const err=$('veErr');
   if(!name){if(err){err.style.display='flex';err.textContent='❌ নাম দিন';}return;}
   if(!Number(sell)){if(err){err.style.display='flex';err.textContent='❌ Sell price দিন';}return;}
+  if(offer>0&&offer>=Number(sell)){if(err){err.style.display='flex';err.textContent='❌ অফার দাম মূল দামের চেয়ে কম হতে হবে';}return;}
   _prodVariants[i]={
     name,
     desc:$('ve_desc')?.value.trim()||'',
     buyPrice:Number($('ve_buy')?.value||0),
     sellPrice:Number(sell),
+    offerPrice:offer>0?offer:0,
     stock:Number($('ve_stock')?.value||0),
     images:[..._variantEditImages]
   };
@@ -4579,11 +4663,30 @@ async function pgTools(){
   setC(`
   <div class="pH"><div><h1>🛠️ Business Tools</h1><p>Useful tools for your business</p></div></div>
 
-  <!-- 🚀 SELL ONLINE — flagship features, always visible -->
-  <div style="font-size:13px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🚀 অনলাইনে বিক্রি করুন</div>
+  <!-- TOOLS HUB — click a tile to open only that tool -->
+  <div id="toolsHub" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px">
+    ${[
+      {id:'shop',ico:'🌐',label:'Public Online Shop',clr:'99,102,241'},
+      {id:'orderlink',ico:'🔗',label:'কাস্টম অর্ডার লিংক',clr:'168,85,247'},
+      {id:'steadfast',ico:'🚚',label:'Steadfast Courier',clr:'16,185,129'},
+      {id:'redx',ico:'🔴',label:'RedX Courier',clr:'220,38,38'},
+      {id:'pathao',ico:'🟠',label:'Pathao Courier',clr:'229,57,53'},
+      {id:'calc',ico:'🧮',label:'Business Calculator',clr:'99,102,241'},
+      {id:'stockval',ico:'📊',label:'Stock Value',clr:'99,102,241'},
+      {id:'fraud',ico:'🛡️',label:'Fraud Check',clr:'239,68,68'},
+      {id:'expense',ico:'💸',label:'Expense Log',clr:'245,158,11'},
+      {id:'coupon',ico:'🏷️',label:'Coupon Codes',clr:'168,85,247'},
+      {id:'export',ico:'📤',label:'Export Data',clr:'99,102,241'},
+    ].map(t=>`
+      <div onclick="toolsGoTo('${t.id}')" style="cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 10px;text-align:center;transition:all .2s" onmouseover="this.style.borderColor='rgba(${t.clr},.5)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+        <div style="font-size:28px;margin-bottom:8px">${t.ico}</div>
+        <div style="font-size:12px;font-weight:600;line-height:1.3">${t.label}</div>
+      </div>`).join('')}
+  </div>
+  <button id="toolsBackBtn" onclick="toolsBackToHub()" style="display:none;margin-bottom:16px" class="btn bS bSm">← Business Tools</button>
 
   <!-- PUBLIC ONLINE SHOP -->
-  <div class="card flagshipCard" id="toolSec_shop" style="border:1px solid rgba(99,102,241,.35);background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(168,85,247,.05));margin-bottom:16px;position:relative;overflow:hidden">
+  <div class="card flagshipCard" id="toolSec_shop" style="display:none;border:1px solid rgba(99,102,241,.35);background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(168,85,247,.05));margin-bottom:16px;position:relative;overflow:hidden">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:46px;height:46px;border-radius:14px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;overflow:hidden;flex-shrink:0;box-shadow:0 4px 16px rgba(99,102,241,.4)">🌐</div>
@@ -4624,7 +4727,7 @@ async function pgTools(){
   </div>
 
   <!-- CUSTOM ORDER LINK -->
-  <div class="card flagshipCard" id="toolSec_orderlink" style="border:1px solid rgba(168,85,247,.35);background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(99,102,241,.05));margin-bottom:24px;position:relative;overflow:hidden">
+  <div class="card flagshipCard" id="toolSec_orderlink" style="display:none;border:1px solid rgba(168,85,247,.35);background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(99,102,241,.05));margin-bottom:16px;position:relative;overflow:hidden">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#A855F7,#7C3AED);display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;overflow:hidden;flex-shrink:0;box-shadow:0 4px 16px rgba(168,85,247,.4)">🔗</div>
@@ -4642,27 +4745,6 @@ async function pgTools(){
     <div id="orderLinksList" style="margin-top:14px"></div>
   </div>
   <div class="mOvl" id="createLinkOvl"><div class="modal mLg" id="createLinkMod"></div></div>
-
-  <!-- 🧰 OTHER TOOLS HUB — click a tile to open only that tool -->
-  <div style="font-size:13px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🧰 আরও সরঞ্জাম</div>
-  <div id="toolsHub" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px">
-    ${[
-      {id:'steadfast',ico:'🚚',label:'Steadfast Courier',clr:'16,185,129'},
-      {id:'redx',ico:'🔴',label:'RedX Courier',clr:'220,38,38'},
-      {id:'pathao',ico:'🟠',label:'Pathao Courier',clr:'229,57,53'},
-      {id:'calc',ico:'🧮',label:'Business Calculator',clr:'99,102,241'},
-      {id:'stockval',ico:'📊',label:'Stock Value',clr:'99,102,241'},
-      {id:'fraud',ico:'🛡️',label:'Fraud Check',clr:'239,68,68'},
-      {id:'expense',ico:'💸',label:'Expense Log',clr:'245,158,11'},
-      {id:'coupon',ico:'🏷️',label:'Coupon Codes',clr:'168,85,247'},
-      {id:'export',ico:'📤',label:'Export Data',clr:'99,102,241'},
-    ].map(t=>`
-      <div onclick="toolsGoTo('${t.id}')" style="cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 10px;text-align:center;transition:all .2s" onmouseover="this.style.borderColor='rgba(${t.clr},.5)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
-        <div style="font-size:28px;margin-bottom:8px">${t.ico}</div>
-        <div style="font-size:12px;font-weight:600;line-height:1.3">${t.label}</div>
-      </div>`).join('')}
-  </div>
-  <button id="toolsBackBtn" onclick="toolsBackToHub()" style="display:none;margin-bottom:16px" class="btn bS bSm">← আরও সরঞ্জাম</button>
 
   <div class="g g2" style="gap:16px;margin-bottom:16px">
 
@@ -4811,7 +4893,7 @@ async function pgTools(){
   loadOrderLinks();
   toolsBackToHub(); // start on the hub menu — sections open only when a tile is clicked
 }
-const TOOL_SECTION_IDS=['toolSec_steadfast','toolSec_redx','toolSec_pathao','toolSec_calc','toolSec_stockval','toolSec_fraud','toolSec_expense','toolSec_coupon','toolSec_export'];
+const TOOL_SECTION_IDS=['toolSec_shop','toolSec_orderlink','toolSec_steadfast','toolSec_redx','toolSec_pathao','toolSec_calc','toolSec_stockval','toolSec_fraud','toolSec_expense','toolSec_coupon','toolSec_export'];
 window.toolsGoTo=(key)=>{
   const target=$('toolSec_'+key);
   if(!target)return;
@@ -4949,7 +5031,7 @@ window.olToggleProd=(i)=>{
     _olSelProds.push({
       _idx:i,name:p.name,price:Number(price),images:p.images||[],imageUrl:p.imageUrl||'',
       soldOut:hasVar?p.variants.every(v=>Number(v.stock||0)<=0):Number(p.stock||0)<=0,
-      variants:hasVar?p.variants.map(v=>({name:v.name,price:Number(v.sellPrice||0),stock:Number(v.stock||0),images:(Array.isArray(v.images)?v.images.filter(x=>typeof x==='string'):(typeof v.image==='string'?[v.image]:[]))})):[]
+      variants:hasVar?p.variants.map(v=>({name:v.name,price:Number(v.sellPrice||0),offerPrice:Number(v.offerPrice||0),desc:v.desc||'',stock:Number(v.stock||0),images:(Array.isArray(v.images)?v.images.filter(x=>typeof x==='string'):(typeof v.image==='string'?[v.image]:[]))})):[]
     });
   }
   const c=$('olSelCount');if(c)c.textContent=_olSelProds.length;
