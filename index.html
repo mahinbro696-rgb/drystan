@@ -2883,6 +2883,7 @@ async function cancelModRequest(docId,reason){
 window.doLogout=async()=>{
   // Clear this device's trusted flag — TOTP will be required again on next login
   try{const uid=auth.currentUser?.uid;if(uid)localStorage.removeItem('dry_trusted_'+uid);}catch{}
+  try{if(location.hash.startsWith('#app/'))history.replaceState(null,'',location.pathname);}catch{}
   await signOut(auth);
 };
 
@@ -2996,8 +2997,22 @@ function loadApp(){
   applyTheme();$('langLbl').textContent=G.lang.toUpperCase();
   const sn=G.gcfg.siteName||'Drystan';
   const nm=$('mainLogoName');if(nm)nm.textContent=sn;
-  G.page=G.role==='moderator'?'newOrder':'dash';
+  // Restore the page the user was on before a refresh (from #app/{page}), falling back to the default
+  const ALL_PAGES=['dash','prods','newOrder','orders','reports','campaigns','tools','team','cfg','account','help'];
+  let restoredPage=null;
+  if(location.hash.startsWith('#app/')){
+    const candidate=location.hash.slice(5).split('/')[0];
+    if(ALL_PAGES.includes(candidate))restoredPage=candidate;
+  }
+  G.page=restoredPage||(G.role==='moderator'?'newOrder':'dash');
   nav(G.page);
+  // Safety net: if nav() rejected the restored page (e.g. moderator permission was revoked
+  // since the hash was set), G.page won't have changed and #pageContent stays empty — recover.
+  if(restoredPage&&G.role==='moderator'){
+    const perms=G.modPerms||{orders:true};
+    const allowedNow=['newOrder','orders','account',...(perms.products?['prods']:[]),...(perms.customers?['custs']:[]),...(perms.reports?['reports']:[]),...(perms.campaigns?['campaigns']:[])];
+    if(!allowedNow.includes(restoredPage))nav('newOrder');
+  }
   // Start moderator login approval listener (admin only)
   if(G.role==='admin'){setTimeout(startModLoginListener,1000);}
   // Start new-order notification listener (admin + moderators with order permission)
@@ -3169,6 +3184,7 @@ window.nav=p=>{
     if(perms.products)allowed.push('prods');
     if(perms.customers)allowed.push('custs');
     if(perms.reports)allowed.push('reports');
+    if(perms.campaigns)allowed.push('campaigns');
     if(!allowed.includes(p)){toast('Access denied — ask admin for permission','err');return;}
   }
   G.page=p;closeSB();
@@ -3176,6 +3192,9 @@ window.nav=p=>{
   $('pgTitle').textContent=pgTitles[p]||p;
   if(p!=='newOrder'){G.lastOrder=null;G.oItems=[];G.oForm=null;}
   _gSearchData=null; // refresh global-search cache after navigation (data may have changed)
+  // Remember which page we're on so a refresh lands back here (not always Dashboard).
+  // Uses a distinct '#app/...' namespace so it never collides with #shop/ or #order/ links.
+  try{history.replaceState(null,'','#app/'+p);}catch{}
   renderPage();
 };
 function setC(html){$('pageContent').innerHTML=html;$('pageContent').style.animation='none';$('pageContent').offsetHeight;$('pageContent').style.animation='fadeUp .35s ease';}
@@ -3227,7 +3246,6 @@ function buildSidebar(){
     {p:'prods',ico:'box',lbl:'Products'},
     {p:'newOrder',ico:'plus',lbl:'Create Order'},
     {p:'orders',ico:'cart',lbl:'Orders'},
-    {p:'custs',ico:'users',lbl:'Customers'},
     {p:'reports',ico:'chart',lbl:'Reports & Analytics'},
     {p:'campaigns',ico:'target',lbl:'Campaigns'},
     {p:'tools',ico:'tool',lbl:'Business Tools'},
@@ -3238,7 +3256,6 @@ function buildSidebar(){
     {p:'newOrder',ico:'plus',lbl:'Create Order'},
     {p:'orders',ico:'cart',lbl:'Orders'},
     ...(G.modPerms?.products?[{p:'prods',ico:'box',lbl:'Products'}]:[]),
-    ...(G.modPerms?.customers?[{p:'custs',ico:'users',lbl:'Customers'}]:[]),
     ...(G.modPerms?.reports?[{p:'reports',ico:'chart',lbl:'Reports'}]:[]),
     ...(G.modPerms?.campaigns?[{p:'campaigns',ico:'target',lbl:'Campaigns'}]:[]),
   ];
@@ -3363,8 +3380,6 @@ async function pgDash(){
       const l=bn?{pending:'অপেক্ষমান',completed:'সম্পন্ন',cancelled:'বাতিল',parcel_sent:'পাঠানো হয়েছে',returned:'ফেরত'}:{pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Sent',returned:'Returned'};
       return`<span class="badge ${m[s]||'bPend'}">${l[s]||s}</span>`;
     };
-
-    const T=(en,b)=>bn?b:en;
 
     setC(`
     <div style="margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px">
@@ -6974,7 +6989,6 @@ let _acUnChkTimeout=null;
 async function pgHelp(){
   loading();
   const bn=G.lang==='bn';
-  const T=(en,b)=>bn?b:en;
   // Pull support contact from global config (owner-editable)
   let gc=G.gcfg||{};
   try{const d=await getDoc(GCfg());if(d.exists())gc={...gc,...d.data()};G.gcfg=gc;}catch{}
