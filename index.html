@@ -3010,8 +3010,9 @@ onAuthStateChanged(auth,async user=>{
         G.role=ud.role||'moderator';
         if(ud.displayName)G.user.displayName=ud.displayName;
         G.userPlan=ud.plan||'free';
-        // bizId: admin uses own UID, moderator uses their admin's bizId
-        G.bizId=G.role==='admin'?user.uid:(ud.bizId||ud.adminUid||user.uid);
+        // bizId comes from the user profile for both admins and moderators.
+        // This lets a replacement admin account manage the original business data.
+        G.bizId=ud.bizId||ud.adminUid||user.uid;
         // Load moderator permissions
         if(G.role==='moderator'){G.modPerms=ud.permissions||{orders:true};}
         // Load business config (using admin's bizId)
