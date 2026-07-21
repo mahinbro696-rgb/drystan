@@ -1119,8 +1119,46 @@ const app=initializeApp(FC);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
+// PRO UPGRADE LAYER — optional App Check and SaaS plan controls.
+// Put your reCAPTCHA v3 site key here, then enforce App Check in Firebase Console.
+const APP_CHECK_SITE_KEY='';
+if(APP_CHECK_SITE_KEY){
+  import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js')
+    .then(({initializeAppCheck,ReCaptchaV3Provider})=>{
+      initializeAppCheck(app,{provider:new ReCaptchaV3Provider(APP_CHECK_SITE_KEY),isTokenAutoRefreshEnabled:true});
+    })
+    .catch(()=>{});
+}
+const PLAN_LIMITS={
+  free:{products:50,ordersPerMonth:500,moderators:1},
+  pro:{products:500,ordersPerMonth:5000,moderators:5},
+  business:{products:5000,ordersPerMonth:50000,moderators:25}
+};
+function currentPlan(){
+  return (G?.profilePlan||G?.userPlan||G?.gcfg?.defaultPlan||'free').toLowerCase();
+}
+function currentPlanLimits(){
+  return PLAN_LIMITS[currentPlan()]||PLAN_LIMITS.free;
+}
+async function enforcePlanLimit(kind){
+  if(G.user?.uid===OWNER_AUTH_UID)return true;
+  const limits=currentPlanLimits();
+  if(kind==='product'){
+    const count=(await getDocs(BCol('products'))).size;
+    if(count>=limits.products){toast(`আপনার ${currentPlan().toUpperCase()} plan এ product limit ${limits.products}. Owner upgrade করুন।`,'err');return false;}
+  }
+  if(kind==='order'){
+    const monthKey=new Date().toISOString().slice(0,7);
+    const snap=await getDocs(BCol('orders'));
+    const count=snap.docs.filter(d=>String(d.data().orderDate||d.data().createdDate||'').startsWith(monthKey)).length;
+    if(count>=limits.ordersPerMonth){toast(`এই মাসে order limit শেষ। Plan upgrade করুন।`,'err');return false;}
+  }
+  return true;
+}
+
 // OWNER SECRET (hardcoded — never in Firestore)
 const OWNER_SECRET='DRY$T4N-0WN3R-X9K2M';
+const OWNER_AUTH_UID='M1iLATMbWWbmmWwQe4dkZheK6ya2';
 // SHA-256 hash of owner password — never plaintext in source
 const OWNER_PASS_HASH='770c9fabf9efce3d3c7a75e84f5a7a36a0fea275107e1083bd0fbc7b5785a4d1';
 let _ownerPwCurrentHash=OWNER_PASS_HASH;
@@ -1371,15 +1409,31 @@ window.runGlobalSearch=(q)=>{
 
 // ══ OWNER PANEL ══
 window.addEventListener('hashchange', checkOwnerHash);
-function checkOwnerHash(){
-  if(location.hash !== '#'+OWNER_SECRET) return;
-  // Always show owner panel on top of everything
+function ownerAuthAllowed(){
+  return !!(G.user && G.user.uid === OWNER_AUTH_UID);
+}
+function showOwnerShell(){
   document.querySelectorAll('#loginWrap,#appWrap,#loadScreen').forEach(el=>{
     el.classList.remove('show');
     if(el.id==='loadScreen') el.classList.add('hide');
   });
   $('ownerWrap').classList.add('show');
-  loadOwnerData();
+}
+function unlockOwnerPanel(){
+  $('ownerContent').style.display='none';
+  $('ownerDash').style.display='block';
+  loadOwnerData();ownerTab(0);startOwnerIdleLock();
+}
+function checkOwnerHash(){
+  if(location.hash !== '#'+OWNER_SECRET) return;
+  // Always show owner panel on top of everything
+  showOwnerShell();
+  if(ownerAuthAllowed()) unlockOwnerPanel();
+  else {
+    $('ownerContent').style.display='block';
+    $('ownerDash').style.display='none';
+    loadOwnerData();
+  }
 }
 // Check on page load after short delay
 window.addEventListener('load', ()=>setTimeout(checkOwnerHash, 200));
@@ -2075,6 +2129,13 @@ async function loadOwnerData(){
 let _ownerTries=0,_ownerLockUntil=0;
 window.ownerLogin=async()=>{
   const err=$('ownerErr');err.style.display='none';
+  if(!ownerAuthAllowed()){
+    err.style.display='flex';
+    err.textContent='❌ আগে owner Gmail দিয়ে main website এ login করুন, তারপর owner panel খুলুন।';
+    return;
+  }
+  unlockOwnerPanel();
+  return;
   const now=Date.now();
   if(now<_ownerLockUntil){
     const secs=Math.ceil((_ownerLockUntil-now)/1000);
@@ -2090,9 +2151,7 @@ window.ownerLogin=async()=>{
     err.style.display='flex';err.textContent=`❌ Wrong password. (${5-_ownerTries} tries left)`;return;
   }
   _ownerTries=0;
-  $('ownerContent').style.display='none';
-  $('ownerDash').style.display='block';
-  loadOwnerData();ownerTab(0);startOwnerIdleLock();
+  unlockOwnerPanel();
 };
 let _ownerIdleTimer=null;
 function startOwnerIdleLock(){
@@ -2224,6 +2283,13 @@ function renderOwUsersList(users){
               <div style="font-weight:700;font-size:13px">${esc(admin.displayName||'Admin')} <span class="badge bAdmin" style="font-size:10px">ADMIN</span>${admin.suspended?' <span class="badge bCanc" style="font-size:9px">🚫 SUSPENDED</span>':''}</div>
               <div style="font-size:11px;color:var(--t2)">@${esc(admin.username||'-')} · ${esc(admin.email||'-')}</div>
               <div style="font-size:10px;color:var(--t3)">👥 ${adminMods.length} moderator(s) · Joined: ${admin.createdAt?fdate(admin.createdAt):'-'}</div>
+              <div style="margin-top:6px;display:flex;gap:6px;align-items:center" onclick="event.stopPropagation()">
+                <span style="font-size:10px;color:var(--t2);font-weight:700">Plan</span>
+                <select class="afI" id="plan_${admin.id}" style="width:110px;padding:5px 8px;font-size:11px">
+                  ${['free','pro','business'].map(p=>`<option value="${p}" ${(admin.plan||'free')===p?'selected':''}>${p.toUpperCase()}</option>`).join('')}
+                </select>
+                <button class="btn bG bSm" style="font-size:10px;padding:5px 8px" onclick="ownerSetPlan('${admin.id}')">Save Plan</button>
+              </div>
             </div>
           </div>
           <div style="display:flex;gap:5px;align-items:center">
@@ -2456,6 +2522,16 @@ window.ownerToggleSuspend=async(uid,name,isSuspended)=>{
   try{
     await updateDoc(Doc('users',uid),{suspended:!isSuspended});
     toast(isSuspended?'✅ পুনরায় চালু করা হয়েছে':'🚫 সাসপেন্ড করা হয়েছে');
+    loadOwnerUsers();
+  }catch(e){toast('❌ '+e.message,'err');}
+};
+
+window.ownerSetPlan=async(uid)=>{
+  if(G.user?.uid!==OWNER_AUTH_UID){toast('Owner only','err');return;}
+  const plan=$('plan_'+uid)?.value||'free';
+  try{
+    await updateDoc(Doc('users',uid),{plan,planUpdatedAt:serverTimestamp(),planUpdatedBy:G.user?.uid||''});
+    toast(`✅ Plan updated to ${plan.toUpperCase()}`,'ok');
     loadOwnerUsers();
   }catch(e){toast('❌ '+e.message,'err');}
 };
@@ -2914,7 +2990,6 @@ function resetSessionTimer(){
 // Prevent right-click source view (basic deterrent — not foolproof)
 // Real security is in Firebase Rules + Auth, not HTML hiding
 onAuthStateChanged(auth,async user=>{
-  if(location.hash==='#'+OWNER_SECRET){return;} // Owner panel takes priority
   if(location.hash.startsWith('#shop/')){return;} // Public storefront takes priority — no login needed
   const ls=$('loadScreen');
   if(user){
@@ -2934,6 +3009,7 @@ onAuthStateChanged(auth,async user=>{
         }
         G.role=ud.role||'moderator';
         if(ud.displayName)G.user.displayName=ud.displayName;
+        G.userPlan=ud.plan||'free';
         // bizId: admin uses own UID, moderator uses their admin's bizId
         G.bizId=G.role==='admin'?user.uid:(ud.bizId||ud.adminUid||user.uid);
         // Load moderator permissions
@@ -2969,8 +3045,9 @@ onAuthStateChanged(auth,async user=>{
     if(location.hash==='#'+OWNER_SECRET){
       $('loadScreen').classList.add('hide');
       setTimeout(()=>$('loadScreen').style.display='none',500);
-      $('ownerWrap').classList.add('show');
-      loadOwnerData();
+      showOwnerShell();
+      if(ownerAuthAllowed()) unlockOwnerPanel();
+      else loadOwnerData();
       return;
     }
     loadApp();
@@ -4103,7 +4180,10 @@ async function saveProd(id){
     }
 
     if(id)await updateDoc(BDoc('products',id),{...data,updatedAt:serverTimestamp()});
-    else await addDoc(BCol('products'),{...data,createdAt:serverTimestamp()});
+    else{
+      if(!(await enforcePlanLimit('product'))){btn.disabled=false;btn.innerHTML='💾 Save';return;}
+      await addDoc(BCol('products'),{...data,createdAt:serverTimestamp()});
+    }
     toast(id?'✅ Updated!':'✅ Added!','ok');closeMov('prodMOvl');pgProds();
   }catch(e){toast(e.message,'err');btn.disabled=false;btn.innerHTML='💾 Save';}
 }
@@ -4527,6 +4607,7 @@ window.submitOrder=async()=>{
       if(!proceed){btn.disabled=false;btn.innerHTML='✅ Create Order & Receipt';return;}
     }
     const sub=validItems.reduce((s,it)=>s+(Number(it.price)*Number(it.qty)),0);const disc=Number(f.discount||0);const del=Number(f.delivery||0);const total=sub-disc+del;
+    if(!(await enforcePlanLimit('order'))){btn.disabled=false;btn.innerHTML='✅ Create Order & Receipt';return;}
     const cnt=(await getDocs(BCol('orders'))).size;const num='DRY-'+String(cnt+1).padStart(5,'0');
     // Customer
     const cSnap=await getDocs(query(BCol('customers'),where('phone','==',ordPhone)));
@@ -4856,11 +4937,12 @@ async function pgTools(){
         📦 Steadfast API দিয়ে orders automatically courier এ পাঠানো যাবে। API key লাগবে।<br/>
         <button onclick="showSteadfastGuide()" style="background:none;border:none;color:var(--acc2);text-decoration:underline;cursor:pointer;font-size:12px;padding:4px 0;font-family:inherit">📖 কীভাবে API key পাবো? — বিস্তারিত গাইড দেখুন</button>
       </div>
+      <div class="afG"><label class="afL">🔐 Secure Courier Backend Webhook <span style="font-size:10px;color:var(--t3)">(recommended — API secret backend এ রাখুন)</span></label><input class="afI" id="sf_webhook" value="${esc(G.cfg.courierWebhookUrl||'')}" placeholder="https://...cloudfunctions.net/sendCourier"/></div>
       <div class="afG"><label class="afL">Steadfast API Key</label><input class="afI" id="sf_key" value="${esc(stKey)}" placeholder="Your API Key"/></div>
       <div class="afG"><label class="afL">Steadfast Secret Key</label><input class="afI" id="sf_secret" value="${esc(stSecret)}" placeholder="Your Secret Key"/></div>
       <div class="afG"><label class="afL">🛡️ Fraud-Check API Key <span style="font-size:10px;color:var(--t3)">(optional — fraudbd.com ইত্যাদি থেকে)</span></label><input class="afI" id="sf_fraud" value="${esc(G.cfg.fraudApiKey||'')}" placeholder="ঐচ্ছিক — না দিলে external site খুলবে"/></div>
       <button class="btn bG bFull" onclick="saveSteadfastConfig()">💾 Save Steadfast Config</button>
-      ${stKey?`
+      ${(stKey||G.cfg.courierWebhookUrl)?`
       <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
         <div style="font-weight:600;font-size:13px;margin-bottom:10px">📋 Send Pending Orders to Steadfast</div>
         <button class="btn bP bFull" onclick="sendToSteadfast()">🚀 Send All Pending Orders</button>
@@ -5415,10 +5497,10 @@ window.calcStockValue=async()=>{
 };
 
 window.saveSteadfastConfig=async()=>{
-  const key=$('sf_key')?.value.trim();const secret=$('sf_secret')?.value.trim();const fraud=$('sf_fraud')?.value.trim()||'';
+  const key=$('sf_key')?.value.trim();const secret=$('sf_secret')?.value.trim();const fraud=$('sf_fraud')?.value.trim()||'';const webhook=$('sf_webhook')?.value.trim()||'';
   try{
-    await setDoc(BCfg(),{steadfastKey:key,steadfastSecret:secret,fraudApiKey:fraud},{merge:true});
-    G.cfg.steadfastKey=key;G.cfg.steadfastSecret=secret;G.cfg.fraudApiKey=fraud;
+    await setDoc(BCfg(),{steadfastKey:key,steadfastSecret:secret,fraudApiKey:fraud,courierWebhookUrl:webhook},{merge:true});
+    G.cfg.steadfastKey=key;G.cfg.steadfastSecret=secret;G.cfg.fraudApiKey=fraud;G.cfg.courierWebhookUrl=webhook;
     toast('✅ Config saved!');pgTools();
   }catch(e){toast(e.message,'err');}
 };
@@ -5503,7 +5585,33 @@ window.shareCatalogText=async()=>{
   }catch(e){toast(e.message,'err');}
 };
 
+async function sendPendingOrdersToCourierWebhook(){
+  const url=G.cfg.courierWebhookUrl||'';
+  if(!url)return false;
+  const res=$('sfResult');
+  if(res)res.innerHTML='<div class="spin spinSm" style="margin:0 auto"></div>';
+  const snap=await getDocs(query(BCol('orders'),where('status','==','pending')));
+  const orders=snap.docs.map(d=>({id:d.id,...d.data()}));
+  if(!orders.length){if(res)res.innerHTML='<div class="al aI">No pending orders to send.</div>';return true;}
+  const resp=await fetch(url,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({bizId:G.bizId,orders})
+  });
+  if(!resp.ok)throw new Error('Courier backend failed: '+resp.status);
+  const data=await resp.json().catch(()=>({}));
+  for(const o of orders){
+    await updateDoc(BDoc('orders',o.id),{status:'parcel_sent',courierRequestedAt:serverTimestamp(),courierBatchId:data.batchId||'',updatedAt:serverTimestamp()});
+  }
+  if(res)res.innerHTML=`<div class="al aO">✅ Backend courier request sent: ${orders.length} orders</div>`;
+  toast(`Courier backend: ${orders.length} orders sent`,'ok');
+  return true;
+}
 window.sendToSteadfast=async()=>{
+  if(G.cfg.courierWebhookUrl){
+    try{if(await sendPendingOrdersToCourierWebhook())return;}
+    catch(e){toast(e.message,'err');return;}
+  }
   const key=G.cfg.steadfastKey;const secret=G.cfg.steadfastSecret;
   if(!key||!secret){toast('Save Steadfast API keys first','err');return;}
   const res=$('sfResult');
