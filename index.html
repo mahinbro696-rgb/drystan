@@ -1141,6 +1141,17 @@ async function testSecureBackend(){
 }
 window.testSecureBackend=testSecureBackend;
 
+async function testSteadfastConnection(){
+  try{
+    const resp=await secureApiFetch('/v1/steadfast/test',{method:'GET'});
+    const data=await resp.json().catch(()=>({}));
+    return {ok:resp.ok,...data};
+  }catch(e){
+    return {ok:false,connected:false,error:e.message||String(e)};
+  }
+}
+window.testSteadfastConnection=testSteadfastConnection;
+
 // PRO UPGRADE LAYER — optional App Check and SaaS plan controls.
 // Put your reCAPTCHA v3 site key here, then enforce App Check in Firebase Console.
 const APP_CHECK_SITE_KEY='';
@@ -3073,6 +3084,14 @@ onAuthStateChanged(auth,async user=>{
       alert(_backendTest.ok&&_backendTest.authenticated
         ? '✅ Secure backend authentication successful\nUID: '+(_backendTest.uid||user.uid)
         : '❌ Secure backend authentication failed\n'+(_backendTest.error||'Unknown error'));
+      try{history.replaceState(null,'',location.pathname);}catch{}
+    }
+    // One-time Steadfast credential test route. No parcel/order is created.
+    if(location.hash==='#steadfast-test'){
+      const _steadfastTest=await testSteadfastConnection();
+      alert(_steadfastTest.ok&&_steadfastTest.connected
+        ? '✅ Steadfast connection successful\nNo order was created.'
+        : '❌ Steadfast connection failed\n'+(_steadfastTest.error||'Unknown error'));
       try{history.replaceState(null,'',location.pathname);}catch{}
     }
     _appReady=true;
