@@ -1112,7 +1112,7 @@ img{max-width:100%}
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import{getAuth,getIdToken,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,createUserWithEmailAndPassword,updatePassword,reauthenticateWithCredential,EmailAuthProvider}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import{getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,deleteField,query,where,orderBy,serverTimestamp,limit,onSnapshot}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import{getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,deleteField,query,where,orderBy,serverTimestamp,limit,onSnapshot,runTransaction}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const FC={apiKey:"AIzaSyDtoVVHuMKUiIbyQEOmEPyspzBNT5zxGC4",authDomain:"drystan-cfe3b.firebaseapp.com",projectId:"drystan-cfe3b",storageBucket:"drystan-cfe3b.firebasestorage.app",messagingSenderId:"419259525007",appId:"1:419259525007:web:25c283364579b356d74dfa"};
 const app=initializeApp(FC);
@@ -1499,6 +1499,43 @@ function checkOrderLink(){
 }
 // Each link has its OWN independent state — never shared between links
 let _olBiz=null,_olId=null,_olData=null,_olCfg=null,_olCart=[];
+function olTsDate(v){
+  if(!v)return null;
+  try{
+    if(typeof v.toDate==='function')return v.toDate();
+    if(typeof v.seconds==='number')return new Date(v.seconds*1000);
+    const d=v instanceof Date?v:new Date(v);
+    return Number.isNaN(d.getTime())?null:d;
+  }catch{return null;}
+}
+function olIsExpired(link){
+  const d=olTsDate(link?.expiresAt);
+  return !!(d&&d.getTime()<=Date.now());
+}
+function olIsReusable(link){return link?.mode==='multi';}
+function olOrderLimitReached(link){
+  if(!olIsReusable(link))return false;
+  const max=Number(link?.maxOrders||0),count=Number(link?.orderCount||0);
+  return max>0&&count>=max;
+}
+function olDeliveryCharge(){
+  const linkVal=Number(_olData?.delivery);
+  if(Number.isFinite(linkVal)&&linkVal>=0)return linkVal;
+  const cfgVal=Number(_olCfg?.delCOD);
+  return Number.isFinite(cfgVal)&&cfgVal>=0?cfgVal:150;
+}
+function olPublicAvailabilityMessage(link){
+  if(olIsExpired(link))return olMessage('⌛','লিংকের মেয়াদ শেষ','এই অর্ডার লিংকের নির্ধারিত সময় শেষ হয়ে গেছে। নতুন লিংকের জন্য বিক্রেতার সাথে যোগাযোগ করুন।');
+  if(link?.status==='disabled')return olMessage('⏸️','লিংকটি সাময়িকভাবে বন্ধ','বিক্রেতা এই অর্ডার লিংকটি আপাতত বন্ধ রেখেছেন।');
+  if(link?.status==='cancelled')return olMessage('❌','লিংকটি বাতিল হয়েছে','এই অর্ডার লিংকটি আর ব্যবহারযোগ্য নয়।');
+  if(link?.status==='confirmed'){
+    if(olIsReusable(link))return olMessage('✅','অর্ডার সীমা পূর্ণ হয়েছে','এই লিংকের সর্বোচ্চ অর্ডার সংখ্যা পূর্ণ হয়েছে। নতুন লিংকের জন্য বিক্রেতার সাথে যোগাযোগ করুন।');
+    return olMessage('✅','অর্ডার সম্পন্ন হয়েছে','এই লিংকে ইতিমধ্যে অর্ডার করা হয়েছে। নতুন অর্ডারের জন্য বিক্রেতার সাথে যোগাযোগ করুন।');
+  }
+  if(link?.status!=='active')return olMessage('🔒','লিংকটি ব্যবহারযোগ্য নয়','এই অর্ডার লিংকটি বর্তমানে সক্রিয় নেই।');
+  if(olOrderLimitReached(link))return olMessage('✅','অর্ডার সীমা পূর্ণ হয়েছে','এই লিংকের সর্বোচ্চ অর্ডার সংখ্যা পূর্ণ হয়েছে।');
+  return '';
+}
 async function loadOrderLink(bizId,linkId){
   let host=$('publicWrap');
   if(!host){host=document.createElement('div');host.id='publicWrap';host.style.cssText='position:fixed;inset:0;z-index:600;overflow-y:auto;background:var(--bg)';document.body.appendChild(host);}
@@ -1513,15 +1550,9 @@ async function loadOrderLink(bizId,linkId){
       return;
     }
     _olData=linkDoc.data();
-    // One-time use: if already confirmed or cancelled, block
-    if(_olData.status==='confirmed'){
-      host.innerHTML=olMessage('✅','অর্ডার সম্পন্ন হয়েছে','এই লিংকে ইতিমধ্যে অর্ডার করা হয়েছে। নতুন অর্ডারের জন্য বিক্রেতার সাথে যোগাযোগ করুন।');
-      return;
-    }
-    if(_olData.status==='cancelled'){
-      host.innerHTML=olMessage('❌','লিংকটি বাতিল হয়েছে','এই অর্ডার লিংকটি আর ব্যবহারযোগ্য নয়।');
-      return;
-    }
+    // Availability is enforced in the UI and again by Firestore rules/transaction.
+    const availability=olPublicAvailabilityMessage(_olData);
+    if(availability){host.innerHTML=availability;return;}
     // Load business config (for delivery charge, name, whatsapp)
     const cfgDoc=await getDoc(doc(db,'businesses',bizId,'config','settings'));
     _olCfg=cfgDoc.exists()?cfgDoc.data():{};
@@ -1551,6 +1582,8 @@ function renderOrderLink(){
       ${logo?`<img src="${esc(logo)}" style="width:60px;height:60px;border-radius:16px;object-fit:cover;margin-bottom:10px;background:#fff"/>`:'<div style="font-size:38px;margin-bottom:6px">🛍️</div>'}
       <h1 style="font-size:22px;font-weight:800;margin-bottom:4px">${shopName}</h1>
       <p style="font-size:13px;opacity:.9">আপনার পছন্দের পণ্য বেছে নিন</p>
+      ${_olData.customerNote?`<div style="margin:10px auto 0;max-width:520px;background:rgba(255,255,255,.14);padding:8px 12px;border-radius:10px;font-size:12px;line-height:1.6">💬 ${esc(_olData.customerNote)}</div>`:''}
+      <div style="margin-top:9px;font-size:10.5px;opacity:.82">${olIsReusable(_olData)?`🔁 পুনঃব্যবহারযোগ্য${Number(_olData.maxOrders||0)>0?` · সর্বোচ্চ ${Number(_olData.maxOrders)} অর্ডার`:''}`:'1️⃣ একবার ব্যবহারযোগ্য'}${olTsDate(_olData.expiresAt)?` · ⌛ ${olTsDate(_olData.expiresAt).toLocaleString('bn-BD',{dateStyle:'medium',timeStyle:'short'})} পর্যন্ত`:''}</div>
     </div>
     <!-- Products -->
     <div style="padding:18px 14px">
@@ -1738,7 +1771,7 @@ window.olViewImages=(idx,vi)=>{
 };
 window.olOpenCheckout=()=>{
   if(olCartCount()===0)return;
-  const delivery=Number(_olCfg.delCOD||_olData.delivery||150);
+  const delivery=olDeliveryCharge();
   const sub=olCartTotal();
   $('olCheckoutMod').innerHTML=`
   <div class="mH"><h3>🛒 অর্ডার সম্পন্ন করুন</h3><button class="btn bS bIco" onclick="closeMov('olCheckoutOvl')">✕</button></div>
@@ -1770,7 +1803,7 @@ window.olOpenCheckout=()=>{
   </div>
   <div class="mF" style="flex-direction:column;gap:8px">
     <button class="btn bP bFull" id="olConfirmBtn" onclick="olConfirmOrder()">✅ অর্ডার কনফার্ম করুন</button>
-    <button class="btn bD bFull" onclick="olCancelOrder()">❌ বাতিল করুন</button>
+    <button class="btn bS bFull" onclick="olCancelOrder()">← কার্টে ফিরে যান</button>
   </div>`;
   $('olCheckoutOvl').classList.add('open');
 };
@@ -1781,12 +1814,9 @@ window.olQty=(i,d)=>{
   if(_olCart.length===0){closeMov('olCheckoutOvl');renderOrderLink();return;}
   olOpenCheckout();
 };
-window.olCancelOrder=async()=>{
-  if(!confirm('আপনি কি নিশ্চিত এই অর্ডার বাতিল করতে চান? বাতিল করলে এই লিংকটি আর ব্যবহার করা যাবে না।'))return;
-  try{
-    await updateDoc(doc(db,'businesses',_olBiz,'orderLinks',_olId),{status:'cancelled',cancelledAt:serverTimestamp()});
-  }catch{}
-  $('publicWrap').innerHTML=olMessage('❌','অর্ডার বাতিল হয়েছে','আপনি অর্ডারটি বাতিল করেছেন। এই লিংকটি আর ব্যবহারযোগ্য নয়।');
+window.olCancelOrder=()=>{
+  // Customer cancelling checkout must never invalidate a shared link.
+  closeMov('olCheckoutOvl');
 };
 window.olConfirmOrder=async()=>{
   const name=$('ol_name')?.value.trim().slice(0,100);
@@ -1796,52 +1826,70 @@ window.olConfirmOrder=async()=>{
   const thanaEn=$('ol_thana')?.value||'',thanaBn=(BD_DISTRICTS[distEn]?.t||[]).find(t=>t[0]===thanaEn)?.[1]||'';
   const distPart=thanaEn?`, ${distLabel(thanaEn,thanaBn)}, ${distLabel(distEn,distBn)}`:distEn?`, ${distLabel(distEn,distBn)}`:'';
   const addr=addrMain+distPart;
-  const err=$('olErr');const btn=$('olConfirmBtn');
+  const btn=$('olConfirmBtn');
   if(!name){olShowErr('নাম লিখুন');return;}
   if(!/^01[3-9]\d{8}$/.test(phone)){olShowErr('সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন');return;}
   if(!addrMain){olShowErr('ঠিকানা লিখুন');return;}
   if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';}
   try{
-    const delivery=Number(_olCfg.delCOD||_olData.delivery||150);
+    const delivery=olDeliveryCharge();
     const sub=olCartTotal();
     const total=sub+delivery;
-    const num='ORD-'+Date.now().toString().slice(-8);
-    const items=_olCart.map(it=>({name:it.name+(it.variantName?` (${it.variantName})`:''),nameBn:it.name+(it.variantName?` (${it.variantName})`:''),variantName:it.variantName||'',qty:it.qty,price:it.price,buyPrice:0,lineTotal:it.price*it.qty,profit:0,image:it.image||''}));
-    // 1. Save order to database (backup so seller always sees it)
-    await addDoc(collection(db,'businesses',_olBiz,'orders'),{
-      num,cName:name,cPhone:phone,ordererPhone:phone,recvName:name,recvPhone:phone,cAddr:addr,district:distEn,thana:thanaEn,
-      items,subtotal:sub,delivery,discount:0,total,
-      status:'pending',payMethod:'cod',source:'orderlink',linkId:_olId,
-      notes:'[অর্ডার লিংক থেকে]',orderDate:today(),createdAt:serverTimestamp()
+    const linkRef=doc(db,'businesses',_olBiz,'orderLinks',_olId);
+    const orderRef=doc(collection(db,'businesses',_olBiz,'orders'));
+    const num=`DRY-${today().replace(/-/g,'')}-${orderRef.id.slice(0,8).toUpperCase()}`;
+    const items=_olCart.map(it=>({
+      name:it.name+(it.variantName?` (${it.variantName})`:''),
+      nameBn:it.name+(it.variantName?` (${it.variantName})`:''),
+      variantName:it.variantName||'',qty:it.qty,price:it.price,buyPrice:0,
+      lineTotal:it.price*it.qty,profit:0,image:it.image||''
+    }));
+
+    // Atomic create + link usage update. This prevents two customers from consuming
+    // the same single-use slot or exceeding a reusable link's max order limit.
+    await runTransaction(db,async tx=>{
+      const linkSnap=await tx.get(linkRef);
+      if(!linkSnap.exists())throw new Error('অর্ডার লিংকটি আর পাওয়া যাচ্ছে না');
+      const live=linkSnap.data();
+      if(live.status!=='active')throw new Error('এই লিংকটি আর সক্রিয় নেই');
+      if(olIsExpired(live))throw new Error('এই লিংকের মেয়াদ শেষ হয়ে গেছে');
+      const mode=live.mode==='multi'?'multi':'single';
+      const oldCount=Number(live.orderCount||0);
+      const maxOrders=Number(live.maxOrders||0);
+      if(mode==='multi'&&maxOrders>0&&oldCount>=maxOrders)throw new Error('এই লিংকের অর্ডার সীমা পূর্ণ হয়েছে');
+
+      tx.set(orderRef,{
+        num,cName:name,cPhone:phone,ordererPhone:phone,recvName:name,recvPhone:phone,cAddr:addr,district:distEn,thana:thanaEn,
+        items,subtotal:sub,delivery,discount:0,total,
+        status:'pending',payMethod:'cod',source:'orderlink',linkId:_olId,
+        notes:'[অর্ডার লিংক থেকে]',orderDate:today(),createdAt:serverTimestamp()
+      });
+
+      const nextCount=oldCount+1;
+      const shouldClose=mode==='single'||(maxOrders>0&&nextCount>=maxOrders);
+      const linkUpdate={
+        status:shouldClose?'confirmed':'active',
+        orderCount:nextCount,lastUsedAt:serverTimestamp(),
+        customerName:name,customerPhone:phone,customerAddr:addr,
+        orderNum:num,orderTotal:total
+      };
+      if(shouldClose)linkUpdate.confirmedAt=serverTimestamp();
+      tx.update(linkRef,linkUpdate);
     });
-    // 2. Mark this link as confirmed (one-time use — locks the link)
-    await updateDoc(doc(db,'businesses',_olBiz,'orderLinks',_olId),{
-      status:'confirmed',confirmedAt:serverTimestamp(),
-      customerName:name,customerPhone:phone,customerAddr:addr,orderNum:num,orderTotal:total
-    });
-    // 3. Open customer's WhatsApp with a ready message to the seller's business number
+
+    // Open customer's WhatsApp/Messenger helper after database commit.
     const waBiz=(_olCfg.bizWhatsapp||_olCfg.bizPhone||'').replace(/[^0-9]/g,'');
     const waNum=waBiz.startsWith('0')?'88'+waBiz:(waBiz.startsWith('88')?waBiz:'88'+waBiz);
     const itemLines=_olCart.map(it=>`• ${it.name}${it.variantName?' ('+it.variantName+')':''} × ${it.qty} = ${cur(it.price*it.qty)}`).join('\n');
     const msg=`🛒 *নতুন অর্ডার*\n\n👤 নাম: ${name}\n📞 ফোন: ${phone}\n📍 ঠিকানা: ${addr}\n\n${itemLines}\n\nপণ্য: ${cur(sub)}\nডেলিভারি: ${cur(delivery)}\n*সর্বমোট: ${cur(total)}*\n\nঅর্ডার নং: ${num}`;
-    // Build contact buttons based on what the seller has configured
     const fbUser=(_olCfg.fbPageUser||'').trim().replace(/^@/,'').replace(/^(https?:\/\/)?(www\.)?(m\.me\/|messenger\.com\/t\/|facebook\.com\/)/i,'').replace(/\/$/,'');
     const buttons=[];
-    if(waBiz){
-      buttons.push(`<a href="https://wa.me/${waNum}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener noreferrer" class="btn bFull" style="background:#25D366;color:#fff;padding:14px;font-size:15px;margin-bottom:10px">💬 WhatsApp-এ নিশ্চিত করুন</a>`);
-    }
-    if(fbUser){
-      buttons.push(`<a href="https://m.me/${fbUser}" target="_blank" rel="noopener noreferrer" class="btn bFull" style="background:#0084FF;color:#fff;padding:14px;font-size:15px;margin-bottom:10px">📱 Messenger-এ যোগাযোগ করুন</a>`);
-    }
-    // Copy-message button (so customer can paste into any chat — Messenger can't pre-fill)
+    if(waBiz)buttons.push(`<a href="https://wa.me/${waNum}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener noreferrer" class="btn bFull" style="background:#25D366;color:#fff;padding:14px;font-size:15px;margin-bottom:10px">💬 WhatsApp-এ নিশ্চিত করুন</a>`);
+    if(fbUser)buttons.push(`<a href="https://m.me/${fbUser}" target="_blank" rel="noopener noreferrer" class="btn bFull" style="background:#0084FF;color:#fff;padding:14px;font-size:15px;margin-bottom:10px">📱 Messenger-এ যোগাযোগ করুন</a>`);
     window._olOrderMsg=msg;
     buttons.push(`<button onclick="olCopyOrderMsg()" class="btn bS bFull" style="padding:12px;font-size:14px">📋 অর্ডারের তথ্য কপি করুন</button>`);
-    // Success screen
     $('publicWrap').innerHTML=olMessage('🎉','অর্ডার সফল হয়েছে!',`আপনার অর্ডার নং <b>${num}</b><br>সর্বমোট <b>${cur(total)}</b><br><br>${(waBiz||fbUser)?'নিচের বাটনে চেপে বিক্রেতাকে নিশ্চিত করুন।':'বিক্রেতা শীঘ্রই আপনার সাথে যোগাযোগ করবেন।'}`)+
-      `<div style="max-width:340px;margin:-20px auto 0;padding:0 20px 40px">
-        ${buttons.join('')}
-        ${fbUser?'<p style="color:var(--t3);font-size:11px;text-align:center;margin-top:8px">💡 Messenger খুললে উপরের "কপি" করা তথ্য পেস্ট করে পাঠান</p>':''}
-      </div>`;
+      `<div style="max-width:340px;margin:-20px auto 0;padding:0 20px 40px">${buttons.join('')}${fbUser?'<p style="color:var(--t3);font-size:11px;text-align:center;margin-top:8px">💡 Messenger খুললে উপরের "কপি" করা তথ্য পেস্ট করে পাঠান</p>':''}</div>`;
   }catch(e){
     olShowErr('সমস্যা হয়েছে: '+e.message);
     if(btn){btn.disabled=false;btn.innerHTML='✅ অর্ডার কনফার্ম করুন';}
@@ -4969,23 +5017,34 @@ async function pgTools(){
     </div>
   </div>
 
-  <!-- CUSTOM ORDER LINK -->
+  <!-- CUSTOM ORDER LINK — PRO -->
   <div class="card flagshipCard" id="toolSec_orderlink" style="display:none;border:1px solid rgba(168,85,247,.35);background:linear-gradient(135deg,rgba(168,85,247,.1),rgba(99,102,241,.05));margin-bottom:16px;position:relative;overflow:hidden">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:4px;flex-wrap:wrap">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#A855F7,#7C3AED);display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;overflow:hidden;flex-shrink:0;box-shadow:0 4px 16px rgba(168,85,247,.4)">🔗</div>
         <div>
           <div style="font-size:16px;font-weight:800;line-height:1.3">কাস্টম অর্ডার লিংক</div>
-          <div style="font-size:11px;color:var(--t3)">নির্দিষ্ট কয়েকটি পণ্যের জন্য আলাদা লিংক</div>
+          <div style="font-size:11px;color:var(--t3)">ক্যাম্পেইন, নির্দিষ্ট গ্রাহক বা নির্বাচিত পণ্যের জন্য আলাদা অর্ডার লিংক</div>
         </div>
       </div>
-      <span id="olLinkCountBadge" style="font-size:10px;color:var(--purple);font-weight:700;background:rgba(168,85,247,.14);padding:4px 10px;border-radius:20px;white-space:nowrap"></span>
+      <span id="olLinkCountBadge" style="font-size:10px;color:var(--purple);font-weight:700;background:rgba(168,85,247,.14);padding:4px 10px;border-radius:20px;white-space:nowrap">লোড হচ্ছে…</span>
     </div>
-    <div style="font-size:12.5px;color:var(--t2);line-height:1.7;margin:14px 0;padding:12px 14px;background:rgba(255,255,255,.03);border-radius:10px;border-left:3px solid var(--purple)">
-      নির্দিষ্ট কয়েকটি পণ্য বেছে একটি লিংক তৈরি করুন। গ্রাহক লিংকে ঢুকে শুধু <b style="color:var(--t1)">সেই পণ্যগুলো</b> দেখবে, পছন্দমতো কার্টে যোগ করবে, ঠিকানা দিয়ে কনফার্ম করবে। অর্ডার আপনার Orders পেজে আসবে + গ্রাহকের WhatsApp খুলে যাবে। <b style="color:var(--t1)">প্রতিটি লিংক একবার ব্যবহারযোগ্য।</b>
+    <div style="font-size:12.5px;color:var(--t2);line-height:1.75;margin:14px 0;padding:12px 14px;background:rgba(255,255,255,.03);border-radius:10px;border-left:3px solid var(--purple)">
+      নির্বাচিত পণ্য দিয়ে <b style="color:var(--t1)">একবার ব্যবহারযোগ্য</b> অথবা <b style="color:var(--t1)">পুনঃব্যবহারযোগ্য</b> লিংক তৈরি করুন। প্রতিটি লিংকের আলাদা ডেলিভারি চার্জ, মেয়াদ, সর্বোচ্চ অর্ডার সংখ্যা ও গ্রাহকের জন্য নোট সেট করা যাবে।
     </div>
     <button class="btn bP bFull" onclick="openCreateOrderLink()">➕ নতুন অর্ডার লিংক তৈরি করুন</button>
-    <div id="orderLinksList" style="margin-top:14px"></div>
+    <div id="olStats" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px"></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:8px;margin-top:12px">
+      <input class="afI" id="olSearch" placeholder="🔎 নাম, পণ্য, ফোন বা অর্ডার নম্বর দিয়ে খুঁজুন" oninput="filterOrderLinks()" style="margin:0"/>
+      <select class="afI" id="olFilter" onchange="filterOrderLinks()" style="margin:0">
+        <option value="all">সব লিংক</option>
+        <option value="active">🟢 সক্রিয়</option>
+        <option value="confirmed">✅ সম্পন্ন</option>
+        <option value="disabled">⏸️ বন্ধ</option>
+        <option value="expired">⌛ মেয়াদ শেষ</option>
+      </select>
+    </div>
+    <div id="orderLinksList" style="margin-top:12px"></div>
   </div>
   <div class="mOvl" id="createLinkOvl"><div class="modal mLg" id="createLinkMod"></div></div>
 
@@ -5196,124 +5255,281 @@ window.delCoupon=async(id)=>{
   catch(e){toast(e.message,'err');}
 };
 
-// ── CUSTOM ORDER LINKS (admin side) ──
+// ── CUSTOM ORDER LINKS — PRO ADMIN ──
+let _orderLinksCache=[];
+let _olSelProds=[];
+let _olEditId=null;
+
+function olAdminDate(v){return olTsDate(v);}
+function olFmtDate(v){
+  const d=olAdminDate(v);if(!d)return '—';
+  try{return d.toLocaleString('bn-BD',{dateStyle:'medium',timeStyle:'short'});}catch{return d.toLocaleString();}
+}
+function olInputDateTime(v){
+  const d=olAdminDate(v);if(!d)return '';
+  const pad=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function olComputedState(l){
+  if(l.status==='active'&&olIsExpired(l))return 'expired';
+  if(l.status==='active'&&olOrderLimitReached(l))return 'confirmed';
+  return l.status||'active';
+}
+function olStateBadge(l){
+  const s=olComputedState(l);
+  if(s==='confirmed')return '<span class="badge bDone" style="font-size:9px">✅ সম্পন্ন</span>';
+  if(s==='disabled')return '<span class="badge" style="font-size:9px;background:rgba(148,163,184,.15);color:var(--t2)">⏸️ বন্ধ</span>';
+  if(s==='expired')return '<span class="badge" style="font-size:9px;background:rgba(245,158,11,.14);color:var(--yellow)">⌛ মেয়াদ শেষ</span>';
+  if(s==='cancelled')return '<span class="badge bCanc" style="font-size:9px">❌ বাতিল</span>';
+  return '<span class="badge bPend" style="font-size:9px">🟢 সক্রিয়</span>';
+}
+function olModeBadge(l){
+  return olIsReusable(l)
+    ? `<span style="font-size:9px;padding:3px 7px;border-radius:20px;background:rgba(59,130,246,.12);color:#60A5FA">🔁 পুনঃব্যবহারযোগ্য${Number(l.maxOrders||0)>0?' · '+Number(l.maxOrders):''}</span>`
+    : '<span style="font-size:9px;padding:3px 7px;border-radius:20px;background:rgba(168,85,247,.12);color:var(--purple)">1️⃣ একবার</span>';
+}
+function renderOrderLinkStats(){
+  const host=$('olStats');if(!host)return;
+  const total=_orderLinksCache.length;
+  const active=_orderLinksCache.filter(l=>olComputedState(l)==='active').length;
+  const done=_orderLinksCache.filter(l=>olComputedState(l)==='confirmed').length;
+  const off=_orderLinksCache.filter(l=>['disabled','expired'].includes(olComputedState(l))).length;
+  const stat=(n,label,ico)=>`<div style="padding:9px 8px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.025);text-align:center"><div style="font-size:16px;font-weight:800">${ico} ${n}</div><div style="font-size:9.5px;color:var(--t3);margin-top:2px">${label}</div></div>`;
+  host.innerHTML=stat(total,'মোট','🔗')+stat(active,'সক্রিয়','🟢')+stat(done,'সম্পন্ন','✅')+stat(off,'বন্ধ/মেয়াদ শেষ','⏸️');
+  const badge=$('olLinkCountBadge');if(badge)badge.textContent=`মোট ${total} · সক্রিয় ${active}`;
+}
+
 async function loadOrderLinks(){
   const el=$('orderLinksList');if(!el)return;
+  el.innerHTML='<div style="text-align:center;padding:18px"><div class="spin spinSm" style="margin:0 auto"></div></div>';
   try{
     const snap=await getDocs(BCol('orderLinks'));
-    let links=snap.docs.map(d=>({id:d.id,...d.data()}));
-    links.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    const activeCount=links.filter(l=>l.status==='active').length;
-    const badge=$('olLinkCountBadge');if(badge)badge.textContent=activeCount>0?`🟢 ${activeCount} সক্রিয়`:'এখনো কোনো লিংক নেই';
-    if(links.length===0){el.innerHTML='<div style="text-align:center;color:var(--t3);font-size:12px;padding:12px">এখনো কোনো অর্ডার লিংক নেই</div>';return;}
-    const statusBadge=s=>s==='confirmed'?'<span class="badge bDone" style="font-size:9px">✅ কনফার্মড</span>':s==='cancelled'?'<span class="badge bCanc" style="font-size:9px">❌ বাতিল</span>':'<span class="badge bPend" style="font-size:9px">🟢 সক্রিয়</span>';
-    el.innerHTML=links.slice(0,20).map(l=>{
-      const url=`${location.origin}${location.pathname}#order/${G.bizId}/${l.id}`;
-      const pcount=(l.products||[]).length;
-      return `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:8px">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
-          <div style="font-size:13px;font-weight:600">${esc(l.title||'অর্ডার লিংক')} ${statusBadge(l.status)}</div>
-          <div style="font-size:11px;color:var(--t3)">${pcount} পণ্য</div>
-        </div>
-        ${l.status==='confirmed'?`<div style="font-size:11px;color:var(--t2);margin-bottom:6px">👤 ${esc(l.customerName||'')} · 📞 ${esc(l.customerPhone||'')} · ${cur(l.orderTotal||0)}</div>`:''}
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          ${l.status==='active'?`
-            <button class="btn bS bSm" style="font-size:11px;padding:5px 10px" onclick="copyOrderLink('${l.id}')">📋 কপি</button>
-            <button class="btn bSm" style="font-size:11px;padding:5px 10px;background:#25D366;color:#fff" onclick="shareOrderLinkWA('${l.id}')">💬 WhatsApp</button>
-            <a href="#order/${G.bizId}/${l.id}" target="_blank" rel="noopener noreferrer" class="btn bS bSm" style="font-size:11px;padding:5px 10px">👁️</a>
-          `:''}
-          <button class="btn bD bSm" style="font-size:11px;padding:5px 10px" onclick="delOrderLink('${l.id}')">🗑️</button>
-        </div>
-      </div>`;
-    }).join('');
-  }catch(e){el.innerHTML=`<div class="al aE" style="font-size:12px">❌ ${e.message}</div>`;}
+    _orderLinksCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+    _orderLinksCache.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    renderOrderLinkStats();
+    renderOrderLinksList();
+  }catch(e){el.innerHTML=`<div class="al aE" style="font-size:12px">❌ ${esc(e.message)}</div>`;}
 }
-let _olSelProds=[];
-window.openCreateOrderLink=async()=>{
+window.filterOrderLinks=()=>renderOrderLinksList();
+function renderOrderLinksList(){
+  const el=$('orderLinksList');if(!el)return;
+  const q=($('olSearch')?.value||'').trim().toLowerCase();
+  const filter=$('olFilter')?.value||'all';
+  const links=_orderLinksCache.filter(l=>{
+    const state=olComputedState(l);
+    if(filter!=='all'&&state!==filter)return false;
+    if(!q)return true;
+    const hay=[l.title,l.customerName,l.customerPhone,l.orderNum,...(l.products||[]).map(p=>p.name)].filter(Boolean).join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+  if(links.length===0){
+    el.innerHTML='<div style="text-align:center;color:var(--t3);font-size:12px;padding:24px 10px;border:1px dashed var(--border);border-radius:12px">কোনো মিল পাওয়া যায়নি</div>';
+    return;
+  }
+  el.innerHTML=links.map(l=>{
+    const state=olComputedState(l);
+    const url=`${location.origin}${location.pathname}#order/${G.bizId}/${l.id}`;
+    const products=l.products||[];
+    const pnames=products.slice(0,3).map(p=>esc(p.name||'পণ্য')).join(' · ')+(products.length>3?` · +${products.length-3}`:'');
+    const count=Number(l.orderCount||((l.status==='confirmed'&&!olIsReusable(l))?1:0));
+    const expiry=olAdminDate(l.expiresAt);
+    const canManage=state!=='confirmed'&&state!=='cancelled';
+    return `<div style="background:var(--card);border:1px solid ${state==='active'?'rgba(16,185,129,.25)':'var(--border)'};border-radius:12px;padding:12px 14px;margin-bottom:9px">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap">
+        <div style="min-width:0;flex:1">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><b style="font-size:13px">${esc(l.title||'অর্ডার লিংক')}</b>${olStateBadge(l)}${olModeBadge(l)}</div>
+          <div style="font-size:11px;color:var(--t2);margin-top:6px;line-height:1.55">📦 ${products.length} পণ্য${pnames?' · '+pnames:''}</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:10.5px;color:var(--t3);margin-top:5px">
+            <span>🗓️ ${olFmtDate(l.createdAt)}</span>
+            <span>🚚 ${cur(Number(l.delivery??G.cfg.delCOD??150))}</span>
+            <span>🛒 ${count} অর্ডার</span>
+            ${l.lastUsedAt?`<span>🕒 সর্বশেষ ${olFmtDate(l.lastUsedAt)}</span>`:''}
+            ${expiry?`<span style="color:${olIsExpired(l)?'var(--yellow)':'var(--t3)'}">⌛ ${olFmtDate(l.expiresAt)}</span>`:''}
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--t3);max-width:180px;text-align:right">${esc(url.split('#')[1]||'')}</div>
+      </div>
+      ${l.customerNote?`<div style="font-size:11px;color:var(--t2);background:rgba(255,255,255,.025);padding:7px 9px;border-radius:8px;margin-top:8px">💬 ${esc(l.customerNote)}</div>`:''}
+      ${(l.customerName||l.orderNum)?`<div style="font-size:11px;color:var(--t2);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">👤 সর্বশেষ: ${esc(l.customerName||'')} · 📞 ${esc(l.customerPhone||'')} · ${cur(l.orderTotal||0)} ${l.orderNum?`· #${esc(l.orderNum)}`:''}</div>`:''}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn bS bSm" style="font-size:10.5px;padding:5px 9px" onclick="copyOrderLink('${l.id}')">📋 কপি</button>
+        <button class="btn bSm" style="font-size:10.5px;padding:5px 9px;background:#25D366;color:#fff" onclick="shareOrderLinkWA('${l.id}')">💬 WhatsApp</button>
+        <a href="#order/${G.bizId}/${l.id}" target="_blank" rel="noopener noreferrer" class="btn bS bSm" style="font-size:10.5px;padding:5px 9px">👁️ Preview</a>
+        ${canManage?`<button class="btn bS bSm" style="font-size:10.5px;padding:5px 9px" onclick="openEditOrderLink('${l.id}')">✏️ Edit</button>`:''}
+        ${state==='active'?`<button class="btn bS bSm" style="font-size:10.5px;padding:5px 9px" onclick="toggleOrderLink('${l.id}','disabled')">⏸️ Pause</button>`:''}
+        ${state==='disabled'?`<button class="btn bG bSm" style="font-size:10.5px;padding:5px 9px" onclick="toggleOrderLink('${l.id}','active')">▶️ Resume</button>`:''}
+        <button class="btn bS bSm" style="font-size:10.5px;padding:5px 9px" onclick="duplicateOrderLink('${l.id}')">🧬 Duplicate</button>
+        <button class="btn bD bSm" style="font-size:10.5px;padding:5px 9px;margin-left:auto" onclick="delOrderLink('${l.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function olSnapshotProduct(p,i){
+  const hasVar=Array.isArray(p.variants)&&p.variants.length>0;
+  const basePrice=hasVar?Number(p.variants[0].sellPrice||p.variants[0].price||0):Number(p.offerPrice||p.sellPrice||p.price||0);
+  return {
+    _idx:i,productId:p.id||'',name:p.name||'পণ্য',price:basePrice,images:Array.isArray(p.images)?p.images:[],imageUrl:p.imageUrl||'',
+    soldOut:hasVar?p.variants.every(v=>Number(v.stock||0)<=0):Number(p.stock||0)<=0,
+    variants:hasVar?p.variants.map(v=>({
+      name:v.name||'',price:Number(v.sellPrice||v.price||0),offerPrice:Number(v.offerPrice||0),desc:v.desc||'',stock:Number(v.stock||0),
+      images:Array.isArray(v.images)?v.images.filter(x=>typeof x==='string'):(typeof v.image==='string'?[v.image]:[])
+    })):[]
+  };
+}
+function olStripInternalProduct(p){
+  return {productId:p.productId||'',name:p.name,price:Number(p.price||0),images:p.images||[],imageUrl:p.imageUrl||'',soldOut:!!p.soldOut,variants:p.variants||[]};
+}
+window.openCreateOrderLink=()=>openOrderLinkEditor(null);
+window.openEditOrderLink=id=>openOrderLinkEditor(id);
+async function openOrderLinkEditor(id){
   if(G.role==='moderator'&&!G.modPerms?.orderLink){toast('❌ এই অনুমতি আপনার নেই — অ্যাডমিনকে জানান','err');return;}
-  _olSelProds=[];
+  _olEditId=id||null;_olSelProds=[];
   $('createLinkMod').innerHTML='<div class="mB" style="text-align:center;padding:40px"><div class="spin" style="margin:0 auto"></div></div>';
   $('createLinkOvl').classList.add('open');
   try{
+    let existing=null;
+    if(id){
+      const ds=await getDoc(BDoc('orderLinks',id));
+      if(!ds.exists())throw new Error('লিংকটি পাওয়া যায়নি');
+      existing={id:ds.id,...ds.data()};
+      if(['confirmed','cancelled'].includes(existing.status))throw new Error('সম্পন্ন/বাতিল লিংক edit না করে Duplicate করুন');
+    }
     const snap=await getDocs(query(BCol('products'),where('active','==',true)));
     const prods=snap.docs.map(d=>({id:d.id,...d.data()}));
-    $('createLinkMod').innerHTML=`
-    <div class="mH"><h3>🔗 অর্ডার লিংক তৈরি করুন</h3><button class="btn bS bIco" onclick="closeMov('createLinkOvl')">✕</button></div>
-    <div class="mB" style="max-height:74vh;overflow-y:auto">
-      <div class="afG"><label class="afL">লিংকের নাম (শুধু আপনার জন্য)</label><input class="afI" id="ol_title" placeholder="যেমন: ঈদ অফার - রহিম ভাই"/></div>
-      <div style="font-size:12px;font-weight:700;margin:10px 0 8px">পণ্য বাছুন (যেগুলো গ্রাহক দেখবে):</div>
-      ${prods.length===0?'<div class="al aW" style="font-size:12px">কোনো সক্রিয় পণ্য নেই। আগে পণ্য যোগ করুন।</div>':`
-      <div style="display:flex;flex-direction:column;gap:6px">
-        ${prods.map((p,i)=>{
-          const img=(p.images&&p.images[0])||p.imageUrl||'';
-          const price=p.variants?.length?p.variants[0].sellPrice:p.sellPrice;
-          const vCount=p.variants?.length||0;
-          return `<label style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer">
-            <input type="checkbox" data-pidx="${i}" onchange="olToggleProd(${i})" style="width:16px;height:16px;accent-color:var(--acc)"/>
-            ${img?`<img loading="lazy" src="${esc(img)}" style="width:38px;height:38px;border-radius:6px;object-fit:cover"/>`:'<div style="width:38px;height:38px;border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center">📦</div>'}
-            <div style="flex:1"><div style="font-size:13px;font-weight:600">${esc(p.name)}${vCount?` <span style="font-size:10px;color:var(--t3);font-weight:400">(${vCount} ভ্যারিয়েন্ট)</span>`:''}</div><div style="font-size:11px;color:var(--green);font-weight:700">${cur(price)} · স্টক: ${p.stock||0}</div></div>
-          </label>`;
-        }).join('')}
-      </div>`}
-      <div id="olCreateErr" class="al aE" style="display:none;margin-top:10px"></div>
-    </div>
-    <div class="mF">
-      <button class="btn bS" onclick="closeMov('createLinkOvl')">বাতিল</button>
-      <button class="btn bP" id="olCreateBtn" onclick="saveOrderLink()">🔗 লিংক তৈরি করুন (<span id="olSelCount">0</span>)</button>
-    </div>`;
-    // Store products for selection
     window._olAllProds=prods;
-  }catch(e){$('createLinkMod').innerHTML=`<div class="mB"><div class="al aE">❌ ${e.message}</div></div>`;}
+    if(existing){
+      const old=existing.products||[];
+      prods.forEach((p,i)=>{
+        const matched=old.some(x=>(x.productId&&x.productId===p.id)||(!x.productId&&x.name===p.name));
+        if(matched)_olSelProds.push(olSnapshotProduct(p,i));
+      });
+      // Keep legacy/removed products so editing metadata doesn't silently drop them.
+      old.forEach(x=>{
+        const exists=_olSelProds.some(p=>(x.productId&&p.productId===x.productId)||(!x.productId&&p.name===x.name));
+        if(!exists)_olSelProds.push({...x,_idx:-1});
+      });
+    }
+    const mode=existing?.mode==='multi'?'multi':'single';
+    const delivery=Number(existing?.delivery??G.cfg.delCOD??150);
+    $('createLinkMod').innerHTML=`
+      <div class="mH"><h3>${id?'✏️ অর্ডার লিংক Edit':'🔗 নতুন অর্ডার লিংক'}</h3><button class="btn bS bIco" onclick="closeMov('createLinkOvl')">✕</button></div>
+      <div class="mB" style="max-height:74vh;overflow-y:auto">
+        <div class="gridStack2" style="display:grid;grid-template-columns:1.4fr .6fr;gap:10px">
+          <div class="afG"><label class="afL">লিংকের নাম</label><input class="afI" id="ol_title" maxlength="80" value="${esc(existing?.title||'')}" placeholder="যেমন: ঈদ অফার - রহিম ভাই"/></div>
+          <div class="afG"><label class="afL">ডেলিভারি চার্জ (৳)</label><input class="afI" id="ol_delivery" type="number" min="0" max="100000" value="${Number.isFinite(delivery)?delivery:150}"/></div>
+        </div>
+        <div class="afG"><label class="afL">গ্রাহকের জন্য ছোট নোট (ঐচ্ছিক)</label><input class="afI" id="ol_note" maxlength="180" value="${esc(existing?.customerNote||'')}" placeholder="যেমন: এই লিংকে আজকের বিশেষ অফার প্রযোজ্য"/></div>
+        <div class="gridStack2" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="afG"><label class="afL">ব্যবহারের ধরন</label><select class="afI" id="ol_mode" onchange="olModeChanged()"><option value="single" ${mode==='single'?'selected':''}>1️⃣ একবার ব্যবহারযোগ্য</option><option value="multi" ${mode==='multi'?'selected':''}>🔁 পুনঃব্যবহারযোগ্য</option></select></div>
+          <div class="afG" id="olMaxWrap" style="${mode==='multi'?'':'display:none'}"><label class="afL">সর্বোচ্চ অর্ডার (0 = সীমাহীন)</label><input class="afI" id="ol_maxOrders" type="number" min="0" max="10000" value="${Number(existing?.maxOrders||0)}"/></div>
+        </div>
+        <div class="afG"><label class="afL">মেয়াদ শেষ হবে (ঐচ্ছিক)</label><input class="afI" id="ol_expires" type="datetime-local" value="${olInputDateTime(existing?.expiresAt)}"/><div style="font-size:10px;color:var(--t3);margin-top:4px">ফাঁকা রাখলে মেয়াদ থাকবে না। মেয়াদ শেষ হলে অর্ডার নিরাপত্তা নিয়মেও ব্লক হবে।</div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:10px 0 8px">
+          <div style="font-size:12px;font-weight:700">পণ্য বাছুন <span id="olSelCount" style="color:var(--purple)">${_olSelProds.length}</span></div>
+          <div style="display:flex;gap:5px"><button class="btn bS bSm" type="button" onclick="olSelectAllProds(true)">সব</button><button class="btn bS bSm" type="button" onclick="olSelectAllProds(false)">Clear</button></div>
+        </div>
+        <input class="afI" id="ol_prod_search" placeholder="🔎 পণ্য খুঁজুন" oninput="olFilterProducts(this.value)" style="margin-bottom:8px"/>
+        <div id="olProductPicker" style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;padding-right:2px">
+          ${prods.length===0?'<div class="al aW" style="font-size:12px">কোনো সক্রিয় পণ্য নেই।</div>':prods.map((p,i)=>{
+            const img=(p.images&&p.images[0])||p.imageUrl||'';
+            const price=p.variants?.length?Number(p.variants[0].sellPrice||p.variants[0].price||0):Number(p.offerPrice||p.sellPrice||p.price||0);
+            const selected=_olSelProds.some(x=>x._idx===i);
+            return `<label data-ol-product-row style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer">
+              <input type="checkbox" data-pidx="${i}" ${selected?'checked':''} onchange="olToggleProd(${i})" style="width:16px;height:16px;accent-color:var(--acc)"/>
+              ${img?`<img loading="lazy" src="${esc(img)}" style="width:40px;height:40px;border-radius:7px;object-fit:cover"/>`:'<div style="width:40px;height:40px;border-radius:7px;background:var(--bg3);display:flex;align-items:center;justify-content:center">📦</div>'}
+              <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}</div><div style="font-size:10.5px;color:var(--green);font-weight:700">${cur(price)} · স্টক: ${Number(p.stock||0)}${p.variants?.length?' · '+p.variants.length+' ভ্যারিয়েন্ট':''}</div></div>
+            </label>`;
+          }).join('')}
+        </div>
+        <div id="olCreateErr" class="al aE" style="display:none;margin-top:10px"></div>
+      </div>
+      <div class="mF"><button class="btn bS" onclick="closeMov('createLinkOvl')">বাতিল</button><button class="btn bP" id="olCreateBtn" onclick="saveOrderLink()">${id?'💾 পরিবর্তন সেভ করুন':'🔗 লিংক তৈরি করুন'}</button></div>`;
+  }catch(e){$('createLinkMod').innerHTML=`<div class="mH"><h3>অর্ডার লিংক</h3><button class="btn bS bIco" onclick="closeMov('createLinkOvl')">✕</button></div><div class="mB"><div class="al aE">❌ ${esc(e.message)}</div></div>`;}
+}
+window.olModeChanged=()=>{const w=$('olMaxWrap');if(w)w.style.display=$('ol_mode')?.value==='multi'?'block':'none';};
+window.olFilterProducts=q=>{
+  q=String(q||'').trim().toLowerCase();
+  document.querySelectorAll('#olProductPicker [data-ol-product-row]').forEach(row=>{row.style.display=!q||row.textContent.toLowerCase().includes(q)?'flex':'none';});
 };
-window.olToggleProd=(i)=>{
-  const p=window._olAllProds[i];if(!p)return;
+window.olSelectAllProds=all=>{
+  if(!window._olAllProds)return;
+  _olSelProds=all?window._olAllProds.map((p,i)=>olSnapshotProduct(p,i)):[];
+  document.querySelectorAll('#olProductPicker input[data-pidx]').forEach(c=>c.checked=!!all);
+  const c=$('olSelCount');if(c)c.textContent=_olSelProds.length;
+};
+window.olToggleProd=i=>{
+  const p=window._olAllProds?.[i];if(!p)return;
   const ex=_olSelProds.findIndex(x=>x._idx===i);
-  if(ex>=0)_olSelProds.splice(ex,1);
-  else{
-    const hasVar=p.variants&&p.variants.length>0;
-    const price=hasVar?p.variants[0].sellPrice:p.sellPrice;
-    _olSelProds.push({
-      _idx:i,name:p.name,price:Number(price),images:p.images||[],imageUrl:p.imageUrl||'',
-      soldOut:hasVar?p.variants.every(v=>Number(v.stock||0)<=0):Number(p.stock||0)<=0,
-      variants:hasVar?p.variants.map(v=>({name:v.name,price:Number(v.sellPrice||0),offerPrice:Number(v.offerPrice||0),desc:v.desc||'',stock:Number(v.stock||0),images:(Array.isArray(v.images)?v.images.filter(x=>typeof x==='string'):(typeof v.image==='string'?[v.image]:[]))})):[]
-    });
-  }
+  if(ex>=0)_olSelProds.splice(ex,1);else _olSelProds.push(olSnapshotProduct(p,i));
   const c=$('olSelCount');if(c)c.textContent=_olSelProds.length;
 };
 window.saveOrderLink=async()=>{
-  if(_olSelProds.length===0){const e=$('olCreateErr');if(e){e.style.display='flex';e.textContent='অন্তত একটি পণ্য বাছুন';}return;}
-  const title=$('ol_title')?.value.trim()||'অর্ডার লিংক';
+  const er=$('olCreateErr');if(er)er.style.display='none';
+  if(_olSelProds.length===0){if(er){er.style.display='flex';er.textContent='অন্তত একটি পণ্য বাছুন';}return;}
+  const title=($('ol_title')?.value||'').trim().slice(0,80)||'অর্ডার লিংক';
+  const customerNote=($('ol_note')?.value||'').trim().slice(0,180);
+  const delivery=Number($('ol_delivery')?.value);
+  const mode=$('ol_mode')?.value==='multi'?'multi':'single';
+  const maxOrders=mode==='multi'?Math.max(0,Math.min(10000,Number($('ol_maxOrders')?.value)||0)):1;
+  const expiresRaw=$('ol_expires')?.value||'';
+  const expiresAt=expiresRaw?new Date(expiresRaw):null;
+  if(!Number.isFinite(delivery)||delivery<0||delivery>100000){if(er){er.style.display='flex';er.textContent='সঠিক ডেলিভারি চার্জ দিন';}return;}
+  if(expiresAt&&Number.isNaN(expiresAt.getTime())){if(er){er.style.display='flex';er.textContent='মেয়াদের তারিখ সঠিক নয়';}return;}
+  if(expiresAt&&expiresAt.getTime()<=Date.now()){if(er){er.style.display='flex';er.textContent='মেয়াদের সময় ভবিষ্যতের হতে হবে';}return;}
   const btn=$('olCreateBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';}
   try{
-    // Strip internal _idx before saving
-    const products=_olSelProds.map(p=>({name:p.name,price:p.price,images:p.images,imageUrl:p.imageUrl,soldOut:p.soldOut,variants:p.variants||[]}));
-    const ref=await addDoc(BCol('orderLinks'),{
-      title,products,status:'active',
-      bizName:G.cfg.bizName||'',delivery:Number(G.cfg.delCOD||150),
-      createdAt:serverTimestamp()
-    });
-    closeMov('createLinkOvl');
-    toast('✅ অর্ডার লিংক তৈরি হয়েছে!');
-    loadOrderLinks();
-    // Auto-copy the new link
-    const url=`${location.origin}${location.pathname}#order/${G.bizId}/${ref.id}`;
-    try{await navigator.clipboard.writeText(url);toast('📋 লিংক কপি হয়েছে!');}catch{}
-  }catch(e){const er=$('olCreateErr');if(er){er.style.display='flex';er.textContent='❌ '+e.message;}if(btn){btn.disabled=false;btn.innerHTML='🔗 লিংক তৈরি করুন';}}
+    const products=_olSelProds.map(olStripInternalProduct);
+    if(_olEditId){
+      const old=_orderLinksCache.find(l=>l.id===_olEditId)||{};
+      await updateDoc(BDoc('orderLinks',_olEditId),{title,customerNote,delivery,mode,maxOrders,expiresAt,products,updatedAt:serverTimestamp(),orderCount:Number(old.orderCount||0)});
+      toast('✅ অর্ডার লিংক আপডেট হয়েছে');
+    }else{
+      const ref=await addDoc(BCol('orderLinks'),{title,products,status:'active',mode,maxOrders,orderCount:0,customerNote,expiresAt,delivery,bizName:G.cfg.bizName||'',createdAt:serverTimestamp()});
+      toast('✅ অর্ডার লিংক তৈরি হয়েছে!');
+      const url=`${location.origin}${location.pathname}#order/${G.bizId}/${ref.id}`;
+      try{await navigator.clipboard.writeText(url);toast('📋 নতুন লিংক কপি হয়েছে!');}catch{}
+    }
+    closeMov('createLinkOvl');_olEditId=null;await loadOrderLinks();
+  }catch(e){if(er){er.style.display='flex';er.textContent='❌ '+e.message;}}
+  finally{if(btn){btn.disabled=false;btn.innerHTML=_olEditId?'💾 পরিবর্তন সেভ করুন':'🔗 লিংক তৈরি করুন';}}
 };
-window.copyOrderLink=(id)=>{
+window.copyOrderLink=async id=>{
   const url=`${location.origin}${location.pathname}#order/${G.bizId}/${id}`;
-  try{navigator.clipboard.writeText(url);toast('✅ লিংক কপি হয়েছে!');}
-  catch{prompt('লিংক কপি করুন:',url);}
+  try{await navigator.clipboard.writeText(url);toast('✅ লিংক কপি হয়েছে!');}catch{prompt('লিংক কপি করুন:',url);}
 };
-window.shareOrderLinkWA=(id)=>{
+window.shareOrderLinkWA=id=>{
+  const l=_orderLinksCache.find(x=>x.id===id);
   const url=`${location.origin}${location.pathname}#order/${G.bizId}/${id}`;
-  const msg=`🛍️ আপনার জন্য বিশেষ অর্ডার লিংক!\n\nএই লিংকে ঢুকে পছন্দের পণ্য বেছে অর্ডার করুন:\n${url}`;
+  const msg=`🛍️ ${l?.title||'আপনার জন্য বিশেষ অর্ডার লিংক'}
+
+এই লিংকে ঢুকে পছন্দের পণ্য বেছে অর্ডার করুন:
+${url}`;
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank','noopener,noreferrer');
 };
-window.delOrderLink=async(id)=>{
-  if(!confirm('এই অর্ডার লিংকটি মুছে ফেলবেন? গ্রাহক আর এটি খুলতে পারবে না।'))return;
-  try{await deleteDoc(BDoc('orderLinks',id));toast('মুছে ফেলা হয়েছে');loadOrderLinks();}
-  catch(e){toast(e.message,'err');}
+window.toggleOrderLink=async(id,next)=>{
+  const l=_orderLinksCache.find(x=>x.id===id);if(!l)return;
+  if(next==='active'&&olIsExpired(l)){toast('মেয়াদ শেষ হয়েছে — আগে Edit করে নতুন expiry দিন','err');return;}
+  if(!confirm(next==='disabled'?'লিংকটি সাময়িকভাবে বন্ধ করবেন?':'লিংকটি আবার চালু করবেন?'))return;
+  try{await updateDoc(BDoc('orderLinks',id),{status:next,updatedAt:serverTimestamp()});toast(next==='active'?'✅ লিংক চালু হয়েছে':'⏸️ লিংক বন্ধ হয়েছে');loadOrderLinks();}catch(e){toast(e.message,'err');}
+};
+window.duplicateOrderLink=async id=>{
+  const l=_orderLinksCache.find(x=>x.id===id);if(!l)return;
+  if(!confirm(`“${l.title||'অর্ডার লিংক'}” এর একটি নতুন কপি তৈরি করবেন?`))return;
+  try{
+    const ref=await addDoc(BCol('orderLinks'),{
+      title:(l.title||'অর্ডার লিংক')+' — Copy',products:l.products||[],status:'active',mode:l.mode==='multi'?'multi':'single',
+      maxOrders:l.mode==='multi'?Number(l.maxOrders||0):1,orderCount:0,customerNote:l.customerNote||'',expiresAt:null,
+      delivery:Number(l.delivery??G.cfg.delCOD??150),bizName:G.cfg.bizName||l.bizName||'',createdAt:serverTimestamp()
+    });
+    const url=`${location.origin}${location.pathname}#order/${G.bizId}/${ref.id}`;
+    try{await navigator.clipboard.writeText(url);}catch{}
+    toast('✅ Duplicate তৈরি হয়েছে এবং লিংক কপি হয়েছে');loadOrderLinks();
+  }catch(e){toast(e.message,'err');}
+};
+window.delOrderLink=async id=>{
+  if(!confirm('এই অর্ডার লিংকটি স্থায়ীভাবে মুছে ফেলবেন?'))return;
+  try{await deleteDoc(BDoc('orderLinks',id));toast('🗑️ মুছে ফেলা হয়েছে');loadOrderLinks();}catch(e){toast(e.message,'err');}
 };
 
 // ── EXPENSE / CASH LOG ──
