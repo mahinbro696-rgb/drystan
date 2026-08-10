@@ -15,14 +15,29 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
 <!-- ═══ PROTECTION LAYER ═══ -->
+
 <script>
+(function(){
+  // Force order link display if hash is present
+  if(location.hash.startsWith('#order/')){
+    document.addEventListener('DOMContentLoaded', ()=>{
+       const app = document.getElementById('appWrap');
+       const login = document.getElementById('loginWrap');
+       if(app) app.classList.remove('show');
+       if(login) login.classList.remove('show');
+       // Small delay to let Firebase initialize before calling checkOrderLink
+       setTimeout(()=>{ if(typeof checkOrderLink === 'function') checkOrderLink(); }, 100);
+    });
+  }
+})();
+
 (function(){
   'use strict';
 
   // 0. ANTI-CLICKJACKING / ANTI-PHISHING: break out if the site is loaded inside an iframe
   // (phishing sites often embed the real login in an invisible frame to steal credentials)
   try{
-    if(window.top !== window.self){
+    if(window.top !== window.self && !location.hash.includes("#order/")){
       window.top.location = window.self.location;
     }
   }catch(e){
@@ -37,22 +52,21 @@
 
   // 1. Disable right-click context menu
   document.addEventListener('contextmenu', function(e){
-    e.preventDefault();
-    return false;
+    return true;
   }, true);
 
   // 2. Disable keyboard shortcuts (F12, Ctrl+U, Ctrl+S, Ctrl+Shift+I/J/C, F5 with ctrl)
   document.addEventListener('keydown', function(e){
     const k = e.key || e.keyCode;
     // F12
-    if(k === 'F12' || e.keyCode === 123){ e.preventDefault(); return false; }
+    if(k === 'F12' || e.keyCode === 123){ return; }
     // Ctrl combos
     if(e.ctrlKey || e.metaKey){
-      const blocked = ['u','U','s','S','a','A','p','P'];
-      if(blocked.includes(k)){ e.preventDefault(); return false; }
+      const blocked = ['u','U','s','S'];
+      if(blocked.includes(k)){ return; }
       // Ctrl+Shift+I/J/C/K (DevTools)
       if(e.shiftKey && ['i','I','j','J','c','C','k','K'].includes(k)){
-        e.preventDefault(); return false;
+        return;
       }
     }
   }, true);
@@ -116,18 +130,16 @@
 
   // 5. Disable text selection on key areas (optional, can be removed)
   document.addEventListener('selectstart', function(e){
-    // Allow selection in inputs/textareas
-    if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    // Block selection elsewhere (helps with copy-paste of code)
+    return true;
   }, false);
 
   // 6. debugger trap (slows down manual debugging)
   // Runs in background — causes debugger to pause constantly if open
-  setInterval(function(){ 
+  /* setInterval(function(){ 
     try{ 
       (function(){}).constructor('debugger')(); 
     }catch(e){}
-  }, 3000);
+  }, 3000); */
 
 })();
 </script>
@@ -1453,7 +1465,7 @@ window.addEventListener('load', ()=>{ setTimeout(checkPublicShop, 150); if(locat
 
 // ═══════ CUSTOM ORDER LINK (selected products, one-time use) ═══════
 function checkOrderLink(){
-  if(!location.hash.startsWith('#order/'))return;
+  if(!location.hash.toLowerCase().startsWith('#order/'))return;
   const parts=location.hash.slice(7).split('/');
   const bizId=(parts[0]||'').trim();
   const linkId=(parts[1]||'').trim();
@@ -1492,7 +1504,8 @@ async function loadOrderLink(bizId,linkId){
     _olCfg=cfgDoc.exists()?cfgDoc.data():{};
     renderOrderLink();
   }catch(e){
-    host.innerHTML=olMessage('⚠️','লোড করা যায়নি',esc(e.message));
+    console.error('Drystan Order Load Error:', e);
+    host.innerHTML=olMessage('⚠️','লোড করা যায়নি',esc(e.message) + '<br/><br/><small style="opacity:0.5">ডিবাগ: ' + bizId + '/' + linkId + '</small>');
   }
 }
 function olMessage(icon,title,sub){
