@@ -2911,14 +2911,15 @@ function resetSessionTimer(){
 // Prevent right-click source view (basic deterrent — not foolproof)
 // Real security is in Firebase Rules + Auth, not HTML hiding
 onAuthStateChanged(auth,async user=>{
-  if(location.hash && (location.hash.toLowerCase().startsWith('#shop/') || location.hash.toLowerCase().startsWith('#order/'))){
-    const ls=$('loadScreen');
-    if(ls){ls.classList.add('hide');setTimeout(()=>ls.style.display='none',500);}
-    return;
-  } // Public storefront takes priority — no login needed
+  const isStorefront = location.hash && (location.hash.toLowerCase().startsWith('#shop/') || location.hash.toLowerCase().startsWith('#order/'));
   const ls=$('loadScreen');
+
   if(user){
     G.user=user;
+    if(isStorefront) {
+      if(ls){ls.classList.add('hide');setTimeout(()=>ls.style.display='none',500);}
+      return;
+    }
     try{
       const uDoc=await getDoc(Doc('users',user.uid));
       if(uDoc.exists()){
