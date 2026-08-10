@@ -775,6 +775,85 @@ img{max-width:100%}
   .olStickyText .bottom{font-size:18px}
 }
 
+
+/* ===== ORDERS — PRODUCTION UI / RESPONSIVE WORKSPACE ===== */
+.ordHead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.ordHead h1{font-size:26px;font-weight:900;letter-spacing:-.03em;color:var(--t1)}
+.ordHead p{font-size:13px;color:var(--t2);margin-top:5px;line-height:1.55}
+.ordHeadActions{display:flex;gap:8px;flex-wrap:wrap}
+.ordStats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.ordStat{background:linear-gradient(180deg,rgba(255,255,255,.052),rgba(255,255,255,.025));border:1px solid var(--border);border-radius:16px;padding:13px 14px;min-width:0;transition:border-color .18s,transform .18s}
+.ordStat:hover{transform:translateY(-1px);border-color:var(--border2)}
+.ordStatTop{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--t2);font-size:11px;font-weight:700}
+.ordStatVal{font-size:23px;font-weight:900;letter-spacing:-.03em;margin-top:6px;color:var(--t1)}
+.ordStatSub{font-size:10.5px;color:var(--t3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ordControl{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:12px;margin-bottom:14px}
+.ordTabs{display:flex;gap:7px;overflow-x:auto;padding-bottom:7px;scrollbar-width:thin}
+.ordTab{border:1px solid var(--border);background:var(--bg2);color:var(--t2);border-radius:999px;padding:8px 11px;font-size:12px;font-weight:750;display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;transition:.16s}
+.ordTab:hover{color:var(--t1);border-color:var(--border2)}
+.ordTab.active{color:var(--t1);border-color:rgba(99,102,241,.55);background:rgba(99,102,241,.14)}
+.ordTabCount{font-size:10px;min-width:20px;height:20px;padding:0 6px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:rgba(99,102,241,.16);color:var(--acc2);font-weight:900}
+.ordFilters{display:grid;grid-template-columns:minmax(220px,1.7fr) repeat(4,minmax(130px,.65fr));gap:8px;margin-top:4px}
+.ordFilters .afI,.ordFilters .sBar{min-width:0;width:100%;margin:0}
+.ordListCard{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden}
+.ordTable{width:100%;border-collapse:collapse;font-size:12px}
+.ordTable th{padding:10px 9px;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);white-space:nowrap;text-align:left}
+.ordTable td{padding:10px 9px;border-bottom:1px solid var(--border);vertical-align:middle}
+.ordTable tbody tr{transition:background .15s}
+.ordTable tbody tr:hover{background:rgba(99,102,241,.045)}
+.ordNum{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--acc2);font-size:11px;font-weight:750}
+.ordCust{display:flex;align-items:center;gap:8px;min-width:170px}
+.ordThumb{width:38px;height:38px;border-radius:10px;object-fit:cover;background:#fff;flex-shrink:0}
+.ordThumbPh{width:38px;height:38px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ordCustName{font-size:12.5px;font-weight:750;color:var(--t1);max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ordCustPhone{font-size:10.5px;color:var(--t2);margin-top:2px}
+.ordSource{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--border);background:var(--bg2);padding:4px 7px;border-radius:999px;font-size:9.5px;font-weight:750;color:var(--t2);white-space:nowrap}
+.ordStatus{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:850;white-space:nowrap;border:1px solid transparent}
+.ordStatus.pending{color:#FCA5A5;background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.18)}
+.ordStatus.confirmed{color:#C4B5FD;background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.18)}
+.ordStatus.ready{color:#93C5FD;background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.18)}
+.ordStatus.parcel_sent{color:#FCD34D;background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.18)}
+.ordStatus.completed{color:#6EE7B7;background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.18)}
+.ordStatus.returned{color:#D8B4FE;background:rgba(168,85,247,.1);border-color:rgba(168,85,247,.18)}
+.ordStatus.cancelled{color:#CBD5E1;background:rgba(100,116,139,.1);border-color:rgba(100,116,139,.18)}
+.ordPay{display:inline-flex;align-items:center;gap:4px;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:800;background:var(--bg2);border:1px solid var(--border);white-space:nowrap}
+.ordPay.paid{color:var(--green)}.ordPay.partial{color:var(--orange)}.ordPay.pending{color:var(--yellow)}
+.ordRowActions{display:flex;align-items:center;gap:5px;justify-content:flex-end}
+.ordMobileList{display:none;padding:10px;gap:10px}
+.ordMCard{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.ordMTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.ordMCustomer{display:flex;gap:10px;min-width:0;flex:1}
+.ordMBody{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:11px 0}
+.ordMInfo{padding:8px 9px;background:var(--card);border-radius:10px;min-width:0}
+.ordMInfo span{display:block;font-size:9.5px;color:var(--t3);margin-bottom:2px}.ordMInfo b{font-size:12px;color:var(--t1);word-break:break-word}
+.ordMActions{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ordMActions .btn{min-width:0;padding-inline:7px;font-size:11px}
+.ordPager{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;border-top:1px solid var(--border);font-size:11px;color:var(--t2)}
+.ordPagerBtns{display:flex;gap:6px}
+.ordEmpty{padding:42px 18px;text-align:center}.ordEmptyIcon{font-size:42px;margin-bottom:10px}.ordEmpty h3{font-size:16px;margin-bottom:5px}.ordEmpty p{font-size:12px;color:var(--t2)}
+.ordWorkspace{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.75fr);gap:12px}
+.ordPanel{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:13px;min-width:0}
+.ordPanelTitle{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:850;margin-bottom:10px;color:var(--t1)}
+.ordInfoGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ordInfoBox{background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:9px;min-width:0}
+.ordInfoBox small{display:block;color:var(--t3);font-size:9.5px;margin-bottom:3px}.ordInfoBox b,.ordInfoBox div{font-size:12px;line-height:1.5;word-break:break-word}
+.ordQuickActions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ordItem{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)}.ordItem:last-child{border-bottom:none}
+.ordItemInfo{flex:1;min-width:0}.ordItemName{font-size:12px;font-weight:750;line-height:1.4;word-break:break-word}.ordItemMeta{font-size:10px;color:var(--t2);margin-top:2px}.ordItemTotal{font-size:12px;font-weight:850;white-space:nowrap}
+.ordMoney{display:grid;gap:6px}.ordMoneyLine{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;color:var(--t2)}.ordMoneyLine.total{padding-top:8px;border-top:1px solid var(--border);font-size:16px;font-weight:900;color:var(--t1)}
+.ordTimeline{display:grid;gap:8px}.ordEvent{display:grid;grid-template-columns:22px 1fr;gap:8px;position:relative}.ordEventDot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(99,102,241,.14);font-size:10px;z-index:1}.ordEvent:not(:last-child)::after{content:'';position:absolute;left:10px;top:22px;bottom:-9px;width:1px;background:var(--border2)}.ordEventMain{padding-bottom:3px}.ordEventTitle{font-size:11.5px;font-weight:750;color:var(--t1)}.ordEventMeta{font-size:9.5px;color:var(--t3);margin-top:2px;line-height:1.45}
+.ordCourierBox{background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(59,130,246,.06));border:1px solid rgba(16,185,129,.18);border-radius:12px;padding:10px;margin-top:8px}
+.ordCreateLayout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,.72fr);gap:16px;align-items:start}
+.ordCreateMain,.ordCreateSide{display:grid;gap:14px}.ordCreateSide{position:sticky;top:76px}
+.ordCreateSection{background:var(--card);border:1px solid var(--border);border-radius:17px;padding:15px}
+.ordCreateSectionTitle{font-size:14px;font-weight:850;margin-bottom:12px;color:var(--t1)}
+.ordCreateSummary{background:linear-gradient(180deg,rgba(99,102,241,.09),rgba(99,102,241,.035));border:1px solid rgba(99,102,241,.2);border-radius:17px;padding:15px}
+.ordCreateSummaryLine{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--t2);margin-bottom:8px}.ordCreateSummaryLine.total{border-top:1px solid var(--border2);padding-top:11px;margin-top:10px;font-size:19px;font-weight:900;color:var(--t1)}
+.ordCreateBottom{display:flex;gap:8px}.ordCreateBottom .btn{flex:1;min-height:45px}
+@media(max-width:1100px){.ordStats{grid-template-columns:repeat(3,minmax(0,1fr))}.ordFilters{grid-template-columns:1.3fr repeat(2,minmax(130px,.7fr))}.ordFilters>*:nth-child(n+4){grid-column:auto}.ordWorkspace{grid-template-columns:1fr}.ordCreateLayout{grid-template-columns:1fr}.ordCreateSide{position:static}}
+@media(max-width:760px){.ordHead h1{font-size:23px}.ordStats{grid-template-columns:repeat(2,minmax(0,1fr))}.ordStat{padding:11px}.ordStatVal{font-size:20px}.ordFilters{grid-template-columns:1fr 1fr}.ordFilters .sBar{grid-column:1/-1}.ordDesktopTable{display:none}.ordMobileList{display:grid}.ordListCard{background:transparent;border:none;overflow:visible}.ordPager{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-top:10px}.ordInfoGrid{grid-template-columns:1fr}.ordWorkspace{display:block}.ordPanel{margin-bottom:10px}.ordCreateSection{padding:12px}.ordCreateBottom{position:sticky;bottom:8px;z-index:10;background:rgba(13,17,23,.94);padding:8px;border:1px solid var(--border);border-radius:14px;backdrop-filter:blur(8px)}}
+@media(max-width:480px){.ordStats{grid-template-columns:1fr 1fr;gap:7px}.ordFilters{grid-template-columns:1fr}.ordFilters .sBar{grid-column:auto}.ordMBody{grid-template-columns:1fr 1fr}.ordMActions{grid-template-columns:repeat(2,1fr)}.ordHeadActions{width:100%}.ordHeadActions .btn{flex:1}.ordCreateBottom{flex-direction:column}.ordCreateBottom .btn{width:100%}}
+
 </style>
 </head>
 <body>
@@ -1313,7 +1392,7 @@ const cur=n=>'৳'+Number(n||0).toLocaleString('en-BD');
 const fdate=d=>{if(!d)return'';const dt=d?.toDate?d.toDate():new Date(d);return dt.toLocaleDateString('en-GB',{year:'numeric',month:'short',day:'numeric'});};
 const today=()=>new Date().toISOString().slice(0,10);
 const plus3=()=>{const d=new Date();d.setDate(d.getDate()+3);return d.toISOString().slice(0,10);};
-const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 // SECURITY: safely embed a dynamic string as a JavaScript argument inside an HTML event attribute.
 const jsArg=s=>esc(JSON.stringify(String(s??'')));
 // Global translation helper — works on every page (G.lang is read live, so no local redeclaration needed)
@@ -1391,6 +1470,7 @@ const Col=n=>collection(db,n);
 const Doc=(n,id)=>doc(db,n,id);
 const BCol=n=>collection(db,'businesses',G.bizId,n);
 const BDoc=(n,id)=>doc(db,'businesses',G.bizId,n,id);
+const OEvents=(orderId)=>collection(db,'businesses',G.bizId,'orders',orderId,'events');
 const BCfg=()=>doc(db,'businesses',G.bizId,'config','settings');
 const GCfg=()=>doc(db,'globalConfig','settings');
 
@@ -3650,7 +3730,7 @@ async function pgDash(){
       (o.items||[]).reduce((ps,it)=>ps+(Number(it.price||0)-Number(it.buyPrice||0))*Number(it.qty||1),0),0);
     const totalDelivery=completed_orders.reduce((s,o)=>s+Number(o.delivery||0),0);
 
-    const pending=orders.filter(o=>o.status==='pending').length;
+    const pending=orders.filter(o=>['pending','confirmed','ready'].includes(o.status)).length;
     const completedCount=completed_orders.length;
     const parcelSent=orders.filter(o=>o.status==='parcel_sent').length;
     const todayStr=today();
@@ -3688,7 +3768,7 @@ async function pgDash(){
     const now3=Date.now();
     // Stale pending orders (3+ days old, still pending)
     const stalePending=orders.filter(o=>{
-      if(o.status!=='pending')return false;
+      if(!['pending','confirmed','ready'].includes(o.status))return false;
       const created=o.createdAt?.toDate?o.createdAt.toDate().getTime():(o.orderDate?new Date(o.orderDate).getTime():now3);
       return (now3-created)>3*24*60*60*1000;
     });
@@ -3706,8 +3786,8 @@ async function pgDash(){
     if(unpaidDone.length)alerts.push({ico:'💰',clr:'#10B981',bg:'rgba(16,185,129,.12)',txt:T(`${unpaidDone.length} completed order(s) still unpaid`,`${unpaidDone.length}টি সম্পন্ন অর্ডারের টাকা বাকি`),act:"nav('orders')"});
 
     const sb=s=>{
-      const m={pending:'bPend',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent',returned:'bRet'};
-      const l=bn?{pending:'অপেক্ষমান',completed:'সম্পন্ন',cancelled:'বাতিল',parcel_sent:'পাঠানো হয়েছে',returned:'ফেরত'}:{pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Sent',returned:'Returned'};
+      const m={pending:'bPend',confirmed:'bAdmin',ready:'bSent',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent',returned:'bRet'};
+      const l=bn?{pending:'অপেক্ষমান',confirmed:'নিশ্চিত',ready:'প্রস্তুত',completed:'সম্পন্ন',cancelled:'বাতিল',parcel_sent:'পাঠানো হয়েছে',returned:'ফেরত'}:{pending:'Pending',confirmed:'Confirmed',ready:'Ready',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Sent',returned:'Returned'};
       return`<span class="badge ${m[s]||'bPend'}">${l[s]||esc(s)}</span>`;
     };
 
@@ -4464,115 +4544,89 @@ async function pgNewOrder(){
   loading();
   try{
     const snap=await getDocs(query(BCol('products'),where('active','==',true)));
-    const prods=snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>Number(p.stock)>0);
+    const prods=snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>Number(p.stock)>0||(p.variants&&p.variants.some(v=>Number(v.stock||0)>0)));
     window._opProdsCache=prods;
-    if(!G.oForm)G.oForm={cName:'',ordererPhone:'',recvPhone:'',recvName:'',cAddr:'',payMethod:'cod',delivery:G.cfg.delCOD||'150',rLang:G.lang,orderDate:today(),delivDate:plus3(),notes:'',discount:0};
+    if(!G.oForm)G.oForm={cName:'',ordererPhone:'',recvPhone:'',recvName:'',cAddr:'',paymentMethod:'cod',payStatus:'pending',paidAmount:0,payMethod:'cod',delivery:G.cfg.delCOD||'150',rLang:G.lang,orderDate:today(),delivDate:plus3(),notes:'',discount:0};
     const f=G.oForm;
+    if(!f.paymentMethod)f.paymentMethod=f.payMethod==='cod'?'cod':'cash';
+    if(!f.payStatus)f.payStatus=f.payMethod==='paid'?'paid':f.payMethod==='partial'?'partial':'pending';
+    if(f.paidAmount===undefined)f.paidAmount=f.payStatus==='paid'?999999:0;
     const sub=G.oItems.reduce((s,it)=>s+(Number(it.price||0)*Number(it.qty||1)),0);
     const disc=Number(f.discount)||0;
     const del=Number(f.delivery)||0;
-    const total=sub-disc+del;
+    const total=Math.max(0,sub-disc+del);
+    const paid=f.payStatus==='paid'?total:Math.min(total,Math.max(0,Number(f.paidAmount)||0));
+    const due=Math.max(0,total-paid);
     setC(`
-    <div class="pH"><div><h1>Create Order</h1><p>Fill details to generate receipt</p></div></div>
+    <div class="ordHead"><div><h1>Create Order</h1><p>Customer → Product → Payment → Confirm. মোবাইল ও ডেস্কটপ—দুই জায়গায় দ্রুত order entry-এর জন্য সাজানো।</p></div><div class="ordHeadActions"><button class="btn bS" onclick="nav('orders')">← Orders</button></div></div>
+    <div class="ordCreateLayout">
+      <div class="ordCreateMain">
+        <div class="ordCreateSection" style="border-color:rgba(99,102,241,.26)">
+          <div class="ordCreateSectionTitle">✨ Smart Paste</div>
+          <div style="font-size:11.5px;color:var(--t2);margin-bottom:9px">নাম, ফোন, ঠিকানা একসাথে paste করুন — Auto Fill সঠিক field-এ বসাবে।</div>
+          <textarea class="afI" id="smartPasteBox" rows="3" placeholder="Md Rahim&#10;01711234567&#10;Mirpur-10, Dhaka" style="font-size:13px"></textarea>
+          <button class="btn bP bSm" style="margin-top:8px" onclick="doSmartPaste()">⚡ Auto Fill</button>
+        </div>
 
-    <!-- 📋 SMART PASTE BOX -->
-    <div class="card" style="margin-bottom:16px;border-color:rgba(99,102,241,.3)">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <div style="font-size:20px">✨</div>
-        <div>
-          <div style="font-weight:700;font-size:14px">Smart Paste</div>
-          <div style="font-size:12px;color:var(--t2)">নাম, ফোন, ঠিকানা একসাথে paste করুন — automatically সঠিক জায়গায় বসবে</div>
+        <div class="ordCreateSection">
+          <div class="ordCreateSectionTitle">👤 Customer & Delivery</div>
+          <div class="afG"><label class="afL">Customer Name *</label><input class="afI" id="of_cn" value="${esc(f.cName)}" placeholder="Full name" oninput="G.oForm.cName=this.value"/></div>
+          <div class="afRow">
+            <div class="afG"><label class="afL">Orderer Phone *</label><input class="afI" id="of_op" inputmode="numeric" value="${esc(f.ordererPhone)}" placeholder="01XXXXXXXXX" oninput="G.oForm.ordererPhone=this.value"/></div>
+            <div class="afG"><label class="afL">Receiver Phone <span style="font-size:10px;color:var(--t3)">(blank = same)</span></label><input class="afI" id="of_rph" inputmode="numeric" value="${esc(f.recvPhone)}" placeholder="01XXXXXXXXX" oninput="G.oForm.recvPhone=this.value"/></div>
+          </div>
+          <div class="afG"><label class="afL">Receiver Name <span style="font-size:10px;color:var(--t3)">(if different)</span></label><input class="afI" id="of_rv" value="${esc(f.recvName)}" placeholder="Blank = same" oninput="G.oForm.recvName=this.value"/></div>
+          <div class="afG"><label class="afL">Delivery Address *</label><textarea class="afI" id="of_addr" rows="3" placeholder="House / Road / Area / District" oninput="G.oForm.cAddr=this.value">${esc(f.cAddr)}</textarea></div>
         </div>
-      </div>
-      <textarea class="afI" id="smartPasteBox" rows="3" placeholder="উদাহরণ:&#10;Md Rahim&#10;01711234567&#10;Dhaka, Mirpur-10, House-5" style="font-size:13px"></textarea>
-      <button class="btn bP bSm" style="margin-top:8px" onclick="doSmartPaste()">⚡ Auto Fill করুন</button>
-    </div>
 
-    <div class="gridStack2" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-      <div class="card">
-        <div class="cardTitle">👤 Customer Info</div>
-        <div class="afG"><label class="afL">Customer Name *</label><input class="afI" id="of_cn" value="${esc(f.cName)}" placeholder="Full name" oninput="G.oForm.cName=this.value"/></div>
-        <div class="afRow">
-          <div class="afG"><label class="afL">Orderer Phone * <span style="font-size:10px;color:var(--t3)">(যিনি order করলেন)</span></label>
-            <input class="afI" id="of_op" value="${esc(f.ordererPhone)}" placeholder="01XXXXXXXXX" oninput="G.oForm.ordererPhone=this.value"/>
+        <div class="ordCreateSection">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px"><div class="ordCreateSectionTitle" style="margin:0">📦 Products</div><button class="btn bP bSm" onclick="opShowProductGrid()" id="opAddMoreBtn" style="display:none">➕ Add More</button></div>
+          <div id="opBrowseArea">
+            <input class="afI" id="opSearchBox" placeholder="🔍 Search product..." oninput="filterProductPicker(this.value)" style="margin-bottom:12px"/>
+            <div id="productPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;max-height:420px;overflow-y:auto;padding:2px"></div>
           </div>
-          <div class="afG"><label class="afL">Receiver Phone <span style="font-size:10px;color:var(--t3)">(যিনি পাবেন)</span></label>
-            <input class="afI" id="of_rph" value="${esc(f.recvPhone)}" placeholder="Same if blank" oninput="G.oForm.recvPhone=this.value"/>
-          </div>
-        </div>
-        <div class="afG"><label class="afL">Receiver Name <span style="font-size:10px;color:var(--t3)">(if different)</span></label>
-          <input class="afI" id="of_rv" value="${esc(f.recvName)}" placeholder="Blank = same" oninput="G.oForm.recvName=this.value"/>
-        </div>
-        <div class="afG"><label class="afL">Delivery Address *</label>
-          <textarea class="afI" id="of_addr" rows="2" oninput="G.oForm.cAddr=this.value">${esc(f.cAddr)}</textarea>
+          <div id="opSelectedItems" style="margin-top:6px"></div>
         </div>
       </div>
-      <div class="card">
-        <div class="cardTitle">⚙️ Order Settings</div>
-        <div class="afG"><label class="afL">Payment</label>
-          <select class="afI" onchange="G.oForm.payMethod=this.value;updDel()">
-            <option value="cod" ${f.payMethod==='cod'?'selected':''}>🚚 Cash on Delivery</option>
-            <option value="paid" ${f.payMethod==='paid'?'selected':''}>✅ Paid (Advance)</option>
-            <option value="partial" ${f.payMethod==='partial'?'selected':''}>🔄 Partial Payment</option>
-          </select>
-        </div>
-        <div class="afRow">
-          <div class="afG" style="margin:0"><label class="afL">Delivery Charge (৳)</label><input class="afI" type="number" id="of_del" value="${f.delivery}" min="0" oninput="G.oForm.delivery=this.value;updTotal()"/></div>
-          <div class="afG" style="margin:0"><label class="afL">Discount (৳)</label><input class="afI" type="number" id="of_disc" value="${f.discount||0}" min="0" oninput="G.oForm.discount=this.value;updTotal()"/></div>
-          <div class="afG" style="margin:0"><label class="afL">🏷️ Coupon Code</label>
-            <div style="display:flex;gap:6px">
-              <input class="afI" id="of_coupon" placeholder="EID20" style="flex:1" oninput="this.value=this.value.toUpperCase()"/>
-              <button class="btn bS bSm" type="button" onclick="applyCoupon()">প্রয়োগ</button>
-            </div>
-            <div id="couponMsg" style="font-size:11px;margin-top:3px"></div>
-          </div>
-        </div>
-        <div class="afRow">
-          <div class="afG"><label class="afL">Order Date</label><input class="afI" type="date" value="${f.orderDate}" oninput="G.oForm.orderDate=this.value"/></div>
-          <div class="afG"><label class="afL">Delivery By</label><input class="afI" type="date" value="${f.delivDate}" oninput="G.oForm.delivDate=this.value"/></div>
-        </div>
-        <div class="afG"><label class="afL">Receipt Language</label>
-          <select class="afI" onchange="G.oForm.rLang=this.value">
-            <option value="en" ${f.rLang==='en'?'selected':''}>🇬🇧 English</option>
-            <option value="bn" ${f.rLang==='bn'?'selected':''}>🇧🇩 বাংলা</option>
-          </select>
-        </div>
-        <div class="afG"><label class="afL">Notes</label><textarea class="afI" rows="2" oninput="G.oForm.notes=this.value">${esc(f.notes)}</textarea></div>
-      </div>
-    </div>
 
-    <div class="card" style="margin-bottom:16px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-        <div class="cardTitle" style="margin:0">📦 পণ্য বাছুন</div>
-        <button class="btn bP bSm" onclick="opShowProductGrid()" id="opAddMoreBtn" style="display:none">➕ আরও পণ্য যোগ করুন</button>
-      </div>
-      <div id="opBrowseArea">
-        <input class="afI" id="opSearchBox" placeholder="🔍 পণ্যের নাম লিখে খুঁজুন..." oninput="filterProductPicker(this.value)" style="margin-bottom:12px"/>
-        <div id="productPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px;max-height:380px;overflow-y:auto;padding:2px"></div>
-      </div>
-      <div id="opSelectedItems" style="margin-top:6px"></div>
-      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:14px">
-        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-bottom:6px" id="subRow"><span>Subtotal</span><span style="font-weight:600">${cur(sub)}</span></div>
-        ${disc>0?`<div style="display:flex;justify-content:space-between;font-size:13px;color:var(--green);margin-bottom:6px"><span>Discount</span><span style="font-weight:600">- ${cur(disc)}</span></div>`:''}
-        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-bottom:10px" id="delRow"><span>Delivery</span><span style="font-weight:600">${cur(del)}</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:20px;font-weight:800;padding:14px;background:var(--acc4);border-radius:12px;border:1px solid rgba(99,102,241,.2)" id="totRow">
-          <span>Grand Total</span><span style="color:var(--acc2)">${cur(total)}</span>
+      <div class="ordCreateSide">
+        <div class="ordCreateSection">
+          <div class="ordCreateSectionTitle">💳 Payment & Order Settings</div>
+          <div class="afG"><label class="afL">Payment Method</label><select class="afI" id="of_paymentMethod" onchange="onCreatePaymentMethodChange(this.value)">
+            <option value="cod" ${f.paymentMethod==='cod'?'selected':''}>🚚 Cash on Delivery</option>
+            <option value="bkash" ${f.paymentMethod==='bkash'?'selected':''}>📱 bKash</option>
+            <option value="nagad" ${f.paymentMethod==='nagad'?'selected':''}>📱 Nagad</option>
+            <option value="bank" ${f.paymentMethod==='bank'?'selected':''}>🏦 Bank Transfer</option>
+            <option value="cash" ${f.paymentMethod==='cash'?'selected':''}>💵 Cash / Manual</option>
+          </select></div>
+          <div class="afG"><label class="afL">Payment Status</label><select class="afI" id="of_payStatus" onchange="onCreatePayStatusChange(this.value)">
+            <option value="pending" ${f.payStatus==='pending'?'selected':''}>⏳ Unpaid</option>
+            <option value="partial" ${f.payStatus==='partial'?'selected':''}>🔄 Partial</option>
+            <option value="paid" ${f.payStatus==='paid'?'selected':''}>✅ Paid</option>
+          </select></div>
+          <div class="afG" id="of_paidWrap" style="display:${f.payStatus==='partial'?'block':'none'}"><label class="afL">Paid Amount (৳)</label><input class="afI" id="of_paidAmount" type="number" min="0" value="${Number(f.paidAmount)||0}" oninput="G.oForm.paidAmount=this.value;updTotal()"/></div>
+          <div class="afRow"><div class="afG"><label class="afL">Delivery Charge</label><input class="afI" type="number" id="of_del" value="${f.delivery}" min="0" oninput="G.oForm.delivery=this.value;updTotal()"/></div><div class="afG"><label class="afL">Discount</label><input class="afI" type="number" id="of_disc" value="${f.discount||0}" min="0" oninput="G.oForm.discount=this.value;updTotal()"/></div></div>
+          <div class="afG"><label class="afL">🏷️ Coupon</label><div style="display:flex;gap:6px"><input class="afI" id="of_coupon" placeholder="EID20" style="flex:1" oninput="this.value=this.value.toUpperCase()"/><button class="btn bS bSm" type="button" onclick="applyCoupon()">Apply</button></div><div id="couponMsg" style="font-size:11px;margin-top:3px"></div></div>
+          <div class="afRow"><div class="afG"><label class="afL">Order Date</label><input class="afI" type="date" value="${f.orderDate}" oninput="G.oForm.orderDate=this.value"/></div><div class="afG"><label class="afL">Delivery By</label><input class="afI" type="date" value="${f.delivDate}" oninput="G.oForm.delivDate=this.value"/></div></div>
+          <div class="afG"><label class="afL">Receipt Language</label><select class="afI" onchange="G.oForm.rLang=this.value"><option value="en" ${f.rLang==='en'?'selected':''}>🇬🇧 English</option><option value="bn" ${f.rLang==='bn'?'selected':''}>🇧🇩 বাংলা</option></select></div>
+          <div class="afG"><label class="afL">Notes</label><textarea class="afI" rows="2" maxlength="1000" oninput="G.oForm.notes=this.value">${esc(f.notes)}</textarea></div>
+        </div>
+
+        <div class="ordCreateSummary">
+          <div class="ordCreateSectionTitle">🧾 Order Summary</div>
+          <div class="ordCreateSummaryLine" id="subRow"><span>Subtotal</span><span>${cur(sub)}</span></div>
+          <div class="ordCreateSummaryLine" id="discRow"><span>Discount</span><span>${disc?'- '+cur(disc):cur(0)}</span></div>
+          <div class="ordCreateSummaryLine" id="delRow"><span>Delivery</span><span>${cur(del)}</span></div>
+          <div class="ordCreateSummaryLine"><span>Paid</span><span id="paidRow">${cur(paid)}</span></div>
+          <div class="ordCreateSummaryLine"><span>Due</span><span id="dueRow" style="color:${due?'var(--yellow)':'var(--green)'};font-weight:800">${cur(due)}</span></div>
+          <div class="ordCreateSummaryLine total" id="totRow"><span>Total</span><span style="color:var(--acc2)">${cur(total)}</span></div>
+          <div class="ordCreateBottom"><button class="btn bS" onclick="G.oForm=null;G.oItems=[];pgNewOrder()">🔄 Reset</button><button class="btn bP" id="subOBtn" onclick="submitOrder()">✅ Create Order</button></div>
         </div>
       </div>
-    </div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
-      <button class="btn bS" onclick="G.oForm=null;G.oItems=[];pgNewOrder()">🔄 Reset</button>
-      <button class="btn bP" id="subOBtn" onclick="submitOrder()" style="min-width:200px;padding:12px">✅ Create Order & Receipt</button>
     </div>`);
-    renderProductPickerGrid();
-    renderSelectedItems();
-    // If returning to this page with items already in cart, show the "add more" collapsed state
-    if(G.oItems.length>0){
-      const ba=$('opBrowseArea');const ab=$('opAddMoreBtn');
-      if(ba)ba.style.display='none';
-      if(ab)ab.style.display='inline-flex';
-    }
-  }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
+    renderProductPickerGrid();renderSelectedItems();syncCreatePaymentUI();
+    if(G.oItems.length>0){const ba=$('opBrowseArea'),ab=$('opAddMoreBtn');if(ba)ba.style.display='none';if(ab)ab.style.display='inline-flex';}
+  }catch(e){setC(`<div class="al aE">❌ ${esc(e.message)}</div>`);}
 }
 // ── VISUAL PRODUCT PICKER (animated thumbnail grid for Create Order) ──
 // ── Real-time available stock: total stock minus what's already in this order's cart ──
@@ -4737,15 +4791,34 @@ window.doSmartPaste=()=>{
   toast(`✅ Auto filled! Name: ${name||'?'} | Phone: ${phone||'?'} | Address: ${addr.join(', ')||'?'}`,'ok');
 };
 
-window.updDel=()=>{G.oForm.delivery=G.oForm.payMethod==='cod'?(G.cfg.delCOD||'150'):(G.cfg.delPaid||'0');const el=$('of_del');if(el)el.value=G.oForm.delivery;updTotal();};
-window.updTotal=()=>{
+function createOrderTotals(){
   const sub=G.oItems.reduce((s,it)=>s+(Number(it.price||0)*Number(it.qty||1)),0);
-  const disc=Number(G.oForm?.discount||0);
-  const del=Number(G.oForm?.delivery||0);
-  const total=sub-disc+del;
-  const tr=$('totRow');if(tr)tr.innerHTML=`<span>Grand Total</span><span style="color:var(--acc2)">${cur(total)}</span>`;
-  const sr=$('subRow');if(sr)sr.innerHTML=`<span>Subtotal</span><span style="font-weight:600">${cur(sub)}</span>`;
-  const dr=$('delRow');if(dr)dr.innerHTML=`<span>Delivery</span><span style="font-weight:600">${cur(del)}</span>`;
+  const disc=Math.max(0,Number(G.oForm?.discount||0));
+  const del=Math.max(0,Number(G.oForm?.delivery||0));
+  const total=Math.max(0,sub-disc+del);
+  let paid=0;
+  if(G.oForm?.payStatus==='paid')paid=total;
+  else if(G.oForm?.payStatus==='partial')paid=Math.min(total,Math.max(0,Number(G.oForm?.paidAmount||0)));
+  const due=Math.max(0,total-paid);
+  return{sub,disc,del,total,paid,due};
+}
+window.syncCreatePaymentUI=()=>{
+  const f=G.oForm||{};
+  const wrap=$('of_paidWrap');if(wrap)wrap.style.display=f.payStatus==='partial'?'block':'none';
+  const paidInput=$('of_paidAmount');if(paidInput&&f.payStatus!=='partial')paidInput.value=f.payStatus==='paid'?createOrderTotals().total:0;
+  updTotal();
+};
+window.onCreatePaymentMethodChange=(v)=>{G.oForm.paymentMethod=v;if(v==='cod'&&G.oForm.payStatus==='paid'){}updDel();};
+window.onCreatePayStatusChange=(v)=>{G.oForm.payStatus=v;if(v==='pending')G.oForm.paidAmount=0;syncCreatePaymentUI();};
+window.updDel=()=>{G.oForm.delivery=G.oForm.paymentMethod==='cod'?(G.cfg.delCOD||'150'):(G.cfg.delPaid||'0');const el=$('of_del');if(el)el.value=G.oForm.delivery;updTotal();};
+window.updTotal=()=>{
+  const t=createOrderTotals();
+  const tr=$('totRow');if(tr)tr.innerHTML=`<span>Total</span><span style="color:var(--acc2)">${cur(t.total)}</span>`;
+  const sr=$('subRow');if(sr)sr.innerHTML=`<span>Subtotal</span><span>${cur(t.sub)}</span>`;
+  const dr=$('delRow');if(dr)dr.innerHTML=`<span>Delivery</span><span>${cur(t.del)}</span>`;
+  const dcr=$('discRow');if(dcr)dcr.innerHTML=`<span>Discount</span><span>${t.disc?'- '+cur(t.disc):cur(0)}</span>`;
+  const pr=$('paidRow');if(pr)pr.textContent=cur(t.paid);
+  const due=$('dueRow');if(due){due.textContent=cur(t.due);due.style.color=t.due?'var(--yellow)':'var(--green)';}
 };
 window.applyCoupon=async()=>{
   const code=$('of_coupon')?.value.trim().toUpperCase();
@@ -4840,52 +4913,84 @@ window.selectVariant=(itemIdx,vi,buyP,sellP,stock,name)=>{
   updTotal();
 };
 window.submitOrder=async()=>{
-  const f=G.oForm;const ordPhone=f.ordererPhone;const recvPhone=f.recvPhone||ordPhone;
-  if(!f.cName||!ordPhone||!f.cAddr){toast('Fill name, phone, address','err');return;}
+  const f=G.oForm||{};const ordPhone=String(f.ordererPhone||'').trim();const recvPhone=String(f.recvPhone||'').trim()||ordPhone;
+  if(!String(f.cName||'').trim()||!ordPhone||!String(f.cAddr||'').trim()){toast('Name, phone এবং address পূরণ করুন','err');return;}
   if(!/^01[3-9]\d{8}$/.test(ordPhone)){toast('Orderer phone must be valid 11-digit BD number','err');return;}
-  if(f.recvPhone&&!/^01[3-9]\d{8}$/.test(f.recvPhone)){toast('Receiver phone must be valid 11-digit BD number','err');return;}
-  const validItems=G.oItems.filter(it=>it.pid&&it.price);
-  if(!validItems.length){toast('Add at least one product','err');return;}
-  const btn=$('subOBtn');btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Creating...';
+  if(f.recvPhone&&!/^01[3-9]\d{8}$/.test(String(f.recvPhone).trim())){toast('Receiver phone must be valid 11-digit BD number','err');return;}
+  const validItems=G.oItems.filter(it=>it.pid&&Number(it.price)>0&&Number(it.qty)>0);
+  if(!validItems.length){toast('কমপক্ষে একটি product যোগ করুন','err');return;}
+  const t=createOrderTotals();
+  if(t.disc>t.sub){toast('Discount subtotal-এর চেয়ে বেশি হতে পারবে না','err');return;}
+  if(f.payStatus==='partial'&&(t.paid<=0||t.paid>=t.total)){toast('Partial payment amount 0-এর বেশি এবং total-এর কম হতে হবে','err');return;}
+  const btn=$('subOBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Creating...';}
   try{
-    // Soft stock check: warn if low but allow advance orders (common in f-commerce)
-    let lowStockItems=[];
+    // Up-to-date stock check, variant-aware. Advance order can still be confirmed by admin.
+    const low=[];
     for(const it of validItems){
-      const pd=await getDoc(BDoc('products',it.pid));
-      if(!pd.exists()){toast('পণ্যটি আর নেই, রিফ্রেশ করুন','err');btn.disabled=false;btn.innerHTML='✅ Create Order & Receipt';return;}
-      if(Number(pd.data().stock||0)<Number(it.qty))lowStockItems.push(`${pd.data().name} (স্টক: ${pd.data().stock||0})`);
+      const ps=await getDoc(BDoc('products',it.pid));
+      if(!ps.exists())throw new Error('একটি product আর database-এ নেই. Refresh করুন.');
+      const pd=ps.data();
+      let available=Number(pd.stock||0);
+      if(it.variantName&&Array.isArray(pd.variants))available=Number(pd.variants.find(v=>v.name===it.variantName)?.stock||0);
+      if(available<Number(it.qty||1))low.push(`${pd.name}${it.variantName?' ('+it.variantName+')':''} — stock ${available}`);
     }
-    if(lowStockItems.length){
-      const proceed=confirm(`⚠️ এই পণ্যগুলোর পর্যাপ্ত স্টক নেই:\n${lowStockItems.join('\n')}\n\nতবুও কি অর্ডার তৈরি করবেন? (অগ্রিম অর্ডার)`);
-      if(!proceed){btn.disabled=false;btn.innerHTML='✅ Create Order & Receipt';return;}
-    }
-    const sub=validItems.reduce((s,it)=>s+(Number(it.price)*Number(it.qty)),0);const disc=Number(f.discount||0);const del=Number(f.delivery||0);const total=sub-disc+del;
-    if(!(await enforcePlanLimit('order'))){btn.disabled=false;btn.innerHTML='✅ Create Order & Receipt';return;}
-    const cnt=(await getDocs(BCol('orders'))).size;const num='DRY-'+String(cnt+1).padStart(5,'0');
-    // Customer
-    const cSnap=await getDocs(query(BCol('customers'),where('phone','==',ordPhone)));
-    let custId;
-    if(!cSnap.empty){const cd=cSnap.docs[0];custId=cd.id;await updateDoc(BDoc('customers',custId),{name:f.cName,addr:f.cAddr,orders:(cd.data().orders||0)+1,spent:(cd.data().spent||0)+total,lastOrder:serverTimestamp()});}
-    else{const r=await addDoc(BCol('customers'),{name:f.cName,phone:ordPhone,addr:f.cAddr,orders:1,spent:total,createdAt:serverTimestamp()});custId=r.id;}
-    const oItems=await Promise.all(validItems.map(async it=>{const pd=(await getDoc(BDoc('products',it.pid))).data();return{pid:it.pid,name:pd.name+(it.variantName?` (${it.variantName})`:''),nameBn:(pd.nameBn||pd.name)+(it.variantName?` (${it.variantName})`:''),variantName:it.variantName||'',qty:Number(it.qty),price:Number(it.price),buyPrice:Number(it.buyPrice||pd.buyPrice||0),lineTotal:Number(it.price)*Number(it.qty),profit:(Number(it.price)-Number(it.buyPrice||pd.buyPrice||0))*Number(it.qty)};}));
-    // Stock timing: admin-chosen in Settings — deduct now (creation) or later (on Completed status)
+    if(low.length&&!confirm(`⚠️ পর্যাপ্ত stock নেই:\n${low.join('\n')}\n\nAdvance order হিসেবে create করবেন?`)){if(btn){btn.disabled=false;btn.innerHTML='✅ Create Order';}return;}
+    if(!(await enforcePlanLimit('order'))){if(btn){btn.disabled=false;btn.innerHTML='✅ Create Order';}return;}
+
+    const orderRef=doc(BCol('orders'));
+    const num=`DRY-${today().replace(/-/g,'')}-${orderRef.id.slice(0,8).toUpperCase()}`;
+    const cSnap=await getDocs(query(BCol('customers'),where('phone','==',ordPhone),limit(1)));
+    const custRef=cSnap.empty?doc(BCol('customers')):cSnap.docs[0].ref;
+    const custExists=!cSnap.empty;
+    const eventRef=doc(OEvents(orderRef.id));
     const deductNow=G.cfg.stockDeductTiming==='creation';
-    const oRef=await addDoc(BCol('orders'),{num,custId,cName:f.cName,cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:f.recvName||f.cName,cAddr:f.cAddr,payMethod:f.payMethod,delivery:del,subtotal:sub,discount:disc,total,status:'pending',payStatus:f.payMethod==='paid'?'paid':'pending',orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:oItems,stockDeducted:deductNow,createdBy:G.user?.uid,createdAt:serverTimestamp()});
-    if(deductNow){
-      for(const it of oItems){
-        try{
-          const pd=await getDoc(BDoc('products',it.pid));
-          if(pd.exists()){
-            const newStock=Math.max(0,Number(pd.data().stock||0)-Number(it.qty||1));
-            await updateDoc(BDoc('products',it.pid),{stock:newStock});
-          }
-        }catch{}
+    let finalItems=[];
+
+    await runTransaction(db,async tx=>{
+      // All reads first.
+      const uniquePids=[...new Set(validItems.map(it=>it.pid))];
+      const prodSnaps={};
+      for(const pid of uniquePids){const s=await tx.get(BDoc('products',pid));if(!s.exists())throw new Error('Product missing: '+pid);prodSnaps[pid]=s;}
+      const custSnapTx=custExists?await tx.get(custRef):null;
+
+      // Build immutable order-item snapshot from current product data.
+      finalItems=validItems.map(it=>{
+        const pd=prodSnaps[it.pid].data();
+        const variant=it.variantName&&Array.isArray(pd.variants)?pd.variants.find(v=>v.name===it.variantName):null;
+        const buy=Number(it.buyPrice||variant?.buyPrice||pd.buyPrice||0);
+        const price=Number(it.price||variant?.sellPrice||pd.sellPrice||0);
+        const qty=Number(it.qty||1);
+        const img=(variant?.images&&variant.images[0])||variant?.image||(pd.images&&pd.images[0])||pd.imageUrl||'';
+        return{pid:it.pid,name:pd.name+(it.variantName?` (${it.variantName})`:''),nameBn:(pd.nameBn||pd.name)+(it.variantName?` (${it.variantName})`:''),variantName:it.variantName||'',qty,price,buyPrice:buy,lineTotal:price*qty,profit:(price-buy)*qty,image:img};
+      });
+
+      // Optional stock deduction at order creation. Handles variant stock atomically.
+      if(deductNow){
+        for(const pid of uniquePids){
+          const base=prodSnaps[pid].data();let work={...base,variants:Array.isArray(base.variants)?base.variants.map(v=>({...v})):[]};
+          for(const it of finalItems.filter(x=>x.pid===pid))work=orderApplyStockDelta(work,it,-Number(it.qty||1),false);
+          const patch={stock:Number(work.stock||0),updatedAt:serverTimestamp()};if(Array.isArray(base.variants))patch.variants=work.variants;
+          tx.update(BDoc('products',pid),patch);
+        }
       }
-    }
+
+      const legacyPay=f.payStatus==='paid'?'paid':f.payStatus==='partial'?'partial':'cod';
+      const orderData={num,custId:custRef.id,cName:String(f.cName).trim(),cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:String(f.recvName||f.cName).trim(),cAddr:String(f.cAddr).trim(),paymentMethod:f.paymentMethod||'cod',payMethod:legacyPay,payStatus:f.payStatus||'pending',paidAmount:t.paid,dueAmount:t.due,delivery:t.del,subtotal:t.sub,discount:t.disc,total:t.total,status:'pending',source:'manual',archived:false,orderDate:f.orderDate||today(),delivDate:f.delivDate||'',rLang:f.rLang||G.lang,notes:String(f.notes||'').slice(0,1000),items:finalItems,stockDeducted:deductNow,createdBy:G.user?.uid||'',createdByName:G.user?.displayName||'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
+      tx.set(orderRef,orderData);
+
+      if(custExists){
+        const c=custSnapTx.data();
+        tx.update(custRef,{name:String(f.cName).trim(),addr:String(f.cAddr).trim(),orders:Number(c.orders||c.totalOrders||0)+1,totalOrders:Number(c.totalOrders||c.orders||0)+1,lastOrder:serverTimestamp(),lastOrderStatus:'pending',updatedAt:serverTimestamp()});
+      }else{
+        tx.set(custRef,{name:String(f.cName).trim(),phone:ordPhone,addr:String(f.cAddr).trim(),orders:1,totalOrders:1,spent:0,completedSpend:0,completedOrders:0,cancelledOrders:0,returnedOrders:0,lastOrder:serverTimestamp(),lastOrderStatus:'pending',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+      }
+      tx.set(eventRef,{type:'created',title:'Order created',fromStatus:'',toStatus:'pending',actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:'Manual order created',createdAt:serverTimestamp()});
+    });
+
     toast('Order created! 🎉');
-    G.lastOrder={id:oRef.id,num,cName:f.cName,cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:f.recvName||f.cName,cAddr:f.cAddr,payMethod:f.payMethod,delivery:del,subtotal:sub,discount:disc,total,orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:oItems};
+    G.lastOrder={id:orderRef.id,num,cName:String(f.cName).trim(),cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:String(f.recvName||f.cName).trim(),cAddr:String(f.cAddr).trim(),paymentMethod:f.paymentMethod,payMethod:f.payStatus==='paid'?'paid':f.payStatus==='partial'?'partial':'cod',payStatus:f.payStatus,paidAmount:t.paid,dueAmount:t.due,delivery:t.del,subtotal:t.sub,discount:t.disc,total:t.total,orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:finalItems};
     G.oItems=[];G.oForm=null;showReceipt(G.lastOrder);
-  }catch(e){toast(e.message,'err');btn.disabled=false;btn.innerHTML='✅ Create Order & Receipt';}
+  }catch(e){toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='✅ Create Order';}}
 };
 
 // ── RECEIPT PRESETS (admin picks in Settings) ──
@@ -4922,7 +5027,7 @@ function showReceipt(o){
         <div><strong>${isEn?'Phone:':'ফোন:'}</strong> ${esc(o.recvPhone||o.cPhone)}</div>
         <div style="grid-column:1/-1"><strong>${isEn?'Address:':'ঠিকানা:'}</strong> ${esc(o.cAddr)}</div>
         ${o.delivDate?`<div><strong>${isEn?'Delivery:':'ডেলিভারি:'}</strong> ${esc(o.delivDate)}</div>`:''}
-        <div style="grid-column:${o.delivDate?'auto':'1/-1'}"><strong>${isEn?'Payment:':'পেমেন্ট:'}</strong> <span style="font-weight:700;color:${o.payMethod==='paid'?'#10B981':o.payMethod==='partial'?'#F97316':'#F59E0B'}">${o.payMethod==='paid'?(isEn?'Paid ✅':'পেইড ✅'):o.payMethod==='partial'?(isEn?'Partial':'আংশিক'):(isEn?'Cash on Delivery':'ক্যাশ অন ডেলিভারি')}</span></div>
+        <div style="grid-column:${o.delivDate?'auto':'1/-1'}"><strong>${isEn?'Payment:':'পেমেন্ট:'}</strong> <span style="font-weight:700;color:${o.payMethod==='paid'?'#10B981':o.payMethod==='partial'?'#F97316':'#F59E0B'}">${o.payMethod==='paid'?(isEn?'Paid ✅':'পেইড ✅'):o.payMethod==='partial'?(isEn?'Partial':'আংশিক'):(isEn?'Cash on Delivery':'ক্যাশ অন ডেলিভারি')}${o.paymentMethod&&o.paymentMethod!=='cod'?' · '+esc(o.paymentMethod):''}</span></div>
       </div>
       <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px">
         <thead><tr style="background:${P.tableBg};border-top:2px solid ${P.border};border-bottom:1px solid #ddd">
@@ -6146,351 +6251,156 @@ function downloadCSV(rows,name){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`drystan-${name}-${today()}.csv`;a.click();
   toast(`✅ ${name} CSV downloaded!`,'ok');
 }
-let oSrch='',oFilt='';
-let _orderCache=null; // cached order list (scoped by current oFilt) — search text filters this without re-fetching
-let _orderCacheAll=null; // unfiltered cache — used to compute tab counts regardless of active filter
+// ══ ORDERS — PRODUCTION WORKSPACE ══
+let oSrch='',oFilt='',oSource='',oPayFilt='',oDateFilt='',oSort='newest',oArchive='active',oPage=1;
+const O_PAGE_SIZE=20;
+let _orderCache=null,_orderCacheAll=null;
+
+function orderStatusMeta(s){
+  const m={
+    pending:{ico:'⏳',label:'Pending',bn:'অপেক্ষমান'},
+    confirmed:{ico:'✅',label:'Confirmed',bn:'নিশ্চিত'},
+    ready:{ico:'📦',label:'Ready',bn:'প্রস্তুত'},
+    parcel_sent:{ico:'🚚',label:'Parcel Sent',bn:'কুরিয়ারে'},
+    completed:{ico:'✔️',label:'Completed',bn:'সম্পন্ন'},
+    returned:{ico:'↩️',label:'Returned',bn:'ফেরত'},
+    cancelled:{ico:'✕',label:'Cancelled',bn:'বাতিল'}
+  };return m[s]||{ico:'•',label:String(s||'Unknown'),bn:String(s||'Unknown')};
+}
+function orderStatusChip(s){const m=orderStatusMeta(s);return`<span class="ordStatus ${esc(s||'pending')}">${m.ico} ${m.label}</span>`;}
+function orderSourceMeta(s){const m={manual:['✍️','Manual'],public:['🌐','Website'],orderlink:['🔗','Custom Link'],custom_link:['🔗','Custom Link'],facebook:['📘','Facebook'],whatsapp:['💬','WhatsApp'],messenger:['💬','Messenger'],phone:['📞','Phone']};return m[s]||['📥',s||'Unknown'];}
+function orderSourceChip(s){const m=orderSourceMeta(s);return`<span class="ordSource">${m[0]} ${esc(m[1])}</span>`;}
+function orderPaymentState(o){const st=o.payStatus||(o.payMethod==='paid'?'paid':o.payMethod==='partial'?'partial':'pending');const paid=st==='paid'?Number(o.total||0):Math.max(0,Number(o.paidAmount||0));const due=Math.max(0,Number(o.total||0)-paid);return{status:st,paid,due};}
+function orderPaymentChip(o){const p=orderPaymentState(o);return`<span class="ordPay ${p.status}">${p.status==='paid'?'✅ Paid':p.status==='partial'?'◐ Partial':'⏳ Unpaid'}${p.due>0?` · ${cur(p.due)} due`:''}</span>`;}
+function orderCreatedMs(o){const v=o.createdAt;if(v?.toDate)return v.toDate().getTime();if(v?.seconds)return Number(v.seconds)*1000;const d=new Date(o.orderDate||0);return Number.isNaN(d.getTime())?0:d.getTime();}
+function isOrderOverdue(o){return o.status==='parcel_sent'&&!!o.expectedDate&&o.expectedDate<today();}
+function orderAllowedTransitions(s){return({pending:['confirmed','cancelled'],confirmed:['ready','cancelled'],ready:['parcel_sent','cancelled'],parcel_sent:['completed','returned'],completed:['returned'],returned:[],cancelled:[]})[s]||[];}
+function orderCanTransition(from,to,allowCourierJump=false){if(from===to)return true;if(allowCourierJump&&['pending','confirmed','ready'].includes(from)&&to==='parcel_sent')return true;return orderAllowedTransitions(from).includes(to);}
+function orderApplyStockDelta(product,item,delta,strict=true){
+  const p={...product,variants:Array.isArray(product.variants)?product.variants.map(v=>({...v})):[]};
+  if(item.variantName&&p.variants.length){
+    const idx=p.variants.findIndex(v=>v.name===item.variantName);if(idx<0)throw new Error(`Variant not found: ${item.variantName}`);
+    const before=Number(p.variants[idx].stock||0);if(delta<0&&strict&&before<Math.abs(delta))throw new Error(`${product.name||'Product'} (${item.variantName}) stock insufficient`);
+    p.variants[idx].stock=Math.max(0,before+delta);p.stock=p.variants.reduce((s,v)=>s+Number(v.stock||0),0);
+  }else{
+    const before=Number(p.stock||0);if(delta<0&&strict&&before<Math.abs(delta))throw new Error(`${product.name||'Product'} stock insufficient`);p.stock=Math.max(0,before+delta);
+  }
+  return p;
+}
+function orderFmtTs(v){try{const d=v?.toDate?v.toDate():v?.seconds?new Date(v.seconds*1000):new Date(v);if(Number.isNaN(d.getTime()))return'';return d.toLocaleString('en-BD',{dateStyle:'medium',timeStyle:'short'});}catch{return'';}}
+window.orderCopy=async(v)=>{try{await navigator.clipboard.writeText(String(v||''));toast('Copied');}catch{prompt('Copy:',String(v||''));}};
+window.orderCall=p=>{const n=String(p||'').replace(/[^0-9+]/g,'');if(n)location.href='tel:'+n;};
+window.orderWhatsapp=p=>{let n=String(p||'').replace(/\D/g,'');if(!n){toast('Phone number missing','err');return;}if(n.startsWith('0'))n='88'+n;window.open('https://wa.me/'+n,'_blank','noopener');};
+
 async function pgOrders(){
   loading();
   try{
-    // Fetch all orders (single-field orderBy only — no composite index needed),
-    // then filter by status client-side. Avoids Firestore index errors for new users.
     const snap=await getDocs(query(BCol('orders'),orderBy('createdAt','desc')));
-    let all=snap.docs.map(d=>({id:d.id,...d.data()}));
-    _orderCacheAll=all;
-    _orderCache=oFilt?all.filter(o=>o.status===oFilt):all;
-    renderOrdersView();
+    _orderCacheAll=snap.docs.map(d=>({id:d.id,...d.data()}));_orderCache=_orderCacheAll;oPage=1;renderOrdersView();
   }catch(e){
-    // Fallback: if even single orderBy fails (no createdAt index on legacy data), fetch unsorted
-    try{
-      const snap2=await getDocs(BCol('orders'));
-      let all=snap2.docs.map(d=>({id:d.id,...d.data()}));
-      all.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-      _orderCacheAll=all;
-      _orderCache=oFilt?all.filter(o=>o.status===oFilt):all;
-      renderOrdersView();
-    }catch(e2){setC(`<div class="al aE">❌ ${e2.message}</div>`);}
+    try{const s=await getDocs(BCol('orders'));_orderCacheAll=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>orderCreatedMs(b)-orderCreatedMs(a));_orderCache=_orderCacheAll;oPage=1;renderOrdersView();}
+    catch(e2){setC(`<div class="al aE">❌ ${esc(e2.message)}</div>`);}
   }
 }
-window.searchOrders=(val)=>{oSrch=val;reRenderPreservingFocus(renderOrdersView);};
-// Is a parcel-sent order past its expected delivery date? (used for the amber "overdue" glow)
-function isOrderOverdue(o){
-  if(o.status!=='parcel_sent'||!o.expectedDate)return false;
-  return o.expectedDate<today();
+function orderFilteredList(){
+  let orders=[...(_orderCacheAll||[])];
+  orders=orders.filter(o=>oArchive==='archived'?o.archived===true:o.archived!==true);
+  if(oFilt)orders=orders.filter(o=>o.status===oFilt);
+  if(oSource)orders=orders.filter(o=>(o.source||'manual')===oSource);
+  if(oPayFilt)orders=orders.filter(o=>orderPaymentState(o).status===oPayFilt);
+  if(oDateFilt){const now=Date.now();let from=0;if(oDateFilt==='today')from=new Date(today()+'T00:00:00').getTime();if(oDateFilt==='7d')from=now-7*86400000;if(oDateFilt==='30d')from=now-30*86400000;orders=orders.filter(o=>orderCreatedMs(o)>=from);}
+  const q=oSrch.trim().toLowerCase();if(q)orders=orders.filter(o=>[o.num,o.cName,o.cPhone,o.ordererPhone,o.recvPhone,o.recvName,o.cAddr,o.steadfastCN,o.trackingCode].some(v=>String(v||'').toLowerCase().includes(q)));
+  orders.sort((a,b)=>{if(a.priority!==b.priority)return(a.priority?-1:1);if(oSort==='oldest')return orderCreatedMs(a)-orderCreatedMs(b);if(oSort==='amount_high')return Number(b.total||0)-Number(a.total||0);if(oSort==='amount_low')return Number(a.total||0)-Number(b.total||0);return orderCreatedMs(b)-orderCreatedMs(a);});
+  return orders;
 }
+window.searchOrders=v=>{oSrch=v;oPage=1;reRenderPreservingFocus(renderOrdersView);};
+window.orderSetStatus=v=>{oFilt=v;oPage=1;renderOrdersView();};
+window.orderSetSource=v=>{oSource=v;oPage=1;renderOrdersView();};
+window.orderSetPay=v=>{oPayFilt=v;oPage=1;renderOrdersView();};
+window.orderSetDate=v=>{oDateFilt=v;oPage=1;renderOrdersView();};
+window.orderSetSort=v=>{oSort=v;oPage=1;renderOrdersView();};
+window.orderSetArchive=v=>{oArchive=v;oPage=1;renderOrdersView();};
+window.orderPage=n=>{const total=Math.max(1,Math.ceil(orderFilteredList().length/O_PAGE_SIZE));oPage=Math.min(total,Math.max(1,n));renderOrdersView();window.scrollTo({top:0,behavior:'smooth'});};
+
 function renderOrdersView(){
   try{
-    const allOrders=_orderCacheAll||_orderCache||[];
-    let orders=_orderCache||[];
-    if(oSrch)orders=orders.filter(o=>o.num?.toLowerCase().includes(oSrch.toLowerCase())||o.cName?.toLowerCase().includes(oSrch.toLowerCase())||o.cPhone?.includes(oSrch)||o.ordererPhone?.includes(oSrch));
-    // Priority (starred) orders float to top
-    orders=[...orders].sort((a,b)=>(b.priority?1:0)-(a.priority?1:0));
-    const sb=s=>{const m={pending:'bPend',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent',returned:'bRet'};const l={pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Parcel Sent',returned:'Returned'};return`<span class="badge ${m[s]||'bPend'}">${l[s]||esc(s)}</span>`;};
-    const totalShown=orders.reduce((s,o)=>s+(o.status!=='cancelled'?Number(o.total||0):0),0);
-    const counts={
-      all:allOrders.length,
-      pending:allOrders.filter(o=>o.status==='pending').length,
-      parcel_sent:allOrders.filter(o=>o.status==='parcel_sent').length,
-      overdue:allOrders.filter(isOrderOverdue).length,
-      completed:allOrders.filter(o=>o.status==='completed').length,
-      returned:allOrders.filter(o=>o.status==='returned').length,
-      cancelled:allOrders.filter(o=>o.status==='cancelled').length,
-    };
-    const tabs=[
-      {key:'',label:'সব',ico:'📋',count:counts.all,clr:'99,102,241'},
-      {key:'pending',label:'Pending',ico:'🔴',count:counts.pending,clr:'239,68,68'},
-      {key:'parcel_sent',label:'Parcel Sent',ico:'🚚',count:counts.parcel_sent,clr:'245,158,11'},
-      {key:'completed',label:'Complete',ico:'✅',count:counts.completed,clr:'16,185,129'},
-      {key:'returned',label:'Return',ico:'↩️',count:counts.returned,clr:'168,85,247'},
-      {key:'cancelled',label:'Cancel',ico:'❌',count:counts.cancelled,clr:'107,114,128'},
-    ];
-    setC(`
-    <div class="pH"><div><h1>Orders</h1><p>${orders.length} orders · Revenue: <strong style="color:var(--green)">${cur(totalShown)}</strong></p></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn bS" onclick="bulkPrintLabels()">🖨️ Labels Print</button>
-        <button class="btn bP" onclick="nav('newOrder')">➕ New Order</button>
-      </div>
-    </div>
-    <!-- STATUS TABS -->
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;overflow-x:auto;padding-bottom:2px">
-      ${tabs.map(t=>`
-        <div onclick="oFilt='${t.key}';pgOrders()" style="cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:12px;background:${oFilt===t.key?`rgba(${t.clr},.16)`:'var(--card)'};border:1.5px solid ${oFilt===t.key?`rgba(${t.clr},.5)`:'var(--border)'};font-size:13px;font-weight:600;transition:all .15s">
-          <span>${t.ico}</span><span>${t.label}</span>
-          <span style="background:rgba(${t.clr},.25);color:rgb(${t.clr});padding:1px 7px;border-radius:10px;font-size:11px;font-weight:800">${t.count}</span>
-        </div>`).join('')}
-      ${counts.overdue>0?`<div style="display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:12px;background:rgba(245,158,11,.14);border:1.5px solid rgba(245,158,11,.4);font-size:12px;font-weight:700;color:rgb(245,158,11);animation:pulseGlow 1.6s ease-in-out infinite">⏰ ${counts.overdue} ডেলিভারি সময় পার হয়েছে</div>`:''}
-    </div>
-    <div class="card">
-      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-        <div class="sBar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input id="orderSearchInp" placeholder="Search by #, name, phone..." value="${esc(oSrch)}" oninput="searchOrders(this.value)"/>
-        </div>
-      </div>
-      ${orders.length===0?`<div class="empty"><h3>No orders found</h3></div>`:`
-      <div class="tWrap"><table>
-        <thead><tr><th></th><th>Order #</th><th>Customer</th><th>Orderer Ph</th><th>Receiver Ph</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
-        <tbody>${orders.map(o=>{
-          const overdue=isOrderOverdue(o);
-          const glowPending=o.status==='pending';
-          const rowStyle=glowPending?'background:rgba(239,68,68,.05);animation:rowGlowRed 2s ease-in-out infinite':overdue?'background:rgba(245,158,11,.06);animation:rowGlowAmber 2s ease-in-out infinite':'';
-          const mainImg=(o.items&&o.items[0]&&o.items[0].image)||'';
-          return `<tr style="${rowStyle}">
-          <td style="width:36px">${mainImg?`<img loading="lazy" src="${esc(mainImg)}" style="width:32px;height:32px;border-radius:7px;object-fit:cover;background:#fff"/>`:'<div style="width:32px;height:32px;border-radius:7px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:13px">📦</div>'}</td>
-          <td><code style="color:var(--acc2);font-size:12px">${esc(o.num)}</code></td>
-          <td style="font-weight:600">${esc(o.cName)}${o.source==='public'?' <span class="badge bSent" style="font-size:9px;padding:2px 6px">🌐 অনলাইন</span>':''}</td>
-          <td style="font-size:13px">${esc(o.ordererPhone||o.cPhone||'-')}</td>
-          <td style="font-size:13px">${esc(o.recvPhone&&o.recvPhone!==o.ordererPhone?o.recvPhone:'-')}</td>
-          <td style="font-weight:700">${cur(o.total)}</td>
-          <td><span class="badge ${o.payMethod==='paid'?'bDone':'bPend'}">${o.payMethod==='paid'?'PAID':'COD'}</span></td>
-          <td>${sb(o.status)}${o.status==='parcel_sent'&&o.expectedDate?`<div style="font-size:10px;color:${overdue?'var(--red)':'var(--t3)'};margin-top:2px">${overdue?'⏰ বিলম্বিত':'🗓️ '+esc(o.expectedDate)}</div>`:''}</td>
-          <td style="font-size:12px;color:var(--t2)">${esc(o.orderDate||'-')}</td>
-          <td><div style="display:flex;gap:5px">
-            <button class="btn bS bSm bIco" onclick="togglePriority('${o.id}',${o.priority?'true':'false'})" title="গুরুত্বপূর্ণ" style="${o.priority?'color:var(--yellow)':''}">${o.priority?'⭐':'☆'}</button>
-            <button class="btn bS bSm bIco" onclick="viewOrder('${o.id}')">👁️</button>
-            ${G.role==='admin'?`<button class="btn bD bSm bIco" onclick="delOrder('${o.id}')">🗑️</button>`:''}
-          </div></td>
-        </tr>`;}).join('')}</tbody>
-      </table></div>`}
-    </div>
-    <div class="mOvl" id="ordMOvl"><div class="modal mLg" id="ordMod"></div></div>`);
-  }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
+    const all=(_orderCacheAll||[]).filter(o=>o.archived!==true);const orders=orderFilteredList();
+    const counts={all:all.length,pending:all.filter(o=>o.status==='pending').length,confirmed:all.filter(o=>o.status==='confirmed').length,ready:all.filter(o=>o.status==='ready').length,parcel_sent:all.filter(o=>o.status==='parcel_sent').length,completed:all.filter(o=>o.status==='completed').length,returned:all.filter(o=>o.status==='returned').length,cancelled:all.filter(o=>o.status==='cancelled').length,overdue:all.filter(isOrderOverdue).length};
+    const processing=counts.pending+counts.confirmed+counts.ready;const unpaid=all.filter(o=>orderPaymentState(o).due>0&&!['cancelled','returned'].includes(o.status)).reduce((s,o)=>s+orderPaymentState(o).due,0);const revenue=all.filter(o=>o.status==='completed').reduce((s,o)=>s+Number(o.total||0),0);
+    const tabs=[['','📋','All',counts.all],['pending','⏳','Pending',counts.pending],['confirmed','✅','Confirmed',counts.confirmed],['ready','📦','Ready',counts.ready],['parcel_sent','🚚','Sent',counts.parcel_sent],['completed','✔️','Complete',counts.completed],['returned','↩️','Return',counts.returned],['cancelled','✕','Cancel',counts.cancelled]];
+    const pageCount=Math.max(1,Math.ceil(orders.length/O_PAGE_SIZE));if(oPage>pageCount)oPage=pageCount;const start=(oPage-1)*O_PAGE_SIZE;const page=orders.slice(start,start+O_PAGE_SIZE);
+    const sources=[...new Set(all.map(o=>o.source||'manual'))].sort();
+    const row=o=>{const img=o.items?.[0]?.image||'';const phone=o.recvPhone||o.cPhone||o.ordererPhone||'';return`<tr>
+      <td><div class="ordCust">${img?`<img class="ordThumb" loading="lazy" src="${esc(img)}"/>`:'<div class="ordThumbPh">📦</div>'}<div style="min-width:0"><div class="ordCustName">${esc(o.cName||o.recvName||'-')}</div><div class="ordCustPhone">${esc(phone||'-')} · ${(o.items||[]).reduce((s,i)=>s+Number(i.qty||0),0)} item</div></div></div></td>
+      <td><div class="ordNum">${esc(o.num||'-')}</div>${o.priority?'<div style="font-size:9px;color:var(--yellow);margin-top:3px">⭐ Priority</div>':''}</td>
+      <td style="font-weight:850;white-space:nowrap">${cur(o.total)}</td><td>${orderPaymentChip(o)}</td><td>${orderStatusChip(o.status)}${isOrderOverdue(o)?'<div style="font-size:9px;color:var(--red);margin-top:4px">⏰ Overdue</div>':''}</td><td>${orderSourceChip(o.source||'manual')}</td><td style="font-size:10.5px;color:var(--t2);white-space:nowrap">${esc(o.orderDate||orderFmtTs(o.createdAt)||'-')}</td>
+      <td><div class="ordRowActions"><button class="btn bS bSm bIco" onclick="togglePriority('${o.id}',${!!o.priority})" title="Priority">${o.priority?'⭐':'☆'}</button><button class="btn bS bSm bIco" onclick="viewOrder('${o.id}')" title="View">👁️</button>${G.role==='admin'||G.role==='owner'?`<button class="btn bS bSm bIco" onclick="archiveOrder('${o.id}',true)" title="Archive">🗄️</button>`:''}</div></td></tr>`;};
+    const mcard=o=>{const phone=o.recvPhone||o.cPhone||o.ordererPhone||'';const img=o.items?.[0]?.image||'';return`<div class="ordMCard"><div class="ordMTop"><div class="ordMCustomer">${img?`<img class="ordThumb" src="${esc(img)}"/>`:'<div class="ordThumbPh">📦</div>'}<div style="min-width:0"><div class="ordNum">${esc(o.num||'-')}</div><div class="ordCustName" style="margin-top:4px">${esc(o.cName||'-')}</div><div class="ordCustPhone">${esc(phone||'-')}</div></div></div><div style="display:grid;gap:5px;justify-items:end">${orderStatusChip(o.status)}${orderSourceChip(o.source||'manual')}</div></div><div class="ordMBody"><div class="ordMInfo"><span>Total</span><b>${cur(o.total)}</b></div><div class="ordMInfo"><span>Payment</span><b>${orderPaymentState(o).status}${orderPaymentState(o).due?` · ${cur(orderPaymentState(o).due)} due`:''}</b></div><div class="ordMInfo"><span>Date</span><b>${esc(o.orderDate||'-')}</b></div><div class="ordMInfo"><span>Items</span><b>${(o.items||[]).reduce((s,i)=>s+Number(i.qty||0),0)}</b></div></div><div class="ordMActions"><button class="btn bS bSm" onclick="orderCall('${esc(phone)}')">📞 Call</button><button class="btn bS bSm" onclick="orderWhatsapp('${esc(phone)}')">💬 WhatsApp</button><button class="btn bS bSm" onclick="togglePriority('${o.id}',${!!o.priority})">${o.priority?'⭐':'☆'} Priority</button><button class="btn bP bSm" onclick="viewOrder('${o.id}')">Open →</button></div></div>`;};
+    setC(`<div class="ordHead"><div><h1>Orders</h1><p>${orders.length} matching · Completed revenue <strong style="color:var(--green)">${cur(revenue)}</strong></p></div><div class="ordHeadActions"><button class="btn bS" onclick="bulkPrintLabels()">🖨️ Labels</button><button class="btn bP" onclick="nav('newOrder')">➕ New Order</button></div></div>
+      <div class="ordStats"><div class="ordStat"><div class="ordStatTop"><span>📥 TOTAL</span><span>All</span></div><div class="ordStatVal">${counts.all}</div><div class="ordStatSub">Active order records</div></div><div class="ordStat"><div class="ordStatTop"><span>⚙️ PROCESSING</span><span>Pending</span></div><div class="ordStatVal">${processing}</div><div class="ordStatSub">Pending + confirmed + ready</div></div><div class="ordStat"><div class="ordStatTop"><span>🚚 COURIER</span><span>${counts.overdue?'⚠️':''}</span></div><div class="ordStatVal">${counts.parcel_sent}</div><div class="ordStatSub">${counts.overdue?counts.overdue+' overdue':'No overdue parcel'}</div></div><div class="ordStat"><div class="ordStatTop"><span>✔️ COMPLETE</span><span>Done</span></div><div class="ordStatVal">${counts.completed}</div><div class="ordStatSub">Successful orders</div></div><div class="ordStat"><div class="ordStatTop"><span>💰 DUE</span><span>৳</span></div><div class="ordStatVal" style="font-size:20px">${cur(unpaid)}</div><div class="ordStatSub">Outstanding amount</div></div></div>
+      <div class="ordControl"><div class="ordTabs">${tabs.map(t=>`<button class="ordTab ${oFilt===t[0]?'active':''}" onclick="orderSetStatus('${t[0]}')"><span>${t[1]}</span>${t[2]}<span class="ordTabCount">${t[3]}</span></button>`).join('')}</div><div class="ordFilters"><div class="sBar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="orderSearchInp" placeholder="Order #, name, phone, address, tracking..." value="${esc(oSrch)}" oninput="searchOrders(this.value)"/></div><select class="afI" onchange="orderSetSource(this.value)"><option value="">All Sources</option>${sources.map(s=>`<option value="${esc(s)}" ${oSource===s?'selected':''}>${esc(orderSourceMeta(s).join(' '))}</option>`).join('')}</select><select class="afI" onchange="orderSetPay(this.value)"><option value="">All Payments</option><option value="pending" ${oPayFilt==='pending'?'selected':''}>Unpaid</option><option value="partial" ${oPayFilt==='partial'?'selected':''}>Partial</option><option value="paid" ${oPayFilt==='paid'?'selected':''}>Paid</option></select><select class="afI" onchange="orderSetDate(this.value)"><option value="">All Dates</option><option value="today" ${oDateFilt==='today'?'selected':''}>Today</option><option value="7d" ${oDateFilt==='7d'?'selected':''}>Last 7 days</option><option value="30d" ${oDateFilt==='30d'?'selected':''}>Last 30 days</option></select><select class="afI" onchange="orderSetSort(this.value)"><option value="newest" ${oSort==='newest'?'selected':''}>Newest</option><option value="oldest" ${oSort==='oldest'?'selected':''}>Oldest</option><option value="amount_high" ${oSort==='amount_high'?'selected':''}>Amount: High</option><option value="amount_low" ${oSort==='amount_low'?'selected':''}>Amount: Low</option></select></div><div style="display:flex;gap:7px;margin-top:8px;flex-wrap:wrap"><button class="btn bSm ${oArchive==='active'?'bP':'bS'}" onclick="orderSetArchive('active')">Active</button><button class="btn bSm ${oArchive==='archived'?'bP':'bS'}" onclick="orderSetArchive('archived')">🗄️ Archived</button>${counts.overdue?`<span class="ordStatus parcel_sent">⏰ ${counts.overdue} overdue</span>`:''}</div></div>
+      <div class="ordListCard">${page.length===0?'<div class="ordEmpty"><div class="ordEmptyIcon">📭</div><h3>No orders found</h3><p>Search বা filter পরিবর্তন করে দেখুন।</p></div>':`<div class="ordDesktopTable"><div class="tWrap"><table class="ordTable"><thead><tr><th>Customer</th><th>Order</th><th>Total</th><th>Payment</th><th>Status</th><th>Source</th><th>Date</th><th style="text-align:right">Actions</th></tr></thead><tbody>${page.map(row).join('')}</tbody></table></div></div><div class="ordMobileList">${page.map(mcard).join('')}</div>`}<div class="ordPager"><span>${orders.length?`${start+1}-${Math.min(start+O_PAGE_SIZE,orders.length)} of ${orders.length}`:'0 orders'}</span><div class="ordPagerBtns"><button class="btn bS bSm" ${oPage<=1?'disabled':''} onclick="orderPage(${oPage-1})">← Prev</button><span style="padding:7px 5px">${oPage}/${pageCount}</span><button class="btn bS bSm" ${oPage>=pageCount?'disabled':''} onclick="orderPage(${oPage+1})">Next →</button></div></div></div>
+      <div class="mOvl" id="ordMOvl"><div class="modal mLg" id="ordMod"></div></div>`);
+  }catch(e){setC(`<div class="al aE">❌ ${esc(e.message)}</div>`);}
+}
+
+async function loadOrderTimeline(id){
+  const box=$('orderTimelineBox');if(!box)return;
+  try{const s=await getDocs(query(OEvents(id),orderBy('createdAt','desc'),limit(30)));const ev=s.docs.map(d=>d.data());if(!ev.length){box.innerHTML='<div style="font-size:11px;color:var(--t3)">No activity events yet (legacy order).</div>';return;}const icon={created:'➕',status:'↔️',payment:'💳',courier:'🚚',priority:'⭐',archive:'🗄️'};box.innerHTML=`<div class="ordTimeline">${ev.map(e=>`<div class="ordEvent"><div class="ordEventDot">${icon[e.type]||'•'}</div><div class="ordEventMain"><div class="ordEventTitle">${esc(e.title||e.type||'Activity')}</div><div class="ordEventMeta">${esc(e.actorName||'System')}${e.note?' · '+esc(e.note):''}${e.createdAt?' · '+esc(orderFmtTs(e.createdAt)):''}</div></div></div>`).join('')}</div>`;}catch(e){box.innerHTML=`<div style="font-size:11px;color:var(--t3)">Timeline unavailable: ${esc(e.message)}</div>`;}
 }
 async function viewOrder(id){
-  const d=await getDoc(BDoc('orders',id));const o={id,...d.data()};
-  const sb=s=>{const m={pending:'bPend',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent',returned:'bRet'};const l={pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Parcel Sent',returned:'Returned'};return`<span class="badge ${m[s]||'bPend'}">${l[s]||esc(s)}</span>`;};
-  $('ordMod').innerHTML=`
-  <div class="mH"><h3>📋 ${esc(o.num)}</h3><button class="btn bS bIco" onclick="closeMov('ordMOvl')">✕</button></div>
-  <div class="mB">
-    <div class="g g2" style="gap:10px;margin-bottom:14px">
-      <div class="card" style="padding:12px"><div style="font-size:11px;color:var(--t2)">Customer</div><div style="font-weight:700">${esc(o.cName)}</div></div>
-      <div class="card" style="padding:12px"><div style="font-size:11px;color:var(--t2)">Orderer Phone</div><div style="font-weight:700">${esc(o.ordererPhone||o.cPhone||'-')}</div></div>
-      <div class="card" style="padding:12px"><div style="font-size:11px;color:var(--t2)">Receiver Phone</div><div style="font-weight:700">${esc(o.recvPhone||'-')}</div></div>
-      <div class="card" style="padding:12px"><div style="font-size:11px;color:var(--t2)">Receiver Name</div><div style="font-weight:700">${esc(o.recvName||o.cName)}</div></div>
-      <div class="card" style="padding:12px;grid-column:1/-1"><div style="font-size:11px;color:var(--t2)">Address</div><div>${esc(o.cAddr)}</div></div>
-    </div>
-    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px">
-      <thead><tr style="border-bottom:1px solid var(--border)"><th style="padding:8px"></th><th style="padding:8px">Product</th><th style="text-align:center;padding:8px">Qty</th><th style="text-align:right;padding:8px">Price</th><th style="text-align:right;padding:8px">Total</th></tr></thead>
-      <tbody>${(o.items||[]).map(it=>`<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:8px;width:38px">${it.image?`<img loading="lazy" src="${esc(it.image)}" style="width:34px;height:34px;border-radius:7px;object-fit:cover;background:#fff"/>`:'<div style="width:34px;height:34px;border-radius:7px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px">📦</div>'}</td>
-        <td style="padding:10px 8px;font-weight:500">${esc(it.name)}</td><td style="text-align:center;padding:10px 8px">${esc(String(it.qty??''))}</td><td style="text-align:right;padding:10px 8px">${cur(it.price)}</td><td style="text-align:right;padding:10px 8px;font-weight:700">${cur(it.lineTotal)}</td></tr>`).join('')}</tbody>
-    </table>
-    <div style="background:var(--card);border-radius:10px;padding:14px;margin-bottom:14px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-bottom:5px"><span>Subtotal</span><span>${cur(o.subtotal)}</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-bottom:8px"><span>Delivery</span><span>${cur(o.delivery)}</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:17px;font-weight:800"><span>Total</span><span style="color:var(--acc2)">${cur(o.total)}</span></div>
-    </div>
-    <div class="g g2" style="gap:10px">
-      <div class="afG" style="margin:0"><label class="afL">Order Status</label>
-        <select class="afI" id="oStSel" onchange="onOrderStatusChange(this.value)">
-          <option value="pending" ${o.status==='pending'?'selected':''}>⏳ Pending</option>
-          <option value="parcel_sent" ${o.status==='parcel_sent'?'selected':''}>🚚 Parcel Sent</option>
-          <option value="completed" ${o.status==='completed'?'selected':''}>✅ Completed</option>
-          <option value="returned" ${o.status==='returned'?'selected':''}>↩️ Product Return</option>
-          <option value="cancelled" ${o.status==='cancelled'?'selected':''}>❌ Cancelled</option>
-        </select>
-        <div style="font-size:11px;color:var(--t2);margin-top:4px">⚠️ Stock deducted on "Completed". Restored on "Return" or "Cancelled".</div>
-      </div>
-      <div class="afG" style="margin:0"><label class="afL">Payment Status</label>
-        <select class="afI" id="oPstSel">
-          <option value="pending" ${o.payStatus==='pending'?'selected':''}>Pending</option>
-          <option value="paid" ${o.payStatus==='paid'?'selected':''}>Paid ✅</option>
-          <option value="partial" ${o.payStatus==='partial'?'selected':''}>Partial</option>
-        </select>
-      </div>
-    </div>
-    <div id="parcelDeadlineBox" style="display:none"></div>
-    ${o.status==='parcel_sent'&&o.expectedDate?`<div style="font-size:12px;color:${isOrderOverdue(o)?'var(--red)':'var(--t2)'};margin-top:8px;padding:8px 12px;background:var(--card);border-radius:8px">🗓️ প্রত্যাশিত ডেলিভারি: <strong>${esc(o.expectedDate)}</strong>${isOrderOverdue(o)?' — ⏰ সময় পার হয়েছে':''}${o.deadlineNote?`<br><span style="color:var(--t3)">📝 ${esc(o.deadlineNote)}</span>`:''}</div>`:''}
-    <div id="oNoteBox" style="margin-top:10px"></div>
-    ${o.notes?`<div class="afG" style="margin-top:10px"><label class="afL">Notes</label><div style="padding:10px;background:var(--card);border-radius:8px;font-size:13px">${esc(o.notes)}</div></div>`:''}
-    ${aiEnabled()?`
-    <div style="margin-top:12px">
-      <button class="btn bFull bSm" style="background:linear-gradient(135deg,#A855F7,#7C3AED);color:#fff" onclick='aiRiskCheck(${esc(JSON.stringify({name:o.cName,phone:o.cPhone||o.ordererPhone,addr:o.cAddr,total:o.total,pay:o.payMethod,source:o.source})).replace(/'/g,"&#39;")})'>🤖 AI ঝুঁকি বিশ্লেষণ</button>
-      <div id="aiRiskResult" style="margin-top:10px"></div>
-    </div>`:''}
-  </div>
-  <div class="mF">
-    <button class="btn bS" onclick="closeMov('ordMOvl')">Close</button>
-    <button class="btn bP" onclick="updOrdSt('${id}')">💾 Update Status</button>
-  </div>`;
-  $('ordMOvl').classList.add('open');
+  const d=await getDoc(BDoc('orders',id));if(!d.exists()){toast('Order not found','err');return;}const o={id,...d.data()};window._activeOrderStatus=o.status||'pending';const p=orderPaymentState(o),phone=o.recvPhone||o.cPhone||o.ordererPhone||'';const transitions=orderAllowedTransitions(o.status);const statusOptions=[o.status,...transitions].filter((v,i,a)=>a.indexOf(v)===i);const courierReady=['pending','confirmed','ready'].includes(o.status);const tracking=o.trackingCode||o.steadfastCN||'';
+  $('ordMod').innerHTML=`<div class="mH"><div><h3 style="margin-bottom:3px">${esc(o.num||'Order')}</h3><div style="display:flex;gap:6px;flex-wrap:wrap">${orderStatusChip(o.status)} ${orderSourceChip(o.source||'manual')} ${o.priority?'<span class="ordStatus parcel_sent">⭐ Priority</span>':''}</div></div><button class="btn bS bIco" onclick="closeMov('ordMOvl')">✕</button></div>
+  <div class="mB"><div class="ordWorkspace"><div style="display:grid;gap:12px">
+    <div class="ordPanel"><div class="ordPanelTitle"><span>👤 Customer & Delivery</span><span style="font-size:10px;color:var(--t3)">${esc(o.orderDate||'')}</span></div><div class="ordInfoGrid"><div class="ordInfoBox"><small>Customer</small><b>${esc(o.cName||'-')}</b></div><div class="ordInfoBox"><small>Receiver</small><b>${esc(o.recvName||o.cName||'-')}</b></div><div class="ordInfoBox"><small>Phone</small><b>${esc(phone||'-')}</b></div><div class="ordInfoBox"><small>Orderer Phone</small><b>${esc(o.ordererPhone||o.cPhone||'-')}</b></div><div class="ordInfoBox" style="grid-column:1/-1"><small>Address</small><div>${esc(o.cAddr||'-')}</div></div></div><div class="ordQuickActions"><button class="btn bS bSm" onclick="orderCall('${esc(phone)}')">📞 Call</button><button class="btn bS bSm" onclick="orderWhatsapp('${esc(phone)}')">💬 WhatsApp</button><button class="btn bS bSm" onclick="orderCopy('${esc(phone)}')">📋 Copy Phone</button><button class="btn bS bSm" onclick='orderCopy(${jsArg(o.cAddr||'')})'>📍 Copy Address</button></div></div>
+    <div class="ordPanel"><div class="ordPanelTitle"><span>📦 Products (${(o.items||[]).length})</span></div>${(o.items||[]).map(it=>`<div class="ordItem">${it.image?`<img class="ordThumb" src="${esc(it.image)}"/>`:'<div class="ordThumbPh">📦</div>'}<div class="ordItemInfo"><div class="ordItemName">${esc(it.name||'Product')}</div><div class="ordItemMeta">${it.variantName?'🎨 '+esc(it.variantName)+' · ':''}${cur(it.price)} × ${Number(it.qty||1)}</div></div><div class="ordItemTotal">${cur(Number(it.price||0)*Number(it.qty||1))}</div></div>`).join('')||'<div style="color:var(--t3);font-size:11px">No items</div>'}</div>
+    <div class="ordPanel"><div class="ordPanelTitle"><span>📝 Notes</span></div><div style="font-size:12px;color:${o.notes?'var(--t2)':'var(--t3)'};line-height:1.7;white-space:pre-wrap;word-break:break-word">${esc(o.notes||'No notes')}</div>${aiEnabled()?`<button class="btn bFull bSm" style="margin-top:10px;background:linear-gradient(135deg,#A855F7,#7C3AED);color:#fff" onclick='aiRiskCheck(${esc(JSON.stringify({name:o.cName,phone:o.cPhone||o.ordererPhone,addr:o.cAddr,total:o.total,pay:o.payMethod,source:o.source})).replace(/'/g,"&#39;")})'>🤖 AI Risk Check</button><div id="aiRiskResult" style="margin-top:8px"></div>`:''}</div>
+  </div><div style="display:grid;gap:12px;align-content:start">
+    <div class="ordPanel"><div class="ordPanelTitle"><span>💰 Payment</span>${orderPaymentChip(o)}</div><div class="ordMoney"><div class="ordMoneyLine"><span>Subtotal</span><b>${cur(o.subtotal)}</b></div>${Number(o.discount||0)>0?`<div class="ordMoneyLine"><span>Discount</span><b style="color:var(--green)">- ${cur(o.discount)}</b></div>`:''}<div class="ordMoneyLine"><span>Delivery</span><b>${cur(o.delivery)}</b></div><div class="ordMoneyLine"><span>Paid</span><b>${cur(p.paid)}</b></div><div class="ordMoneyLine"><span>Due</span><b style="color:${p.due?'var(--yellow)':'var(--green)'}">${cur(p.due)}</b></div><div class="ordMoneyLine total"><span>Total</span><span style="color:var(--acc2)">${cur(o.total)}</span></div></div></div>
+    <div class="ordPanel"><div class="ordPanelTitle"><span>⚙️ Fulfillment</span></div><div class="afG"><label class="afL">Order Status</label><select class="afI" id="oStSel" onchange="onOrderStatusChange(this.value)">${statusOptions.map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${orderStatusMeta(s).ico} ${orderStatusMeta(s).label}</option>`).join('')}</select><div style="font-size:10px;color:var(--t3);margin-top:5px">Only valid next steps are shown.</div></div><div class="afG"><label class="afL">Payment Status</label><select class="afI" id="oPstSel" onchange="onOrderPaymentEdit(this.value,${Number(o.total||0)})"><option value="pending" ${p.status==='pending'?'selected':''}>Unpaid</option><option value="partial" ${p.status==='partial'?'selected':''}>Partial</option><option value="paid" ${p.status==='paid'?'selected':''}>Paid</option></select></div><div class="afG" id="oPaidAmtWrap" style="display:${p.status==='partial'?'block':'none'}"><label class="afL">Paid Amount</label><input class="afI" id="oPaidAmt" type="number" min="0" max="${Number(o.total||0)}" value="${p.paid}"/></div><div id="parcelDeadlineBox"></div>${o.status==='parcel_sent'&&o.expectedDate?`<div style="font-size:11px;color:${isOrderOverdue(o)?'var(--red)':'var(--t2)'};padding:8px;background:var(--bg2);border-radius:9px">🗓️ Expected: <b>${esc(o.expectedDate)}</b>${isOrderOverdue(o)?' · ⏰ Overdue':''}</div>`:''}${tracking?`<div class="ordCourierBox"><div style="font-size:10px;color:var(--t2)">Courier tracking</div><div class="ordNum" style="margin-top:4px">${esc(tracking)}</div><button class="btn bS bSm" style="margin-top:7px" onclick="orderCopy('${esc(tracking)}')">📋 Copy Tracking</button></div>`:''}${courierReady&&(G.role==='admin'||G.role==='owner')?`<button class="btn bG bFull" id="singleCourierBtn" style="margin-top:8px" onclick="sendSingleOrderToSteadfast('${id}')">🚚 Send this order to Steadfast</button>`:''}</div>
+    <div class="ordPanel"><div class="ordPanelTitle"><span>🕘 Activity</span></div><div id="orderTimelineBox"><div class="spin spinSm"></div></div></div>
+  </div></div></div>
+  <div class="mF" style="justify-content:space-between;gap:8px;flex-wrap:wrap"><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn bS" onclick="togglePriority('${id}',${!!o.priority});closeMov('ordMOvl')">${o.priority?'☆ Remove Priority':'⭐ Priority'}</button>${G.role==='admin'||G.role==='owner'?`<button class="btn bS" onclick="archiveOrder('${id}',${o.archived===true?'false':'true'});closeMov('ordMOvl')">${o.archived===true?'♻️ Restore':'🗄️ Archive'}</button>`:''}</div><div style="display:flex;gap:7px"><button class="btn bS" onclick="closeMov('ordMOvl')">Close</button><button class="btn bP" id="ordSaveBtn" onclick="updOrdSt('${id}')">💾 Save Changes</button></div></div>`;
+  $('ordMOvl').classList.add('open');loadOrderTimeline(id);
 }
 window.viewOrder=viewOrder;
-window.onOrderStatusChange=(val)=>{
-  const box=$('parcelDeadlineBox');if(!box)return;
-  if(val==='parcel_sent'){
-    const defaultDays=Number(G.cfg.parcelDeadlineDays||3);
-    box.style.display='block';
-    box.innerHTML=`
-    <div class="afG" style="margin-top:10px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:12px">
-      <label class="afL">📦 কত দিনে ডেলিভারি সম্পন্ন হবে?</label>
-      <select class="afI" id="oDeadlineDays" onchange="onDeadlineDaysChange(this.value)">
-        <option value="1" ${defaultDays===1?'selected':''}>১ দিন</option>
-        <option value="2" ${defaultDays===2?'selected':''}>২ দিন</option>
-        <option value="3" ${defaultDays===3?'selected':''}>৩ দিন (ডিফল্ট)</option>
-        <option value="custom">কাস্টম...</option>
-      </select>
-      <div id="oCustomDaysBox" style="display:none;margin-top:8px">
-        <input class="afI" type="number" min="1" id="oCustomDays" placeholder="কত দিন?" oninput="onDeadlineDaysChange('custom')"/>
-        <div id="oReasonBox" style="display:none;margin-top:8px">
-          <label class="afL" style="color:var(--yellow)">⚠️ ৩ দিনের বেশি সময়ের কারণ লিখুন *</label>
-          <textarea class="afI" id="oDeadlineReason" rows="2" placeholder="যেমন: দূরবর্তী এলাকা, প্রোডাক্ট তৈরি হচ্ছে ইত্যাদি"></textarea>
-        </div>
-      </div>
-      <div style="font-size:11px;color:var(--t3);margin-top:6px">প্রত্যাশিত তারিখ: <strong id="oExpectedDatePreview" style="color:var(--t1)">${plusDays(defaultDays)}</strong></div>
-    </div>`;
-  }else{
-    box.style.display='none';box.innerHTML='';
-  }
-};
-window.onDeadlineDaysChange=(val)=>{
-  const customBox=$('oCustomDaysBox');const reasonBox=$('oReasonBox');const preview=$('oExpectedDatePreview');
-  let days=3;
-  if(val==='custom'){
-    if(customBox)customBox.style.display='block';
-    days=Number($('oCustomDays')?.value||0);
-    if(reasonBox)reasonBox.style.display=days>3?'block':'none';
-  }else{
-    if(customBox)customBox.style.display='none';
-    days=Number(val);
-  }
-  if(preview&&days>0)preview.textContent=plusDays(days);
-};
+window.onOrderPaymentEdit=(v,total)=>{const w=$('oPaidAmtWrap');if(w)w.style.display=v==='partial'?'block':'none';const inp=$('oPaidAmt');if(inp){if(v==='paid')inp.value=total;if(v==='pending')inp.value=0;}};
+window.onOrderStatusChange=val=>{const box=$('parcelDeadlineBox');if(!box)return;if(val==='parcel_sent'){const days=Number(G.cfg.parcelDeadlineDays||3);box.innerHTML=`<div class="afG" style="margin-top:8px"><label class="afL">Expected delivery</label><select class="afI" id="oDeadlineDays" onchange="onDeadlineDaysChange(this.value)"><option value="1">1 day</option><option value="2">2 days</option><option value="3" ${days===3?'selected':''}>3 days</option><option value="custom">Custom</option></select><div id="oCustomDaysBox" style="display:none;margin-top:7px"><input class="afI" type="number" min="1" id="oCustomDays" placeholder="Days" oninput="onDeadlineDaysChange('custom')"/><div id="oReasonBox" style="display:none;margin-top:7px"><label class="afL">Reason for >3 days *</label><textarea class="afI" id="oDeadlineReason" rows="2"></textarea></div></div><div style="font-size:10px;color:var(--t3);margin-top:5px">Expected: <b id="oExpectedDatePreview">${plusDays(days)}</b></div></div>`;}else box.innerHTML='';};
+window.onDeadlineDaysChange=val=>{const cb=$('oCustomDaysBox'),rb=$('oReasonBox'),pv=$('oExpectedDatePreview');let days=3;if(val==='custom'){if(cb)cb.style.display='block';days=Number($('oCustomDays')?.value||0);if(rb)rb.style.display=days>3?'block':'none';}else{if(cb)cb.style.display='none';days=Number(val);}if(pv&&days>0)pv.textContent=plusDays(days);};
 function plusDays(n){const d=new Date();d.setDate(d.getDate()+Number(n||3));return d.toISOString().slice(0,10);}
-window.aiRiskCheck=async(data)=>{
-  const res=$('aiRiskResult');if(!res)return;
-  res.innerHTML='<div style="text-align:center;padding:14px"><div class="spin spinSm" style="margin:0 auto"></div></div>';
-  try{
-    const sys='You are a fraud-risk analyst for Bangladeshi COD (cash-on-delivery) e-commerce. Given an order, assess its fraud/return risk. Reply in Bengali in this exact format:\n\nঝুঁকি: [কম/মাঝারি/বেশি]\nকারণ: [1-2 short reasons]\nপরামর্শ: [1 short suggestion like "ডেলিভারির আগে ফোন করে নিশ্চিত করুন"]\n\nConsider: incomplete address, COD amount size, missing info. Keep under 80 words.';
-    const prompt=`অর্ডার তথ্য:
-নাম: ${data.name||'নেই'}
-ফোন: ${data.phone||'নেই'}
-ঠিকানা: ${data.addr||'নেই'}
-COD পরিমাণ: ৳${data.total} (${data.pay==='paid'?'অগ্রিম পরিশোধিত':'ক্যাশ অন ডেলিভারি'})
-উৎস: ${data.source==='public'?'অনলাইন শপ (গ্রাহক নিজে)':'ম্যানুয়াল এন্ট্রি'}
 
-এই অর্ডারের ঝুঁকি বিশ্লেষণ করো।`;
-    const reply=await callAI(sys,prompt,400);
-    const lc=reply.toLowerCase();
-    const clr=reply.includes('বেশি')?'var(--red)':reply.includes('মাঝারি')?'var(--yellow)':'var(--green)';
-    res.innerHTML=`<div style="background:var(--card);border:1px solid ${clr}44;border-left:3px solid ${clr};border-radius:8px;padding:12px;font-size:13px;line-height:1.8;white-space:pre-wrap">${esc(reply)}</div><div style="font-size:10px;color:var(--t3);margin-top:6px;text-align:center">🤖 AI অনুমান · চূড়ান্ত সিদ্ধান্ত আপনার</div>`;
-  }catch(e){res.innerHTML=`<div class="al aE" style="font-size:12px">❌ ${e.message}</div>`;}
-};
-async function updOrdSt(id){
-  const newStatus=$('oStSel').value;
-  const newPayStatus=$('oPstSel').value;
-  // For "Parcel Sent": compute the expected delivery date from the days picker, and require a reason if >3 days
-  let extraData={};
-  if(newStatus==='parcel_sent'){
-    const daysSel=$('oDeadlineDays')?.value;
-    let days=daysSel==='custom'?Number($('oCustomDays')?.value||0):Number(daysSel||3);
-    if(!days||days<1){toast('❌ সঠিক দিন সংখ্যা দিন','err');return;}
-    let reason='';
-    if(days>3){
-      reason=$('oDeadlineReason')?.value.trim()||'';
-      if(!reason){toast('❌ ৩ দিনের বেশি হলে কারণ লেখা আবশ্যক','err');return;}
-    }
-    extraData={expectedDate:plusDays(days),deadlineDays:days,deadlineNote:reason,deadlineSetBy:G.role,parcelSentAt:serverTimestamp()};
-  }
-  try{
-    const d=await getDoc(BDoc('orders',id));
-    const o=d.data();
-    const oldStatus=o.status;
-    const stockDeducted=o.stockDeducted===true;
+async function transitionOrderAtomic(id,newStatus,opts={}){
+  const orderRef=BDoc('orders',id),eventRef=doc(OEvents(id));
+  await runTransaction(db,async tx=>{
+    const os=await tx.get(orderRef);if(!os.exists())throw new Error('Order not found');const o=os.data();const oldStatus=o.status||'pending';
+    if(!orderCanTransition(oldStatus,newStatus,!!opts.allowCourierJump))throw new Error(`Invalid status change: ${oldStatus} → ${newStatus}`);
+    const needDeduct=newStatus==='completed'&&o.stockDeducted!==true;const needRestore=['returned','cancelled'].includes(newStatus)&&o.stockDeducted===true;
+    const productIds=(needDeduct||needRestore)?[...new Set((o.items||[]).map(i=>i.pid).filter(Boolean))]:[];const productSnaps={};
+    for(const pid of productIds){const ps=await tx.get(BDoc('products',pid));if(!ps.exists())throw new Error('Product missing during stock update');productSnaps[pid]=ps;}
+    const custSnap=o.custId?await tx.get(BDoc('customers',o.custId)):null;
 
-    // Stock management based on status change
-    if(newStatus==='completed'&&!stockDeducted){
-      // Deduct stock when completing for the first time
-      for(const it of (o.items||[])){
-        try{
-          const pd=await getDoc(BDoc('products',it.pid));
-          if(pd.exists()){
-            const newStock=Math.max(0,Number(pd.data().stock||0)-Number(it.qty||1));
-            await updateDoc(BDoc('products',it.pid),{stock:newStock});
-          }
-        }catch{}
-      }
-      await updateDoc(BDoc('orders',id),{status:newStatus,payStatus:newPayStatus,stockDeducted:true,completedAt:serverTimestamp(),updatedAt:serverTimestamp(),...extraData});
-      toast('✅ Order completed! Stock deducted.','ok');
-    } else if(newStatus==='returned'&&stockDeducted){
-      // Restore stock on return
-      for(const it of (o.items||[])){
-        try{
-          const pd=await getDoc(BDoc('products',it.pid));
-          if(pd.exists())await updateDoc(BDoc('products',it.pid),{stock:Number(pd.data().stock||0)+Number(it.qty||1)});
-        }catch{}
-      }
-      await updateDoc(BDoc('orders',id),{status:newStatus,payStatus:newPayStatus,stockDeducted:false,returnedAt:serverTimestamp(),updatedAt:serverTimestamp(),...extraData});
-      toast('↩️ Order returned! Stock restored.','info');
-    } else if((newStatus==='cancelled')&&stockDeducted){
-      // Restore stock on cancel (if already deducted)
-      for(const it of (o.items||[])){
-        try{
-          const pd=await getDoc(BDoc('products',it.pid));
-          if(pd.exists())await updateDoc(BDoc('products',it.pid),{stock:Number(pd.data().stock||0)+Number(it.qty||1)});
-        }catch{}
-      }
-      await updateDoc(BDoc('orders',id),{status:newStatus,payStatus:newPayStatus,stockDeducted:false,updatedAt:serverTimestamp(),...extraData});
-      toast('❌ Order cancelled, stock restored.','info');
-    } else {
-      await updateDoc(BDoc('orders',id),{status:newStatus,payStatus:newPayStatus,updatedAt:serverTimestamp(),...extraData});
-      toast(newStatus==='parcel_sent'?'🚚 Parcel sent! Deadline set.':'✅ Status updated!','ok');
-    }
-    closeMov('ordMOvl');pgOrders();
-  }catch(e){toast(e.message,'err');}
+    if(needDeduct||needRestore){const deltaSign=needDeduct?-1:1;for(const pid of productIds){const base=productSnaps[pid].data();let work={...base,variants:Array.isArray(base.variants)?base.variants.map(v=>({...v})):[]};for(const it of (o.items||[]).filter(x=>x.pid===pid))work=orderApplyStockDelta(work,it,deltaSign*Number(it.qty||1),needDeduct);const patch={stock:Number(work.stock||0),updatedAt:serverTimestamp()};if(Array.isArray(base.variants))patch.variants=work.variants;tx.update(BDoc('products',pid),patch);}}
+
+    const pStatus=opts.payStatus||o.payStatus||(o.payMethod==='paid'?'paid':o.payMethod==='partial'?'partial':'pending');let paid=Number(opts.paidAmount!==undefined?opts.paidAmount:o.paidAmount||0);if(pStatus==='paid')paid=Number(o.total||0);if(pStatus==='pending')paid=0;paid=Math.min(Number(o.total||0),Math.max(0,paid));if(pStatus==='partial'&&(paid<=0||paid>=Number(o.total||0)))throw new Error('Partial paid amount must be between 0 and total');
+    const samePay=(o.payStatus||(o.payMethod==='paid'?'paid':o.payMethod==='partial'?'partial':'pending'))===pStatus&&Number(o.paidAmount||0)===paid;const noExtra=!opts.extra||Object.keys(opts.extra).length===0;if(oldStatus===newStatus&&samePay&&noExtra)throw new Error('No changes to save');
+    const patch={status:newStatus,payStatus:pStatus,payMethod:pStatus==='paid'?'paid':pStatus==='partial'?'partial':'cod',paidAmount:paid,dueAmount:Math.max(0,Number(o.total||0)-paid),updatedAt:serverTimestamp(),...opts.extra};
+    if(needDeduct)patch.stockDeducted=true;if(needRestore)patch.stockDeducted=false;
+    if(newStatus==='confirmed'&&oldStatus!=='confirmed')patch.confirmedAt=serverTimestamp();if(newStatus==='ready'&&oldStatus!=='ready')patch.readyAt=serverTimestamp();if(newStatus==='parcel_sent'&&oldStatus!=='parcel_sent')patch.parcelSentAt=serverTimestamp();if(newStatus==='completed'&&oldStatus!=='completed')patch.completedAt=serverTimestamp();if(newStatus==='returned'&&oldStatus!=='returned')patch.returnedAt=serverTimestamp();if(newStatus==='cancelled'&&oldStatus!=='cancelled')patch.cancelledAt=serverTimestamp();
+    tx.update(orderRef,patch);
+
+    if(custSnap?.exists()){const c=custSnap.data();const cp={lastOrderStatus:newStatus,updatedAt:serverTimestamp()};if(newStatus==='completed'&&oldStatus!=='completed'){cp.completedOrders=Number(c.completedOrders||0)+1;cp.completedSpend=Number(c.completedSpend||0)+Number(o.total||0);}if(newStatus==='returned'&&oldStatus!=='returned'){cp.returnedOrders=Number(c.returnedOrders||0)+1;if(oldStatus==='completed'){cp.completedOrders=Math.max(0,Number(c.completedOrders||0)-1);cp.completedSpend=Math.max(0,Number(c.completedSpend||0)-Number(o.total||0));}}if(newStatus==='cancelled'&&oldStatus!=='cancelled')cp.cancelledOrders=Number(c.cancelledOrders||0)+1;tx.update(BDoc('customers',o.custId),cp);}
+    const changedStatus=oldStatus!==newStatus;const payChanged=(o.payStatus||'pending')!==pStatus||Number(o.paidAmount||0)!==paid;const type=opts.eventType||(opts.extra?.courier?'courier':changedStatus?'status':payChanged?'payment':'status');const title=opts.eventTitle||(changedStatus?`${orderStatusMeta(oldStatus).label} → ${orderStatusMeta(newStatus).label}`:'Payment updated');tx.set(eventRef,{type,title,fromStatus:oldStatus,toStatus:newStatus,actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:String(opts.note||'').slice(0,500),createdAt:serverTimestamp()});
+  });
+}
+async function updOrdSt(id){const newStatus=$('oStSel')?.value;const payStatus=$('oPstSel')?.value||'pending';let paidAmount=Number($('oPaidAmt')?.value||0);let extra={};if(newStatus==='parcel_sent'&&window._activeOrderStatus!=='parcel_sent'){const sel=$('oDeadlineDays')?.value;let days=sel==='custom'?Number($('oCustomDays')?.value||0):Number(sel||G.cfg.parcelDeadlineDays||3);if(!days||days<1){toast('Valid delivery days দিন','err');return;}let reason='';if(days>3){reason=$('oDeadlineReason')?.value.trim()||'';if(!reason){toast('৩ দিনের বেশি হলে reason দিন','err');return;}}extra={expectedDate:plusDays(days),deadlineDays:days,deadlineNote:reason,deadlineSetBy:G.role};}
+  const btn=$('ordSaveBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';}try{await transitionOrderAtomic(id,newStatus,{payStatus,paidAmount,extra,note:'Order workspace update'});toast('✅ Order updated');closeMov('ordMOvl');pgOrders();}catch(e){toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='💾 Save Changes';}}
 }
 window.updOrdSt=updOrdSt;
-async function delOrder(id){
-  if(!confirm('Delete this order?'))return;
-  try{
-    const d=await getDoc(BDoc('orders',id));
-    const o=d.data();
-    // Only restore stock if it was deducted (completed orders)
-    if(o.stockDeducted===true&&o.items){
-      for(const it of o.items){
-        try{const pd=await getDoc(BDoc('products',it.pid));if(pd.exists())await updateDoc(BDoc('products',it.pid),{stock:Number(pd.data().stock||0)+Number(it.qty||1)});}catch{}
-      }
-    }
-    await deleteDoc(BDoc('orders',id));
-    toast(o.stockDeducted?'Deleted, stock restored':'Deleted');
-    pgOrders();
-  }catch(e){toast(e.message,'err');}
-}
-window.delOrder=delOrder;
-window.togglePriority=async(id,current)=>{
-  try{
-    await updateDoc(BDoc('orders',id),{priority:!current});
-    // Update cache and re-render without full refetch
-    if(_orderCache){const o=_orderCache.find(x=>x.id===id);if(o)o.priority=!current;}
-    renderOrdersView();
-    toast(!current?'⭐ গুরুত্বপূর্ণ চিহ্নিত':'তারকা সরানো হয়েছে');
-  }catch(e){toast(e.message,'err');}
-};
-window.bulkPrintLabels=()=>{
-  // Print shipping labels for orders in the current view (defaults to pending + parcel_sent)
-  let orders=(_orderCache||[]);
-  if(!oFilt)orders=orders.filter(o=>o.status==='pending'||o.status==='parcel_sent');
-  if(orders.length===0){toast('প্রিন্ট করার মতো কোনো অর্ডার নেই','err');return;}
-  const biz=esc(G.cfg.bizName||'Drystan');
-  const bizPhone=esc(G.cfg.bizPhone||G.gcfg?.supportPhone||'');
-  const labels=orders.map(o=>`
-    <div style="width:48%;border:1px dashed #999;border-radius:8px;padding:12px;margin:1%;box-sizing:border-box;display:inline-block;vertical-align:top;font-size:12px;page-break-inside:avoid">
-      <div style="display:flex;justify-content:space-between;border-bottom:2px solid #111;padding-bottom:6px;margin-bottom:6px">
-        <strong style="font-size:14px">${biz}</strong>
-        <span>${esc(o.num)}</span>
-      </div>
-      <div style="margin-bottom:4px"><strong>প্রাপক:</strong> ${esc(o.recvName||o.cName)}</div>
-      <div style="margin-bottom:4px"><strong>ফোন:</strong> ${esc(o.recvPhone||o.cPhone||o.ordererPhone||'')}</div>
-      <div style="margin-bottom:4px"><strong>ঠিকানা:</strong> ${esc(o.cAddr||'')}</div>
-      <div style="display:flex;justify-content:space-between;border-top:1px solid #ccc;padding-top:6px;margin-top:6px">
-        <span><strong>COD:</strong> ৳${o.payMethod==='paid'?'0 (পরিশোধিত)':esc(String(o.total))}</span>
-        <span>${bizPhone}</span>
-      </div>
-    </div>`).join('');
-  const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><title>Labels (${orders.length})</title><style>body{font-family:Arial,sans-serif;margin:8px;color:#111}@media print{button{display:none}}</style></head><body>
-    <button onclick="window.print()" style="padding:10px 20px;background:#6366F1;color:#fff;border:none;border-radius:8px;margin-bottom:10px;cursor:pointer">🖨️ ${orders.length}টি লেবেল প্রিন্ট</button>
-    <div>${labels}</div></body></html>`);
-  w.document.close();
-};
+window.sendSingleOrderToSteadfast=async id=>{const btn=$('singleCourierBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Sending...';}try{const d=await getDoc(BDoc('orders',id));if(!d.exists())throw new Error('Order not found');const o=d.data();if(!['pending','confirmed','ready'].includes(o.status))throw new Error('Only processing orders can be sent to courier');const statusResp=await secureApiFetch('/v1/steadfast/config-status',{method:'GET'});const sd=await statusResp.json().catch(()=>({}));if(!statusResp.ok||!sd.configured)throw new Error(sd.error||'Steadfast is not configured');const pay=orderPaymentState(o);const r=await secureApiFetch('/v1/steadfast/create-order',{method:'POST',body:JSON.stringify({invoice:o.num,recipient_name:o.recvName||o.cName,recipient_phone:o.recvPhone||o.cPhone||o.ordererPhone,recipient_address:o.cAddr,cod_amount:pay.due,note:o.notes||''})});const data=await r.json().catch(()=>({}));if(!r.ok||!data.ok)throw new Error(data.error||'Courier request failed');const tracking=data.consignment?.tracking_code||'';await transitionOrderAtomic(id,'parcel_sent',{allowCourierJump:true,payStatus:pay.status,paidAmount:pay.paid,extra:{courier:'steadfast',courierStatus:data.consignment?.status||'sent',trackingCode:tracking,steadfastCN:tracking,consignmentId:data.consignment?.consignment_id||null,expectedDate:plusDays(Number(G.cfg.parcelDeadlineDays||3)),courierSentAt:serverTimestamp()},eventType:'courier',eventTitle:'Sent to Steadfast',note:tracking?`Tracking: ${tracking}`:''});toast('🚚 Sent to Steadfast');closeMov('ordMOvl');pgOrders();}catch(e){toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='🚚 Send this order to Steadfast';}}};
+window.archiveOrder=async(id,archive=true)=>{if(!confirm(archive?'Archive this order?':'Restore this order?'))return;try{const ref=BDoc('orders',id),ev=doc(OEvents(id));await runTransaction(db,async tx=>{const s=await tx.get(ref);if(!s.exists())throw new Error('Order not found');tx.update(ref,{archived:!!archive,archivedAt:archive?serverTimestamp():null,archivedBy:archive?(G.user?.uid||''):'',updatedAt:serverTimestamp()});tx.set(ev,{type:'archive',title:archive?'Order archived':'Order restored',actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:'',createdAt:serverTimestamp()});});toast(archive?'Archived':'Restored');pgOrders();}catch(e){toast(e.message,'err');}};
+window.delOrder=(id)=>archiveOrder(id,true); // compatibility: hard-delete removed
+window.togglePriority=async(id,current)=>{try{const ref=BDoc('orders',id),ev=doc(OEvents(id));await runTransaction(db,async tx=>{const s=await tx.get(ref);if(!s.exists())throw new Error('Order not found');tx.update(ref,{priority:!current,updatedAt:serverTimestamp()});tx.set(ev,{type:'priority',title:!current?'Marked priority':'Priority removed',actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:'',createdAt:serverTimestamp()});});if(_orderCacheAll){const o=_orderCacheAll.find(x=>x.id===id);if(o)o.priority=!current;}renderOrdersView();toast(!current?'⭐ Priority set':'Priority removed');}catch(e){toast(e.message,'err');}};
+window.bulkPrintLabels=()=>{let orders=orderFilteredList().filter(o=>['pending','confirmed','ready','parcel_sent'].includes(o.status));if(!orders.length){toast('No printable active orders','err');return;}const biz=esc(G.cfg.bizName||'Drystan'),bizPhone=esc(G.cfg.bizPhone||'');const labels=orders.map(o=>{const pay=orderPaymentState(o);return`<div style="width:48%;border:1px dashed #999;border-radius:8px;padding:12px;margin:1%;box-sizing:border-box;display:inline-block;vertical-align:top;font-size:12px;page-break-inside:avoid"><div style="display:flex;justify-content:space-between;border-bottom:2px solid #111;padding-bottom:6px;margin-bottom:6px"><strong>${biz}</strong><span>${esc(o.num)}</span></div><div><strong>প্রাপক:</strong> ${esc(o.recvName||o.cName)}</div><div><strong>ফোন:</strong> ${esc(o.recvPhone||o.cPhone||o.ordererPhone||'')}</div><div><strong>ঠিকানা:</strong> ${esc(o.cAddr||'')}</div><div style="display:flex;justify-content:space-between;border-top:1px solid #ccc;padding-top:6px;margin-top:6px"><span><strong>COD:</strong> ৳${pay.due}</span><span>${bizPhone}</span></div></div>`;}).join('');const w=window.open('','_blank');if(!w){toast('Popup blocked','err');return;}w.document.write(`<!DOCTYPE html><html><head><title>Labels</title><style>body{font-family:Arial,sans-serif;margin:8px;color:#111}@media print{button{display:none}}</style></head><body><button onclick="window.print()" style="padding:10px 20px">🖨️ Print ${orders.length}</button><div>${labels}</div></body></html>`);w.document.close();};
 
 // ══ CUSTOMERS ══
 let cSrch='';
@@ -6537,7 +6447,7 @@ function renderCustsView(){
 async function viewCust(id){
   const cd=await getDoc(BDoc('customers',id));const c={id,...cd.data()};
   let orders=[];try{const os=await getDocs(query(BCol('orders'),where('custId','==',id)));orders=os.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));}catch{}
-  const sb=s=>{const m={pending:'bPend',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent',returned:'bRet'};const l={pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Sent',returned:'Returned'};return`<span class="badge ${m[s]||'bPend'}">${l[s]||esc(s)}</span>`;};
+  const sb=s=>{const m={pending:'bPend',confirmed:'bAdmin',ready:'bSent',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent',returned:'bRet'};const l={pending:'Pending',confirmed:'Confirmed',ready:'Ready',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Sent',returned:'Returned'};return`<span class="badge ${m[s]||'bPend'}">${l[s]||esc(s)}</span>`;};
   $('custMod').innerHTML=`
   <div class="mH"><h3>👤 ${esc(c.name)}</h3><button class="btn bS bIco" onclick="closeMov('custMOvl')">✕</button></div>
   <div class="mB">
