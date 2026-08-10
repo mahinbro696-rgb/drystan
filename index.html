@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="theme-color" content="#070A12"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -664,6 +664,117 @@ img{max-width:100%}
   #publicWrap .pubGrid{gap:10px}
   #publicWrap .pubHeader{padding:18px 14px!important}
 }
+
+/* ===== CUSTOM ORDER LINK — POLISHED PUBLIC UI ===== */
+.olWrap{max-width:980px;margin:0 auto;padding:18px 14px 130px}
+.olHero{position:relative;overflow:hidden;padding:22px 18px;border-radius:28px;background:linear-gradient(135deg,rgba(99,102,241,.22),rgba(168,85,247,.16));border:1px solid rgba(129,140,248,.28);box-shadow:0 18px 42px rgba(0,0,0,.22)}
+.olHero::before,.olHero::after{content:'';position:absolute;border-radius:999px;filter:blur(6px);pointer-events:none}
+.olHero::before{width:180px;height:180px;right:-40px;top:-55px;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 65%)}
+.olHero::after{width:160px;height:160px;left:-30px;bottom:-80px;background:radial-gradient(circle,rgba(99,102,241,.22),transparent 65%)}
+.olHeroTop{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;position:relative;z-index:1}
+.olHeroBrand{display:flex;align-items:center;gap:14px;min-width:0;flex:1}
+.olHeroLogo{width:64px;height:64px;border-radius:20px;object-fit:cover;background:#fff;box-shadow:0 10px 22px rgba(0,0,0,.18);flex-shrink:0}
+.olHeroFallback{width:64px;height:64px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.16);backdrop-filter:blur(6px);font-size:32px;box-shadow:0 10px 22px rgba(0,0,0,.15);flex-shrink:0}
+.olHeroCopy{min-width:0}
+.olEyebrow{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.12);color:#EEF2FF;font-size:12px;font-weight:700;margin-bottom:10px}
+.olHeroTitle{font-size:clamp(24px,4vw,34px);line-height:1.12;font-weight:900;color:#fff;letter-spacing:-.02em;margin-bottom:8px;word-break:break-word}
+.olHeroSub{font-size:14px;line-height:1.7;color:rgba(255,255,255,.88);max-width:620px}
+.olHeroMeta{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-self:flex-start}
+.olChip{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);color:#fff;font-size:12px;font-weight:700;backdrop-filter:blur(6px);white-space:normal;text-align:center}
+.olChip.soft{color:var(--t1);background:rgba(15,23,42,.5);border-color:rgba(255,255,255,.06)}
+.olHeroInfo{display:grid;grid-template-columns:1.2fr .9fr;gap:14px;margin-top:16px;position:relative;z-index:1}
+.olNoteCard,.olSummaryCard{background:rgba(7,10,18,.28);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:14px 15px;backdrop-filter:blur(6px)}
+.olNoteCard h4,.olSummaryCard h4{font-size:13px;font-weight:800;color:#fff;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.olNoteCard p{font-size:13px;line-height:1.7;color:rgba(255,255,255,.88);white-space:pre-wrap;word-break:break-word}
+.olMiniList{display:grid;gap:8px}
+.olMiniItem{display:flex;justify-content:space-between;gap:10px;font-size:13px;line-height:1.5;color:rgba(255,255,255,.9)}
+.olMiniItem span:last-child{text-align:right;font-weight:800;color:#fff}
+.olSection{margin-top:18px}
+.olSectionHead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.olSectionTitle{font-size:18px;font-weight:900;color:var(--t1);letter-spacing:-.02em}
+.olSectionSub{font-size:13px;color:var(--t2);line-height:1.6}
+.olProductsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.olProdCard{background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.03));border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:0 16px 32px rgba(0,0,0,.18);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;position:relative}
+.olProdCard:hover{transform:translateY(-2px);border-color:rgba(129,140,248,.35);box-shadow:0 20px 38px rgba(0,0,0,.25)}
+.olProdMedia{position:relative;aspect-ratio:4/3;background:var(--bg3);cursor:pointer;overflow:hidden}
+.olProdMedia img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}
+.olProdCard:hover .olProdMedia img{transform:scale(1.04)}
+.olProdMediaPlaceholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:34px}
+.olBadgeTop{position:absolute;left:10px;top:10px;display:flex;gap:8px;flex-wrap:wrap;max-width:calc(100% - 20px)}
+.olBadge,.olTinyBadge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:11px;font-weight:800;line-height:1.2}
+.olBadge{background:rgba(7,10,18,.7);color:#fff;border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(6px)}
+.olTinyBadge{background:rgba(99,102,241,.12);color:var(--acc2);border:1px solid rgba(129,140,248,.16)}
+.olSoldWrap{position:absolute;inset:0;background:rgba(0,0,0,.52);display:flex;align-items:center;justify-content:center;padding:16px}
+.olSoldWrap span{background:#EF4444;color:#fff;padding:8px 16px;border-radius:999px;font-size:13px;font-weight:800;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+.olProdBody{padding:14px}
+.olProdName{font-weight:800;font-size:16px;line-height:1.4;color:var(--t1);margin-bottom:8px;word-break:break-word}
+.olProdMeta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.olProdPrice{font-size:24px;font-weight:900;color:var(--green);line-height:1.15;letter-spacing:-.02em}
+.olProdPrice small{font-size:13px;color:var(--t2);font-weight:600}
+.olProdDesc{font-size:12px;line-height:1.6;color:var(--t2);margin-bottom:12px;min-height:38px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.olActionBtn{min-height:46px;font-size:14px;font-weight:800;border-radius:14px}
+.olInlineVariantsBox{padding:12px 14px;border-top:1px dashed var(--border);background:rgba(99,102,241,.045)}
+.olInlineVariantsBox .olVTitle{font-size:12px;color:var(--t2);font-weight:800;margin-bottom:10px}
+.olVariantGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:10px}
+.olVariantThumb{cursor:pointer;text-align:center;animation:olPopIn .25s ease both}
+.olVariantThumb.disabled{cursor:not-allowed;opacity:.48}
+.olVariantThumbMedia{width:100%;aspect-ratio:1/1;border-radius:14px;overflow:hidden;border:2px solid var(--border);background:var(--bg2)}
+.olVariantThumb.selected .olVariantThumbMedia{border-color:var(--acc);box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+.olVariantThumbMedia img{width:100%;height:100%;object-fit:cover;display:block;background:#fff}
+.olVariantThumbLabel{font-size:11px;font-weight:700;line-height:1.35;color:var(--t2);margin-top:5px;word-break:break-word}
+.olVariantThumb.disabled .olVariantThumbLabel{color:var(--red)}
+.olVariantDetailCard{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:12px;display:flex;gap:12px;align-items:flex-start;animation:olPopIn .25s ease both}
+.olVariantDetailMedia{cursor:zoom-in;width:96px;height:96px;border-radius:14px;overflow:hidden;flex-shrink:0;position:relative;background:var(--bg3)}
+.olVariantDetailMedia img{width:100%;height:100%;object-fit:cover;background:#fff}
+.olVariantDetailInfo{flex:1;min-width:0}
+.olVariantTitle{font-size:15px;font-weight:800;line-height:1.4;margin-bottom:4px;color:var(--t1);word-break:break-word}
+.olVariantDesc{font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:8px;word-break:break-word}
+.olVariantPriceRow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:6px}
+.olVariantStock{font-size:11px;margin-bottom:10px}
+.olStickyBar{position:fixed;left:0;right:0;bottom:0;z-index:22;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,rgba(7,10,18,0),rgba(7,10,18,.92) 40%,rgba(7,10,18,.96) 100%)}
+.olStickyInner{max-width:980px;margin:0 auto;background:rgba(13,17,23,.96);border:1px solid var(--border2);box-shadow:0 -12px 32px rgba(0,0,0,.26);border-radius:22px;padding:12px 14px;backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.olStickyMeta{display:flex;align-items:center;gap:12px;min-width:0}
+.olStickyCount{width:44px;height:44px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:rgba(99,102,241,.14);color:#C7D2FE;font-size:20px;flex-shrink:0}
+.olStickyText{min-width:0}
+.olStickyText .top{font-size:12px;color:var(--t2);line-height:1.4}
+.olStickyText .bottom{font-size:20px;font-weight:900;color:var(--t1);letter-spacing:-.02em;line-height:1.1}
+.olStickyBtn{min-height:48px;border-radius:16px;font-size:14px;font-weight:800;white-space:nowrap;padding-inline:18px}
+.olCheckoutSummary{display:grid;gap:8px;background:var(--card);border-radius:14px;padding:14px;margin-top:8px}
+.olCheckoutLine{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--t2)}
+.olCheckoutLine.total{font-size:17px;font-weight:900;color:var(--t1);padding-top:8px;border-top:1px solid var(--border)}
+.olMsg{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.olMsgCard{max-width:420px;width:100%;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.03));border:1px solid var(--border);border-radius:26px;padding:28px 22px;text-align:center;box-shadow:0 22px 45px rgba(0,0,0,.28)}
+.olMsgIcon{font-size:56px;margin-bottom:12px}
+.olMsgTitle{font-size:22px;font-weight:900;line-height:1.2;margin-bottom:10px;color:var(--t1)}
+.olMsgSub{color:var(--t2);font-size:14px;line-height:1.75;word-break:break-word}
+@media (max-width: 860px){
+  .olHeroInfo{grid-template-columns:1fr}
+}
+@media (max-width: 700px){
+  .olWrap{padding:14px 12px 125px}
+  .olHero{padding:18px 14px;border-radius:24px}
+  .olHeroTop{flex-direction:column;align-items:stretch}
+  .olHeroMeta{justify-content:flex-start}
+  .olProductsGrid{grid-template-columns:1fr}
+  .olStickyInner{flex-direction:column;align-items:stretch}
+  .olStickyBtn{width:100%}
+}
+@media (max-width: 520px){
+  .olHeroBrand{align-items:flex-start}
+  .olHeroLogo,.olHeroFallback{width:54px;height:54px;border-radius:16px}
+  .olHeroTitle{font-size:28px}
+  .olHeroSub{font-size:13px}
+  .olProdMedia{aspect-ratio:1/1}
+  .olProdBody{padding:12px}
+  .olProdName{font-size:15px}
+  .olProdPrice{font-size:22px}
+  .olVariantGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .olVariantDetailCard{flex-direction:column}
+  .olVariantDetailMedia{width:100%;height:auto;aspect-ratio:1/1}
+  .olStickyCount{width:40px;height:40px;border-radius:14px;font-size:18px}
+  .olStickyText .bottom{font-size:18px}
+}
+
 </style>
 </head>
 <body>
@@ -1562,11 +1673,11 @@ async function loadOrderLink(bizId,linkId){
   }
 }
 function olMessage(icon,title,sub){
-  return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:24px">
-    <div style="font-size:54px;margin-bottom:14px">${icon}</div>
-    <h2 style="margin-bottom:8px;font-size:20px">${title}</h2>
-    <p style="color:var(--t2);font-size:14px;max-width:320px;line-height:1.7">${sub}</p>
-  </div>`;
+  return `<div class="olMsg"><div class="olMsgCard">
+    <div class="olMsgIcon">${icon}</div>
+    <div class="olMsgTitle">${title}</div>
+    <div class="olMsgSub">${sub}</div>
+  </div></div>`;
 }
 function olCartCount(){return _olCart.reduce((s,i)=>s+i.qty,0);}
 function olCartTotal(){return _olCart.reduce((s,i)=>s+i.price*i.qty,0);}
@@ -1575,52 +1686,95 @@ function renderOrderLink(){
   const prods=_olData.products||[];
   const shopName=esc(_olCfg.bizName||_olData.bizName||'আমাদের দোকান');
   const logo=_olCfg.bizLogo||'';
+  const delivery=olDeliveryCharge();
+  const expires=olTsDate(_olData.expiresAt);
+  const usageText=olIsReusable(_olData)
+    ? `🔁 পুনঃব্যবহারযোগ্য${Number(_olData.maxOrders||0)>0?` · সর্বোচ্চ ${Number(_olData.maxOrders)} অর্ডার`:''}`
+    : '1️⃣ একবার ব্যবহারযোগ্য';
   host.innerHTML=`
-  <div style="max-width:620px;margin:0 auto;padding-bottom:120px">
-    <!-- Header -->
-    <div style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:#fff;padding:24px 18px;text-align:center;border-radius:0 0 24px 24px;box-shadow:0 8px 30px rgba(99,102,241,.3)">
-      ${logo?`<img src="${esc(logo)}" style="width:60px;height:60px;border-radius:16px;object-fit:cover;margin-bottom:10px;background:#fff"/>`:'<div style="font-size:38px;margin-bottom:6px">🛍️</div>'}
-      <h1 style="font-size:22px;font-weight:800;margin-bottom:4px">${shopName}</h1>
-      <p style="font-size:13px;opacity:.9">আপনার পছন্দের পণ্য বেছে নিন</p>
-      ${_olData.customerNote?`<div style="margin:10px auto 0;max-width:520px;background:rgba(255,255,255,.14);padding:8px 12px;border-radius:10px;font-size:12px;line-height:1.6">💬 ${esc(_olData.customerNote)}</div>`:''}
-      <div style="margin-top:9px;font-size:10.5px;opacity:.82">${olIsReusable(_olData)?`🔁 পুনঃব্যবহারযোগ্য${Number(_olData.maxOrders||0)>0?` · সর্বোচ্চ ${Number(_olData.maxOrders)} অর্ডার`:''}`:'1️⃣ একবার ব্যবহারযোগ্য'}${olTsDate(_olData.expiresAt)?` · ⌛ ${olTsDate(_olData.expiresAt).toLocaleString('bn-BD',{dateStyle:'medium',timeStyle:'short'})} পর্যন্ত`:''}</div>
-    </div>
-    <!-- Products -->
-    <div style="padding:18px 14px">
-      <h3 style="font-size:15px;font-weight:700;margin-bottom:14px">📦 পণ্যসমূহ (${prods.length})</h3>
-      <div class="pubGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+  <div class="olWrap">
+    <section class="olHero">
+      <div class="olHeroTop">
+        <div class="olHeroBrand">
+          ${logo?`<img src="${esc(logo)}" alt="${shopName}" class="olHeroLogo"/>`:`<div class="olHeroFallback">🛍️</div>`}
+          <div class="olHeroCopy">
+            <div class="olEyebrow">🔒 কাস্টম অর্ডার লিংক</div>
+            <h1 class="olHeroTitle">${shopName}</h1>
+            <p class="olHeroSub">নির্বাচিত পণ্যগুলো থেকে সহজে অর্ডার করুন। পছন্দের পণ্য কার্টে যোগ করুন, তারপর নাম, ফোন ও ঠিকানা দিয়ে অর্ডার সম্পন্ন করুন।</p>
+          </div>
+        </div>
+        <div class="olHeroMeta">
+          <span class="olChip">📦 ${prods.length}টি পণ্য</span>
+          <span class="olChip">${usageText}</span>
+          ${expires?`<span class="olChip">⌛ ${expires.toLocaleString('bn-BD',{dateStyle:'medium',timeStyle:'short'})} পর্যন্ত</span>`:''}
+        </div>
+      </div>
+      <div class="olHeroInfo">
+        ${_olData.customerNote?`<div class="olNoteCard"><h4>💬 আপনার জন্য নোট</h4><p>${esc(_olData.customerNote)}</p></div>`:`<div class="olNoteCard"><h4>✨ কীভাবে অর্ডার করবেন</h4><p>১) পণ্য বেছে নিন  ২) কার্টে যোগ করুন  ৩) নিচের "এগিয়ে যান" বাটনে চাপুন  ৪) নাম, ফোন ও ঠিকানা দিয়ে অর্ডার সম্পন্ন করুন।</p></div>`}
+        <div class="olSummaryCard">
+          <h4>📋 অর্ডার সারাংশ</h4>
+          <div class="olMiniList">
+            <div class="olMiniItem"><span>ডেলিভারি চার্জ</span><span>${cur(delivery)}</span></div>
+            <div class="olMiniItem"><span>অর্ডার ধরন</span><span>${olIsReusable(_olData)?'Reusable':'Single-use'}</span></div>
+            ${Number(_olData.maxOrders||0)>0?`<div class="olMiniItem"><span>সর্বোচ্চ অর্ডার</span><span>${Number(_olData.maxOrders)}টি</span></div>`:''}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="olSection">
+      <div class="olSectionHead">
+        <div>
+          <div class="olSectionTitle">📦 পণ্যসমূহ (${prods.length})</div>
+          <div class="olSectionSub">শুধু এই পণ্যগুলোই এই লিংক থেকে অর্ডার করা যাবে। মোবাইলেও সহজে ব্যবহার করার জন্য প্রতিটি কার্ড আলাদা করে সাজানো হয়েছে।</div>
+        </div>
+      </div>
+      <div class="olProductsGrid">
         ${prods.map((p,i)=>{
           const imgs=(p.images&&p.images.length)?p.images:(p.imageUrl?[p.imageUrl]:[]);
           const hasVar=p.variants&&p.variants.length>0;
           const soldOut=hasVar?p.variants.every(v=>Number(v.stock||0)<=0):p.soldOut===true;
           const displayPrice=hasVar?p.variants[0].price:p.price;
-          return `<div id="olProdCard_${i}" style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;position:relative;transition:border-color .2s;${soldOut?'opacity:.55':''}">
-            <div style="position:relative;cursor:pointer" onclick="${hasVar?`olToggleInlineVariants(${i})`:imgs.length>1?`olViewImages(${i})`:''}">
-              ${imgs[0]?`<img loading="lazy" src="${esc(imgs[0])}" style="width:100%;height:140px;object-fit:cover;background:#fff"/>`:`<div style="width:100%;height:140px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:34px">📦</div>`}
-              ${imgs.length>1?`<div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.65);color:#fff;font-size:10px;padding:2px 8px;border-radius:20px">📷 ${imgs.length}</div>`:''}
-              ${soldOut?`<div style="position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center"><span style="background:#EF4444;color:#fff;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;transform:rotate(-8deg)">😔 স্টক শেষ</span></div>`:''}
+          const desc=esc(p.desc||p.description||'');
+          const mediaAction=hasVar?`olToggleInlineVariants(${i})`:(imgs.length>1?`olViewImages(${i})`:'' );
+          return `<article id="olProdCard_${i}" class="olProdCard"${soldOut?' style="opacity:.62"':''}>
+            <div class="olProdMedia" ${mediaAction?`onclick="${mediaAction}"`:''}>
+              ${imgs[0]?`<img loading="lazy" src="${esc(imgs[0])}" alt="${esc(p.name)}"/>`:`<div class="olProdMediaPlaceholder">📦</div>`}
+              <div class="olBadgeTop">
+                ${imgs.length>1?`<span class="olBadge">📷 ${imgs.length} ছবি</span>`:''}
+                ${hasVar?`<span class="olBadge">🎨 ${p.variants.length} অপশন</span>`:''}
+              </div>
+              ${soldOut?`<div class="olSoldWrap"><span>😔 স্টক শেষ</span></div>`:''}
             </div>
-            <div style="padding:10px">
-              <div style="font-weight:600;font-size:13px;margin-bottom:3px;min-height:34px;line-height:1.3">${esc(p.name)}</div>
-              <div style="color:var(--green);font-weight:800;font-size:16px;margin-bottom:8px">${hasVar?'থেকে ':''}${cur(displayPrice)}${hasVar?` <span style="font-size:10px;color:var(--t3);font-weight:400">(${p.variants.length} রকম)</span>`:''}</div>
-              ${soldOut?`<button class="btn bSm bFull" disabled style="font-size:12px;opacity:.6">স্টক শেষ</button>`
-              :hasVar?`<button class="btn bP bSm bFull" id="olPickBtn_${i}" onclick="olToggleInlineVariants(${i})" style="font-size:12px">🎨 পছন্দ করুন</button>`
-              :`<button class="btn bP bSm bFull" onclick="olAddToCart(${i},this)" style="font-size:12px">➕ কার্টে যোগ</button>`}
+            <div class="olProdBody">
+              <div class="olProdName">${esc(p.name)}</div>
+              <div class="olProdMeta">
+                <span class="olTinyBadge">${hasVar?'ভ্যারিয়েন্ট রয়েছে':'সরাসরি অর্ডার'}</span>
+                ${p.category?`<span class="olTinyBadge">${esc(p.category)}</span>`:''}
+              </div>
+              <div class="olProdPrice">${hasVar?'থেকে ':''}${cur(displayPrice)}${hasVar?` <small>(${p.variants.length} রকম)</small>`:''}</div>
+              <div class="olProdDesc">${desc||'পণ্যের অপশন দেখতে নিচের বাটনে চাপুন।'}</div>
+              ${soldOut?`<button class="btn bSm bFull olActionBtn" disabled style="opacity:.6">স্টক শেষ</button>`
+              :hasVar?`<button class="btn bP bSm bFull olActionBtn" id="olPickBtn_${i}" onclick="olToggleInlineVariants(${i})">🎨 অপশন দেখুন</button>`
+              :`<button class="btn bP bSm bFull olActionBtn" onclick="olAddToCart(${i},this)">➕ কার্টে যোগ করুন</button>`}
             </div>
             <div id="olInlineVariants_${i}" style="display:none"></div>
-          </div>`;
+          </article>`;
         }).join('')}
       </div>
-    </div>
+    </section>
   </div>
-  <!-- Floating cart bar -->
-  <div id="olCartBar" style="position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border2);padding:14px 16px;box-shadow:0 -8px 30px rgba(0,0,0,.25);z-index:10;display:${olCartCount()?'block':'none'}">
-    <div style="max-width:620px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <div>
-        <div style="font-size:12px;color:var(--t2)">🛒 <span id="olCartCount">${olCartCount()}</span>টি পণ্য</div>
-        <div style="font-size:18px;font-weight:800;color:var(--acc2)" id="olCartTotal">${cur(olCartTotal())}</div>
+
+  <div id="olCartBar" class="olStickyBar" style="display:${olCartCount()?'block':'none'}">
+    <div class="olStickyInner">
+      <div class="olStickyMeta">
+        <div class="olStickyCount">🛒</div>
+        <div class="olStickyText">
+          <div class="top"><span id="olCartCount">${olCartCount()}</span>টি পণ্য কার্টে আছে</div>
+          <div class="bottom" id="olCartTotal">${cur(olCartTotal())}</div>
+        </div>
       </div>
-      <button class="btn bP" onclick="olOpenCheckout()" style="flex:1;max-width:220px">এগিয়ে যান →</button>
+      <button class="btn bP olStickyBtn" onclick="olOpenCheckout()">এগিয়ে যান →</button>
     </div>
   </div>
   <div class="mOvl" id="olCheckoutOvl"><div class="modal" id="olCheckoutMod"></div></div>
@@ -1665,25 +1819,25 @@ window.olToggleInlineVariants=(idx)=>{
 function olRenderVariantStrip(idx){
   const p=(_olData.products||[])[idx];if(!p||!p.variants)return;
   const panel=$('olInlineVariants_'+idx);if(!panel)return;
-  const fallbackImg=(p.images&&p.images[0])||p.imageUrl||'';
+  const fallbackImg=(p.images&&p.images.length)?p.images[0]:(p.imageUrl||'');
   const selectedVi=_olSelectedVariant[idx];
   panel.innerHTML=`
-    <div style="padding:10px;border-top:1px dashed var(--border);background:rgba(99,102,241,.04)">
-      <div style="font-size:11px;color:var(--t3);font-weight:600;margin-bottom:8px">🎨 একটি পছন্দ করুন:</div>
-      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">
+    <div class="olInlineVariantsBox">
+      <div class="olVTitle">🎨 আপনার পছন্দের অপশনটি বেছে নিন</div>
+      <div class="olVariantGrid">
         ${p.variants.map((v,vi)=>{
           const img=(v.images&&v.images[0])||v.image||fallbackImg;
           const out=Number(v.stock||0)<=0;
           const isSelected=selectedVi===vi;
-          return `<div onclick="${out?'':`olSelectVariant(${idx},${vi})`}" style="cursor:${out?'default':'pointer'};flex-shrink:0;width:62px;text-align:center;animation:olPopIn .25s ease both;animation-delay:${Math.min(vi*0.04,0.3)}s">
-            <div style="width:62px;height:62px;border-radius:10px;overflow:hidden;border:2px solid ${isSelected?'var(--acc)':'var(--border)'};${out?'opacity:.45':''}">
-              ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:100%;object-fit:cover;background:#fff"/>`:'<div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px">🎨</div>'}
+          return `<div onclick="${out?'':`olSelectVariant(${idx},${vi})`}" class="olVariantThumb ${out?'disabled':''} ${isSelected?'selected':''}" style="animation-delay:${Math.min(vi*0.04,0.3)}s">
+            <div class="olVariantThumbMedia">
+              ${img?`<img loading="lazy" src="${esc(img)}" alt="${esc(v.name)}"/>`:`<div class="olProdMediaPlaceholder" style="font-size:18px">🎨</div>`}
             </div>
-            <div style="font-size:9px;margin-top:3px;color:${out?'var(--red)':'var(--t2)'};font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${out?'স্টক নেই':esc(v.name)}</div>
+            <div class="olVariantThumbLabel">${out?'স্টক নেই':esc(v.name)}</div>
           </div>`;
         }).join('')}
       </div>
-      <div id="olVariantDetail_${idx}" style="margin-top:10px"></div>
+      <div id="olVariantDetail_${idx}" style="margin-top:12px"></div>
     </div>`;
   if(selectedVi!==undefined)olShowVariantDetail(idx,selectedVi);
 }
@@ -1701,20 +1855,20 @@ function olShowVariantDetail(idx,vi){
   const hasOffer=v.offerPrice>0&&v.offerPrice<v.price;
   const discountPct=hasOffer?Math.round((1-v.offerPrice/v.price)*100):0;
   box.innerHTML=`
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;animation:olPopIn .3s ease both;display:flex;gap:12px">
-      <div onclick="olViewImages(${idx},${vi})" style="cursor:zoom-in;width:84px;height:84px;border-radius:10px;overflow:hidden;flex-shrink:0;position:relative">
-        ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:100%;object-fit:cover;background:#fff"/>`:'<div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:24px">🎨</div>'}
-        <div style="position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;font-size:9px;padding:1px 5px;border-radius:6px">🔍</div>
+    <div class="olVariantDetailCard">
+      <div onclick="olViewImages(${idx},${vi})" class="olVariantDetailMedia">
+        ${img?`<img loading="lazy" src="${esc(img)}" alt="${esc(v.name)}"/>`:`<div class="olProdMediaPlaceholder" style="font-size:24px">🎨</div>`}
+        <div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.62);color:#fff;font-size:9px;padding:3px 7px;border-radius:999px">🔍 দেখুন</div>
       </div>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:700;font-size:14px;margin-bottom:2px">${esc(p.name)} <span style="color:var(--acc2)">— ${esc(v.name)}</span></div>
-        ${v.desc?`<div style="font-size:11px;color:var(--t2);margin-bottom:6px;line-height:1.4">${esc(v.desc)}</div>`:''}
-        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
-          ${hasOffer?`<span style="font-size:17px;font-weight:800;color:var(--green)">${cur(v.offerPrice)}</span><span style="font-size:12px;color:var(--t3);text-decoration:line-through">${cur(v.price)}</span><span style="font-size:10px;background:rgba(239,68,68,.15);color:var(--red);font-weight:700;padding:1px 6px;border-radius:8px">-${discountPct}%</span>`
-          :`<span style="font-size:17px;font-weight:800;color:var(--green)">${cur(v.price)}</span>`}
+      <div class="olVariantDetailInfo">
+        <div class="olVariantTitle">${esc(p.name)} — <span style="color:var(--acc2)">${esc(v.name)}</span></div>
+        ${v.desc?`<div class="olVariantDesc">${esc(v.desc)}</div>`:''}
+        <div class="olVariantPriceRow">
+          ${hasOffer?`<span style="font-size:18px;font-weight:900;color:var(--green)">${cur(v.offerPrice)}</span><span style="font-size:12px;color:var(--t3);text-decoration:line-through">${cur(v.price)}</span><span style="font-size:10px;background:rgba(239,68,68,.15);color:var(--red);font-weight:800;padding:4px 8px;border-radius:999px">-${discountPct}%</span>`
+          :`<span style="font-size:18px;font-weight:900;color:var(--green)">${cur(v.price)}</span>`}
         </div>
-        <div style="font-size:10px;color:${out?'var(--red)':'var(--t3)'};margin-bottom:8px">${out?'😔 স্টক নেই':'স্টক আছে: '+v.stock}</div>
-        <button class="btn bP bSm bFull" ${out?'disabled style="opacity:.5"':`onclick="olAddVariantToCart(${idx},${vi})"`}>${out?'স্টক নেই':'➕ কার্টে যোগ করুন'}</button>
+        <div class="olVariantStock" style="color:${out?'var(--red)':'var(--t2)'}">${out?'😔 এই অপশনটির স্টক নেই':'📦 স্টক আছে: '+v.stock}</div>
+        <button class="btn bP bSm bFull olActionBtn" ${out?'disabled style="opacity:.55"':`onclick="olAddVariantToCart(${idx},${vi})"`}>${out?'স্টক নেই':'➕ এই অপশনটি কার্টে যোগ করুন'}</button>
       </div>
     </div>`;
 }
@@ -1776,28 +1930,25 @@ window.olOpenCheckout=()=>{
   $('olCheckoutMod').innerHTML=`
   <div class="mH"><h3>🛒 অর্ডার সম্পন্ন করুন</h3><button class="btn bS bIco" onclick="closeMov('olCheckoutOvl')">✕</button></div>
   <div class="mB" style="max-height:75vh;overflow-y:auto">
-    <!-- Cart items -->
     <div style="margin-bottom:16px">
-      ${_olCart.map((it,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-        ${it.image?`<img src="${esc(it.image)}" style="width:42px;height:42px;border-radius:8px;object-fit:cover"/>`:'<div style="width:42px;height:42px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center">📦</div>'}
-        <div style="flex:1"><div style="font-size:13px;font-weight:600">${esc(it.name)}</div>${it.variantName?`<div style="font-size:11px;color:var(--green)">🎨 ${esc(it.variantName)}</div>`:''}<div style="font-size:12px;color:var(--t2)">${cur(it.price)} × ${it.qty}</div></div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <button onclick="olQty(${i},-1)" style="width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--t1);cursor:pointer;font-size:14px">−</button>
-          <span style="min-width:20px;text-align:center;font-weight:600">${it.qty}</span>
-          <button onclick="olQty(${i},1)" style="width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--t1);cursor:pointer;font-size:14px">+</button>
+      ${_olCart.map((it,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+        ${it.image?`<img src="${esc(it.image)}" style="width:48px;height:48px;border-radius:10px;object-fit:cover"/>`:'<div style="width:48px;height:48px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center">📦</div>'}
+        <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;line-height:1.4;word-break:break-word">${esc(it.name)}</div>${it.variantName?`<div style="font-size:11px;color:var(--green);line-height:1.5">🎨 ${esc(it.variantName)}</div>`:''}<div style="font-size:12px;color:var(--t2)">${cur(it.price)} × ${it.qty}</div></div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <button onclick="olQty(${i},-1)" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--t1);cursor:pointer;font-size:15px">−</button>
+          <span style="min-width:20px;text-align:center;font-weight:700">${it.qty}</span>
+          <button onclick="olQty(${i},1)" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--t1);cursor:pointer;font-size:15px">+</button>
         </div>
       </div>`).join('')}
     </div>
-    <!-- Customer form -->
     <div class="afG"><label class="afL">আপনার নাম *</label><input class="afI" id="ol_name" placeholder="পুরো নাম" maxlength="60"/></div>
     <div class="afG"><label class="afL">মোবাইল নম্বর *</label><input class="afI" id="ol_phone" type="tel" placeholder="01XXXXXXXXX" maxlength="11"/></div>
     ${distLangEnabled()?renderDistrictPicker('ol'):''}
     <div class="afG"><label class="afL">সম্পূর্ণ ঠিকানা *</label><textarea class="afI" id="ol_addr" rows="2" placeholder="বাসা, রোড, এলাকা" maxlength="300"></textarea></div>
-    <!-- Total breakdown -->
-    <div style="background:var(--card);border-radius:12px;padding:14px;margin-top:8px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-bottom:6px"><span>পণ্যের মূল্য</span><span>${cur(sub)}</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-bottom:8px"><span>ডেলিভারি চার্জ</span><span>${cur(delivery)}</span></div>
-      <div style="display:flex;justify-content:space-between;font-size:17px;font-weight:800;border-top:1px solid var(--border);padding-top:8px"><span>সর্বমোট</span><span style="color:var(--green)">${cur(sub+delivery)}</span></div>
+    <div class="olCheckoutSummary">
+      <div class="olCheckoutLine"><span>পণ্যের মূল্য</span><span>${cur(sub)}</span></div>
+      <div class="olCheckoutLine"><span>ডেলিভারি চার্জ</span><span>${cur(delivery)}</span></div>
+      <div class="olCheckoutLine total"><span>সর্বমোট</span><span style="color:var(--green)">${cur(sub+delivery)}</span></div>
     </div>
     <div id="olErr" class="al aE" style="display:none;margin-top:10px"></div>
   </div>
