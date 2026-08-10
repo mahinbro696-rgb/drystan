@@ -10,7 +10,7 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
 <meta name="referrer" content="strict-origin-when-cross-origin"/>
 <meta http-equiv="X-Frame-Options" content="DENY"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.googleapis.com https://apis.google.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasestorage.app https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://api.anthropic.com https://api.emailjs.com https://*.steadfast.com.bd https://fraudbd.com https://*.fraudbd.com https://api.imgbb.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://www.recaptcha.net https://recaptcha.net; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src https://cdn.gpteng.co 'self' 'unsafe-inline' https://www.gstatic.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.googleapis.com https://apis.google.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://cdn.gpteng.co 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasestorage.app https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://api.anthropic.com https://api.emailjs.com https://*.steadfast.com.bd https://fraudbd.com https://*.fraudbd.com https://api.imgbb.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://www.recaptcha.net https://recaptcha.net; frame-ancestors 'self' https://lovable.dev https://beta.lovable.dev https://*.beta.lovable.dev https://*.dwl.lovable.dev https://*.sandcastle.lovable.net https://gptengineer.app http://localhost:* http://*.localhost:*; base-uri 'self'; object-src 'none'" />
 <title>Drystan – Business Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
@@ -1439,7 +1439,7 @@ function checkOwnerHash(){
 window.addEventListener('load', ()=>setTimeout(checkOwnerHash, 200));
 
 // ═══ PUBLIC STOREFRONT (customer-facing order page, no login) ═══
-window.addEventListener('hashchange', checkPublicShop);
+window.addEventListener('hashchange', ()=>setTimeout(checkPublicShop, 50));
 function checkPublicShop(){
   if(location.hash.startsWith('#order/')){checkOrderLink();return;}
   if(!location.hash.startsWith('#shop/'))return;
@@ -1449,7 +1449,7 @@ function checkPublicShop(){
   const ls=$('loadScreen');if(ls){ls.classList.add('hide');setTimeout(()=>ls.style.display='none',400);}
   loadPublicShop(bizId);
 }
-window.addEventListener('load', ()=>setTimeout(checkPublicShop, 150));
+window.addEventListener('load', ()=>{ setTimeout(checkPublicShop, 150); if(location.hash.startsWith('#order/')) checkOrderLink(); });
 
 // ═══════ CUSTOM ORDER LINK (selected products, one-time use) ═══════
 function checkOrderLink(){
@@ -2990,7 +2990,7 @@ function resetSessionTimer(){
 // Prevent right-click source view (basic deterrent — not foolproof)
 // Real security is in Firebase Rules + Auth, not HTML hiding
 onAuthStateChanged(auth,async user=>{
-  if(location.hash.startsWith('#shop/')){return;} // Public storefront takes priority — no login needed
+  if(location.hash.startsWith('#shop/') || location.hash.startsWith('#order/')){return;} // Public storefront takes priority — no login needed
   const ls=$('loadScreen');
   if(user){
     G.user=user;
