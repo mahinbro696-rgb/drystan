@@ -10,38 +10,125 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
 <meta name="referrer" content="strict-origin-when-cross-origin"/>
 <meta http-equiv="X-Frame-Options" content="DENY"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src https://cdn.gpteng.co 'self' 'unsafe-inline' https://www.gstatic.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.googleapis.com https://apis.google.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://cdn.gpteng.co 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasestorage.app https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://api.anthropic.com https://api.emailjs.com https://*.steadfast.com.bd https://fraudbd.com https://*.fraudbd.com https://api.imgbb.com; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://www.recaptcha.net https://recaptcha.net; frame-ancestors 'self' https://lovable.dev https://beta.lovable.dev https://*.beta.lovable.dev https://*.dwl.lovable.dev https://*.sandcastle.lovable.net https://gptengineer.app http://localhost:* http://*.localhost:*; base-uri 'self'; object-src 'none'" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.googleapis.com https://apis.google.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasestorage.app https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://api.anthropic.com https://api.emailjs.com https://*.steadfast.com.bd https://fraudbd.com https://*.fraudbd.com https://api.imgbb.com https://drystan-api.mulhakiol632.workers.dev; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://www.recaptcha.net https://recaptcha.net; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"/>
 <title>Drystan – Business Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
 <!-- ═══ PROTECTION LAYER ═══ -->
-
 <script>
 (function(){
-  // Force order link display if hash is present
-  const hash = location.hash.toLowerCase();
-  if(hash.startsWith('#order/') || hash.startsWith('#shop/')){
-    document.addEventListener('DOMContentLoaded', ()=>{
-       const ls = document.getElementById('loadScreen');
-       const app = document.getElementById('appWrap');
-       const login = document.getElementById('loginWrap');
-       if(app) app.classList.remove('show');
-       if(login) login.classList.remove('show');
-       
-       if(ls) {
-         ls.classList.add('hide');
-         setTimeout(() => { ls.style.display = 'none'; }, 500);
-       }
-       
-       // Call the specific handlers once they are available
-       function runHandlers() {
-         if(typeof checkOrderLink === 'function') checkOrderLink(); 
-         else if(typeof checkPublicShop === 'function') checkPublicShop();
-         else setTimeout(runHandlers, 100);
-       }
-       runHandlers();
-    });
+  'use strict';
+
+  // 0. ANTI-CLICKJACKING / ANTI-PHISHING: break out if the site is loaded inside an iframe
+  // (phishing sites often embed the real login in an invisible frame to steal credentials)
+  try{
+    if(window.top !== window.self){
+      window.top.location = window.self.location;
+    }
+  }catch(e){
+    // Cross-origin framing blocked access — hide the page so credentials can't be captured
+    document.documentElement.style.display='none';
   }
+
+  // 0b. Warn if not served over HTTPS (except localhost) — protects against credential interception
+  if(location.protocol==='http:' && !['localhost','127.0.0.1'].includes(location.hostname)){
+    location.protocol='https:';
+  }
+
+  // 1. Disable right-click context menu
+  document.addEventListener('contextmenu', function(e){
+    e.preventDefault();
+    return false;
+  }, true);
+
+  // 2. Disable keyboard shortcuts (F12, Ctrl+U, Ctrl+S, Ctrl+Shift+I/J/C, F5 with ctrl)
+  document.addEventListener('keydown', function(e){
+    const k = e.key || e.keyCode;
+    // F12
+    if(k === 'F12' || e.keyCode === 123){ e.preventDefault(); return false; }
+    // Ctrl combos
+    if(e.ctrlKey || e.metaKey){
+      const blocked = ['u','U','s','S','a','A','p','P'];
+      if(blocked.includes(k)){ e.preventDefault(); return false; }
+      // Ctrl+Shift+I/J/C/K (DevTools)
+      if(e.shiftKey && ['i','I','j','J','c','C','k','K'].includes(k)){
+        e.preventDefault(); return false;
+      }
+    }
+  }, true);
+
+  // 3. Console hijack protection — override console methods
+  const _noop = function(){};
+  const _warn = console.warn.bind(console);
+  try {
+    const msg = '%c🔒 Drystan Protected\n%cSource code is proprietary. Unauthorized access is prohibited.';
+    const s1 = 'color:#F97316;font-size:24px;font-weight:900';
+    const s2 = 'color:#94A3B8;font-size:13px';
+    // Show warning once, then clear
+    console.log(msg, s1, s2);
+    // Suppress further console output
+    const _orig = {log:console.log, dir:console.dir, table:console.table};
+    console.log = function(){};
+    console.dir = function(){};
+    console.table = function(){};
+    // Keep warn/error for internal use
+    console.warn = _warn;
+  } catch(e){}
+
+  // 4. DevTools detection — size-based method
+  let _devOpen = false;
+  const _checkDev = function(){
+    const threshold = 160;
+    const widthDiff = window.outerWidth - window.innerWidth;
+    const heightDiff = window.outerHeight - window.innerHeight;
+    if(widthDiff > threshold || heightDiff > threshold){
+      if(!_devOpen){
+        _devOpen = true;
+        // Blur sensitive content when devtools open
+        const app = document.getElementById('appWrap');
+        const login = document.getElementById('loginWrap');
+        if(app && app.classList.contains('show')){
+          app.style.filter = 'blur(8px)';
+          app.style.pointerEvents = 'none';
+          // Show warning overlay
+          let ov = document.getElementById('_devWarning');
+          if(!ov){
+            ov = document.createElement('div');
+            ov.id = '_devWarning';
+            ov.style.cssText = 'position:fixed;inset:0;background:rgba(7,10,18,.97);display:flex;align-items:center;justify-content:center;z-index:99999;flex-direction:column;gap:16px;font-family:Inter,sans-serif';
+            ov.innerHTML = '<div style="font-size:48px">🔒</div><div style="color:#F97316;font-size:20px;font-weight:800">Developer Tools Detected</div><div style="color:#94A3B8;font-size:14px;text-align:center;max-width:320px">Please close Developer Tools to continue using Drystan.</div>';
+            document.body.appendChild(ov);
+          }
+          ov.style.display = 'flex';
+        }
+      }
+    } else {
+      if(_devOpen){
+        _devOpen = false;
+        const app = document.getElementById('appWrap');
+        if(app){ app.style.filter = ''; app.style.pointerEvents = ''; }
+        const ov = document.getElementById('_devWarning');
+        if(ov) ov.style.display = 'none';
+      }
+    }
+  };
+  setInterval(_checkDev, 1000);
+
+  // 5. Disable text selection on key areas (optional, can be removed)
+  document.addEventListener('selectstart', function(e){
+    // Allow selection in inputs/textareas
+    if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    // Block selection elsewhere (helps with copy-paste of code)
+  }, false);
+
+  // 6. debugger trap (slows down manual debugging)
+  // Runs in background — causes debugger to pause constantly if open
+  setInterval(function(){ 
+    try{ 
+      (function(){}).constructor('debugger')(); 
+    }catch(e){}
+  }, 3000);
+
 })();
 </script>
 <style>
@@ -584,9 +671,9 @@ img{max-width:100%}
 
 <!-- LOADING -->
 <div id="loadScreen">
-  <div class="loadLogo" style="animation:glowPulse 2s infinite">D</div>
-  <div class="spin" style="margin-top:20px;border-top-color:var(--acc)"></div>
-  <p style="color:var(--t2);font-size:14px;margin-top:15px;font-weight:600;letter-spacing:0.5px">Connecting to Drystan...</p>
+  <div class="loadLogo">D</div>
+  <div class="spin"></div>
+  <p style="color:var(--t2);font-size:14px">Connecting to Drystan...</p>
 </div>
 
 <!-- OWNER PANEL -->
@@ -1024,13 +1111,35 @@ img{max-width:100%}
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,createUserWithEmailAndPassword,updatePassword,reauthenticateWithCredential,EmailAuthProvider}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import{getAuth,getIdToken,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,createUserWithEmailAndPassword,updatePassword,reauthenticateWithCredential,EmailAuthProvider}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import{getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,query,where,orderBy,serverTimestamp,limit,onSnapshot}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const FC={apiKey:"AIzaSyDtoVVHuMKUiIbyQEOmEPyspzBNT5zxGC4",authDomain:"drystan-cfe3b.firebaseapp.com",projectId:"drystan-cfe3b",storageBucket:"drystan-cfe3b.firebasestorage.app",messagingSenderId:"419259525007",appId:"1:419259525007:web:25c283364579b356d74dfa"};
 const app=initializeApp(FC);
 const auth=getAuth(app);
 const db=getFirestore(app);
+
+// Secure Cloudflare Worker backend (Phase 2)
+const DRYSTAN_API_BASE='https://drystan-api.mulhakiol632.workers.dev';
+async function secureApiFetch(path,options={}){
+  const user=auth.currentUser;
+  if(!user)throw new Error('Please sign in first.');
+  const token=await getIdToken(user,true);
+  const headers=new Headers(options.headers||{});
+  headers.set('Authorization','Bearer '+token);
+  if(options.body&&!headers.has('Content-Type'))headers.set('Content-Type','application/json');
+  return fetch(DRYSTAN_API_BASE+path,{...options,headers});
+}
+async function testSecureBackend(){
+  try{
+    const resp=await secureApiFetch('/auth-test',{method:'GET'});
+    const data=await resp.json().catch(()=>({}));
+    return {ok:resp.ok,...data};
+  }catch(e){
+    return {ok:false,authenticated:false,error:e.message||String(e)};
+  }
+}
+window.testSecureBackend=testSecureBackend;
 
 // PRO UPGRADE LAYER — optional App Check and SaaS plan controls.
 // Put your reCAPTCHA v3 site key here, then enforce App Check in Firebase Console.
@@ -1083,6 +1192,8 @@ const fdate=d=>{if(!d)return'';const dt=d?.toDate?d.toDate():new Date(d);return 
 const today=()=>new Date().toISOString().slice(0,10);
 const plus3=()=>{const d=new Date();d.setDate(d.getDate()+3);return d.toISOString().slice(0,10);};
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// SECURITY: safely embed a dynamic string as a JavaScript argument inside an HTML event attribute.
+const jsArg=s=>esc(JSON.stringify(String(s??'')));
 // Global translation helper — works on every page (G.lang is read live, so no local redeclaration needed)
 const T=(en,bn)=>G.lang==='bn'?bn:en;
 // Bangladesh districts + thanas/upazilas (bilingual) — 64 districts, 501 thanas
@@ -1352,7 +1463,7 @@ function checkOwnerHash(){
 window.addEventListener('load', ()=>setTimeout(checkOwnerHash, 200));
 
 // ═══ PUBLIC STOREFRONT (customer-facing order page, no login) ═══
-window.addEventListener('hashchange', ()=>setTimeout(checkPublicShop, 50));
+window.addEventListener('hashchange', checkPublicShop);
 function checkPublicShop(){
   if(location.hash.startsWith('#order/')){checkOrderLink();return;}
   if(!location.hash.startsWith('#shop/'))return;
@@ -1362,11 +1473,11 @@ function checkPublicShop(){
   const ls=$('loadScreen');if(ls){ls.classList.add('hide');setTimeout(()=>ls.style.display='none',400);}
   loadPublicShop(bizId);
 }
-window.addEventListener('load', ()=>{ setTimeout(checkPublicShop, 150); if(location.hash.startsWith('#order/')) checkOrderLink(); });
+window.addEventListener('load', ()=>setTimeout(checkPublicShop, 150));
 
 // ═══════ CUSTOM ORDER LINK (selected products, one-time use) ═══════
 function checkOrderLink(){
-  if(!location.hash.toLowerCase().startsWith('#order/'))return;
+  if(!location.hash.startsWith('#order/'))return;
   const parts=location.hash.slice(7).split('/');
   const bizId=(parts[0]||'').trim();
   const linkId=(parts[1]||'').trim();
@@ -1381,10 +1492,7 @@ async function loadOrderLink(bizId,linkId){
   let host=$('publicWrap');
   if(!host){host=document.createElement('div');host.id='publicWrap';host.style.cssText='position:fixed;inset:0;z-index:600;overflow-y:auto;background:var(--bg)';document.body.appendChild(host);}
   host.style.display='block';
-  host.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)">
-    <div class="spin" style="border-top-color:var(--acc);width:40px;height:40px"></div>
-    <div style="margin-top:16px;font-size:14px;color:var(--t2);font-weight:600">অর্ডার লোড হচ্ছে...</div>
-  </div>`;
+  host.innerHTML='<div style="display:flex;align-items:center;justify-content:center;min-height:100vh"><div class="spin"></div></div>';
   try{
     // Reset state fresh for THIS link (prevents any cross-link mixing)
     _olBiz=bizId;_olId=linkId;_olCart=[];_olData=null;_olCfg=null;_olOpenCardIdx=null;_olSelectedVariant={};
@@ -1408,8 +1516,7 @@ async function loadOrderLink(bizId,linkId){
     _olCfg=cfgDoc.exists()?cfgDoc.data():{};
     renderOrderLink();
   }catch(e){
-    console.error('Drystan Order Load Error:', e);
-    host.innerHTML=olMessage('⚠️','লোড করা যায়নি',esc(e.message) + '<br/><br/><small style="opacity:0.5">ডিবাগ: ' + bizId + '/' + linkId + '</small>');
+    host.innerHTML=olMessage('⚠️','লোড করা যায়নি',esc(e.message));
   }
 }
 function olMessage(icon,title,sub){
@@ -1437,28 +1544,26 @@ function renderOrderLink(){
     <!-- Products -->
     <div style="padding:18px 14px">
       <h3 style="font-size:15px;font-weight:700;margin-bottom:14px">📦 পণ্যসমূহ (${prods.length})</h3>
-      <div class="pubGrid" style="display:flex;flex-direction:column;gap:12px">
+      <div class="pubGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
         ${prods.map((p,i)=>{
           const imgs=(p.images&&p.images.length)?p.images:(p.imageUrl?[p.imageUrl]:[]);
           const hasVar=p.variants&&p.variants.length>0;
           const soldOut=hasVar?p.variants.every(v=>Number(v.stock||0)<=0):p.soldOut===true;
           const displayPrice=hasVar?p.variants[0].price:p.price;
-          return `<div id="olProdCard_${i}" style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;position:relative;display:flex;transition:all .2s;${soldOut?'opacity:.65':''}">
-            <div style="width:120px;min-width:120px;height:120px;position:relative;cursor:pointer" onclick="${hasVar?`olToggleInlineVariants(${i})`:imgs.length>1?`olViewImages(${i})`:''}">
-              ${imgs[0]?`<img loading="lazy" src="${esc(imgs[0])}" style="width:100%;height:100%;object-fit:cover;background:#fff"/>`:`<div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:30px">📦</div>`}
-              ${imgs.length>1?`<div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.7);color:#fff;font-size:9px;padding:2px 6px;border-radius:20px">📷 ${imgs.length}</div>`:''}
+          return `<div id="olProdCard_${i}" style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;position:relative;transition:border-color .2s;${soldOut?'opacity:.55':''}">
+            <div style="position:relative;cursor:pointer" onclick="${hasVar?`olToggleInlineVariants(${i})`:imgs.length>1?`olViewImages(${i})`:''}">
+              ${imgs[0]?`<img loading="lazy" src="${esc(imgs[0])}" style="width:100%;height:140px;object-fit:cover;background:#fff"/>`:`<div style="width:100%;height:140px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:34px">📦</div>`}
+              ${imgs.length>1?`<div style="position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.65);color:#fff;font-size:10px;padding:2px 8px;border-radius:20px">📷 ${imgs.length}</div>`:''}
+              ${soldOut?`<div style="position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center"><span style="background:#EF4444;color:#fff;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:700;transform:rotate(-8deg)">😔 স্টক শেষ</span></div>`:''}
             </div>
-            <div style="padding:12px;flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0">
-              <div>
-                <div style="font-weight:700;font-size:15px;margin-bottom:4px;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}</div>
-                <div style="color:var(--green);font-weight:800;font-size:17px;margin-bottom:8px">${hasVar?'থেকে ':''}${cur(displayPrice)}</div>
-              </div>
-              ${soldOut?`<button class="btn bSm bFull" disabled style="padding:8px;font-size:12px">স্টক শেষ</button>`
-              :hasVar?`<button class="btn bP bSm" id="olPickBtn_${i}" onclick="olToggleInlineVariants(${i})" style="padding:8px 16px;font-size:12px;align-self:flex-start">🎨 পছন্দ করুন</button>`
-              :`<button class="btn bP bSm" onclick="olAddToCart(${i},this)" style="padding:8px 16px;font-size:12px;align-self:flex-start">➕ কার্টে যোগ</button>`}
+            <div style="padding:10px">
+              <div style="font-weight:600;font-size:13px;margin-bottom:3px;min-height:34px;line-height:1.3">${esc(p.name)}</div>
+              <div style="color:var(--green);font-weight:800;font-size:16px;margin-bottom:8px">${hasVar?'থেকে ':''}${cur(displayPrice)}${hasVar?` <span style="font-size:10px;color:var(--t3);font-weight:400">(${p.variants.length} রকম)</span>`:''}</div>
+              ${soldOut?`<button class="btn bSm bFull" disabled style="font-size:12px;opacity:.6">স্টক শেষ</button>`
+              :hasVar?`<button class="btn bP bSm bFull" id="olPickBtn_${i}" onclick="olToggleInlineVariants(${i})" style="font-size:12px">🎨 পছন্দ করুন</button>`
+              :`<button class="btn bP bSm bFull" onclick="olAddToCart(${i},this)" style="font-size:12px">➕ কার্টে যোগ</button>`}
             </div>
-            ${soldOut?`<div style="position:absolute;top:10px;left:-25px;background:#EF4444;color:#fff;padding:2px 30px;font-size:10px;font-weight:800;transform:rotate(-45deg);box-shadow:0 2px 10px rgba(0,0,0,.2)">স্টক শেষ</div>`:''}
-            <div id="olInlineVariants_${i}" style="display:none;position:absolute;inset:0;background:var(--bg);z-index:5;overflow-y:auto"></div>
+            <div id="olInlineVariants_${i}" style="display:none"></div>
           </div>`;
         }).join('')}
       </div>
@@ -1519,26 +1624,22 @@ function olRenderVariantStrip(idx){
   const fallbackImg=(p.images&&p.images[0])||p.imageUrl||'';
   const selectedVi=_olSelectedVariant[idx];
   panel.innerHTML=`
-    <div style="height:100%;display:flex;flex-direction:column;padding:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:700">🎨 ভেরিয়েন্ট বেছে নিন</div>
-        <button onclick="olToggleInlineVariants(${idx})" style="background:var(--bg3);border:none;color:var(--t1);width:28px;height:28px;border-radius:50%;cursor:pointer">✕</button>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
+    <div style="padding:10px;border-top:1px dashed var(--border);background:rgba(99,102,241,.04)">
+      <div style="font-size:11px;color:var(--t3);font-weight:600;margin-bottom:8px">🎨 একটি পছন্দ করুন:</div>
+      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">
         ${p.variants.map((v,vi)=>{
           const img=(v.images&&v.images[0])||v.image||fallbackImg;
           const out=Number(v.stock||0)<=0;
           const isSelected=selectedVi===vi;
-          return `<div onclick="${out?'':`olSelectVariant(${idx},${vi})`}" style="cursor:${out?'default':'pointer'};text-align:center;animation:olPopIn .25s ease both;animation-delay:${Math.min(vi*0.04,0.3)}s">
-            <div style="aspect-ratio:1/1;border-radius:10px;overflow:hidden;border:2px solid ${isSelected?'var(--acc)':'var(--border)'};${out?'opacity:.4':''};position:relative">
+          return `<div onclick="${out?'':`olSelectVariant(${idx},${vi})`}" style="cursor:${out?'default':'pointer'};flex-shrink:0;width:62px;text-align:center;animation:olPopIn .25s ease both;animation-delay:${Math.min(vi*0.04,0.3)}s">
+            <div style="width:62px;height:62px;border-radius:10px;overflow:hidden;border:2px solid ${isSelected?'var(--acc)':'var(--border)'};${out?'opacity:.45':''}">
               ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:100%;object-fit:cover;background:#fff"/>`:'<div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px">🎨</div>'}
-              ${isSelected?`<div style="position:absolute;top:2px;right:2px;background:var(--acc);color:#fff;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:10px">✓</div>`:''}
             </div>
-            <div style="font-size:9px;margin-top:4px;color:${out?'var(--red)':'var(--t2)'};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(v.name)}</div>
+            <div style="font-size:9px;margin-top:3px;color:${out?'var(--red)':'var(--t2)'};font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${out?'স্টক নেই':esc(v.name)}</div>
           </div>`;
         }).join('')}
       </div>
-      <div id="olVariantDetail_${idx}" style="flex:1;display:flex;flex-direction:column;justify-content:center"></div>
+      <div id="olVariantDetail_${idx}" style="margin-top:10px"></div>
     </div>`;
   if(selectedVi!==undefined)olShowVariantDetail(idx,selectedVi);
 }
@@ -1556,18 +1657,20 @@ function olShowVariantDetail(idx,vi){
   const hasOffer=v.offerPrice>0&&v.offerPrice<v.price;
   const discountPct=hasOffer?Math.round((1-v.offerPrice/v.price)*100):0;
   box.innerHTML=`
-    box.innerHTML=`
-    <div style="background:var(--bg3);border-radius:12px;padding:12px;animation:olPopIn .3s ease both;display:flex;gap:12px;align-items:center">
-      <div onclick="olViewImages(${idx},${vi})" style="cursor:zoom-in;width:70px;height:70px;border-radius:10px;overflow:hidden;flex-shrink:0;position:relative">
-        ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:100%;object-fit:cover;background:#fff"/>`:'<div style="width:100%;height:100%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:20px">🎨</div>'}
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;animation:olPopIn .3s ease both;display:flex;gap:12px">
+      <div onclick="olViewImages(${idx},${vi})" style="cursor:zoom-in;width:84px;height:84px;border-radius:10px;overflow:hidden;flex-shrink:0;position:relative">
+        ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:100%;object-fit:cover;background:#fff"/>`:'<div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:24px">🎨</div>'}
+        <div style="position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;font-size:9px;padding:1px 5px;border-radius:6px">🔍</div>
       </div>
       <div style="flex:1;min-width:0">
-        <div style="font-weight:700;font-size:14px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(v.name)}</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          ${hasOffer?`<span style="font-size:16px;font-weight:800;color:var(--green)">${cur(v.offerPrice)}</span><span style="font-size:11px;color:var(--t3);text-decoration:line-through">${cur(v.price)}</span>`
-          :`<span style="font-size:16px;font-weight:800;color:var(--green)">${cur(v.price)}</span>`}
+        <div style="font-weight:700;font-size:14px;margin-bottom:2px">${esc(p.name)} <span style="color:var(--acc2)">— ${esc(v.name)}</span></div>
+        ${v.desc?`<div style="font-size:11px;color:var(--t2);margin-bottom:6px;line-height:1.4">${esc(v.desc)}</div>`:''}
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
+          ${hasOffer?`<span style="font-size:17px;font-weight:800;color:var(--green)">${cur(v.offerPrice)}</span><span style="font-size:12px;color:var(--t3);text-decoration:line-through">${cur(v.price)}</span><span style="font-size:10px;background:rgba(239,68,68,.15);color:var(--red);font-weight:700;padding:1px 6px;border-radius:8px">-${discountPct}%</span>`
+          :`<span style="font-size:17px;font-weight:800;color:var(--green)">${cur(v.price)}</span>`}
         </div>
-        <button class="btn bP bSm bFull" ${out?'disabled style="opacity:.5;padding:6px"':`onclick="olAddVariantToCart(${idx},${vi})"`} style="padding:8px;font-size:12px">${out?'স্টক নেই':'➕ কার্টে যোগ'}</button>
+        <div style="font-size:10px;color:${out?'var(--red)':'var(--t3)'};margin-bottom:8px">${out?'😔 স্টক নেই':'স্টক আছে: '+v.stock}</div>
+        <button class="btn bP bSm bFull" ${out?'disabled style="opacity:.5"':`onclick="olAddVariantToCart(${idx},${vi})"`}>${out?'স্টক নেই':'➕ কার্টে যোগ করুন'}</button>
       </div>
     </div>`;
 }
@@ -1675,9 +1778,9 @@ window.olCancelOrder=async()=>{
   $('publicWrap').innerHTML=olMessage('❌','অর্ডার বাতিল হয়েছে','আপনি অর্ডারটি বাতিল করেছেন। এই লিংকটি আর ব্যবহারযোগ্য নয়।');
 };
 window.olConfirmOrder=async()=>{
-  const name=$('ol_name')?.value.trim();
+  const name=$('ol_name')?.value.trim().slice(0,100);
   const phone=$('ol_phone')?.value.trim();
-  const addrMain=$('ol_addr')?.value.trim();
+  const addrMain=$('ol_addr')?.value.trim().slice(0,600);
   const distEn=$('ol_dist')?.value||'',distBn=BD_DISTRICTS[distEn]?.bn||'';
   const thanaEn=$('ol_thana')?.value||'',thanaBn=(BD_DISTRICTS[distEn]?.t||[]).find(t=>t[0]===thanaEn)?.[1]||'';
   const distPart=thanaEn?`, ${distLabel(thanaEn,thanaBn)}, ${distLabel(distEn,distBn)}`:distEn?`, ${distLabel(distEn,distBn)}`:'';
@@ -1977,14 +2080,14 @@ window.pubUpdateTotal=()=>{
 };
 
 window.pubSubmitOrder=async()=>{
-  const name=$('pub_name')?.value.trim();
+  const name=$('pub_name')?.value.trim().slice(0,100);
   const phone=$('pub_phone')?.value.trim();
-  const addrMain=$('pub_addr')?.value.trim();
+  const addrMain=$('pub_addr')?.value.trim().slice(0,600);
   const distEn=$('pub_dist')?.value||'',distBn=BD_DISTRICTS[distEn]?.bn||'';
   const thanaEn=$('pub_thana')?.value||'',thanaBn=(BD_DISTRICTS[distEn]?.t||[]).find(t=>t[0]===thanaEn)?.[1]||'';
   const distPart=thanaEn?`, ${distLabel(thanaEn,thanaBn)}, ${distLabel(distEn,distBn)}`:distEn?`, ${distLabel(distEn,distBn)}`:'';
   const addr=addrMain+distPart;
-  const note=$('pub_note')?.value.trim()||'';
+  const note=($('pub_note')?.value.trim()||'').slice(0,1000);
   const del=Number($('pub_delarea')?.value||0);
   const err=$('pubOrderErr');const btn=$('pubOrderBtn');
   const showErr=m=>{if(err){err.style.display='flex';err.textContent=m;}};
@@ -1997,11 +2100,12 @@ window.pubSubmitOrder=async()=>{
   try{
     const sub=pubCartTotal();const total=sub+del;
     const oItems=_pubCart.map(it=>({pid:it.pid,name:it.name+(it.variantName?` (${it.variantName})`:''),nameBn:it.name+(it.variantName?` (${it.variantName})`:''),variantName:it.variantName||'',qty:it.qty,price:it.price,buyPrice:0,lineTotal:it.price*it.qty,profit:0}));
-    // Generate order number
-    const cnt=(await getDocs(collection(db,'businesses',_pubBiz,'orders'))).size;
-    const num='DRY-'+String(cnt+1).padStart(5,'0');
+    // Generate a collision-resistant public order number without reading the private orders collection.
+    // Firestore creates the random document ID locally; its prefix is reused in the visible order number.
     const orderDay=new Date().toISOString().slice(0,10);
-    await addDoc(collection(db,'businesses',_pubBiz,'orders'),{
+    const orderRef=doc(collection(db,'businesses',_pubBiz,'orders'));
+    const num='DRY-'+orderDay.replace(/-/g,'')+'-'+orderRef.id.slice(0,8).toUpperCase();
+    await setDoc(orderRef,{
       num,cName:name,cPhone:phone,ordererPhone:phone,recvPhone:phone,recvName:name,cAddr:addr,district:distEn,thana:thanaEn,
       payMethod:'cod',delivery:del,subtotal:sub,discount:0,total,
       status:'pending',payStatus:'pending',orderDate:orderDay,delivDate:'',rLang:'bn',
@@ -2214,9 +2318,9 @@ function renderOwUsersList(users){
             </div>
           </div>
           <div style="display:flex;gap:5px;align-items:center">
-            <button class="btn ${admin.suspended?'bG':'bD'} bSm" style="font-size:10px;padding:5px 8px" onclick="event.stopPropagation();ownerToggleSuspend('${admin.id}','${esc(admin.displayName||'')}',${admin.suspended?'true':'false'})" title="${admin.suspended?'Unsuspend':'Suspend'}">${admin.suspended?'▶️':'🚫'}</button>
-            <button class="btn bY bSm" style="font-size:10px;padding:5px 8px" onclick="event.stopPropagation();ownerResetPw('${admin.id}','${esc(admin.email||'')}','${esc(admin.displayName||'')}')" title="Reset Password">🔑</button>
-            <button class="btn bD bSm" style="font-size:10px;padding:5px 8px" onclick="event.stopPropagation();ownerDelUser('${admin.id}','${esc(admin.displayName||'')}')" title="Delete">🗑️</button>
+            <button class="btn ${admin.suspended?'bG':'bD'} bSm" style="font-size:10px;padding:5px 8px" onclick="event.stopPropagation();ownerToggleSuspend('${admin.id}',${jsArg(admin.displayName||'')},${admin.suspended?'true':'false'})" title="${admin.suspended?'Unsuspend':'Suspend'}">${admin.suspended?'▶️':'🚫'}</button>
+            <button class="btn bY bSm" style="font-size:10px;padding:5px 8px" onclick="event.stopPropagation();ownerResetPw('${admin.id}',${jsArg(admin.email||'')},${jsArg(admin.displayName||'')})" title="Reset Password">🔑</button>
+            <button class="btn bD bSm" style="font-size:10px;padding:5px 8px" onclick="event.stopPropagation();ownerDelUser('${admin.id}',${jsArg(admin.displayName||'')})" title="Delete">🗑️</button>
             <span style="color:var(--t3);font-size:14px" id="arrow_${admin.id}">▼</span>
           </div>
         </div>
@@ -2237,8 +2341,8 @@ function renderOwUsersList(users){
               </div>
             </div>
             <div style="display:flex;gap:5px">
-              <button class="btn bY bSm" style="font-size:10px;padding:5px 8px" onclick="ownerResetModPw('${m.id}','${esc(m.username||'')}','${esc(m.email||'')}')" title="Reset Password">🔑</button>
-              <button class="btn bD bSm" style="font-size:10px;padding:5px 8px" onclick="ownerDelUser('${m.id}','${esc(m.displayName||'')}')" title="Delete">🗑️</button>
+              <button class="btn bY bSm" style="font-size:10px;padding:5px 8px" onclick="ownerResetModPw('${m.id}',${jsArg(m.username||'')},${jsArg(m.email||'')})" title="Reset Password">🔑</button>
+              <button class="btn bD bSm" style="font-size:10px;padding:5px 8px" onclick="ownerDelUser('${m.id}',${jsArg(m.displayName||'')})" title="Delete">🗑️</button>
             </div>
           </div>
         </div>`).join('')}
@@ -2395,7 +2499,7 @@ async function loadOwnerStorage(){
             <div style="font-weight:700;font-size:14px">${esc(u.displayName||'?')}</div>
             <div style="font-size:11px;color:var(--t2)">@${esc(u.username||'-')} · Joined: ${u.createdAt?fdate(u.createdAt):'-'}</div>
           </div>
-          <button class="btn bD bSm" style="font-size:11px" onclick="ownerClearBiz('${bizId}','${esc(u.displayName||'')}')">🗑️ Clear</button>
+          <button class="btn bD bSm" style="font-size:11px" onclick="ownerClearBiz('${bizId}',${jsArg(u.displayName||'')})">🗑️ Clear</button>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
           <div style="text-align:center;padding:8px;background:rgba(99,102,241,.08);border-radius:8px">
@@ -2911,15 +3015,10 @@ function resetSessionTimer(){
 // Prevent right-click source view (basic deterrent — not foolproof)
 // Real security is in Firebase Rules + Auth, not HTML hiding
 onAuthStateChanged(auth,async user=>{
-  const isStorefront = location.hash && (location.hash.toLowerCase().startsWith('#shop/') || location.hash.toLowerCase().startsWith('#order/'));
+  if(location.hash.startsWith('#shop/')){return;} // Public storefront takes priority — no login needed
   const ls=$('loadScreen');
-
   if(user){
     G.user=user;
-    if(isStorefront) {
-      if(ls){ls.classList.add('hide');setTimeout(()=>ls.style.display='none',500);}
-      return;
-    }
     try{
       const uDoc=await getDoc(Doc('users',user.uid));
       if(uDoc.exists()){
@@ -2967,6 +3066,15 @@ onAuthStateChanged(auth,async user=>{
         try{const gd=await getDoc(GCfg());if(gd.exists())G.gcfg=gd.data();}catch{}
       }
     }catch(e){console.error(e);}
+    // One-time diagnostic route for Phase 2 backend auth testing.
+    // Normal users never see this; open #backend-test manually while signed in.
+    if(location.hash==='#backend-test'){
+      const _backendTest=await testSecureBackend();
+      alert(_backendTest.ok&&_backendTest.authenticated
+        ? '✅ Secure backend authentication successful\nUID: '+(_backendTest.uid||user.uid)
+        : '❌ Secure backend authentication failed\n'+(_backendTest.error||'Unknown error'));
+      try{history.replaceState(null,'',location.pathname);}catch{}
+    }
     _appReady=true;
     // Don't load app if owner panel is open
     if(location.hash==='#'+OWNER_SECRET){
@@ -3382,7 +3490,7 @@ async function pgDash(){
     const sb=s=>{
       const m={pending:'bPend',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent',returned:'bRet'};
       const l=bn?{pending:'অপেক্ষমান',completed:'সম্পন্ন',cancelled:'বাতিল',parcel_sent:'পাঠানো হয়েছে',returned:'ফেরত'}:{pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Sent',returned:'Returned'};
-      return`<span class="badge ${m[s]||'bPend'}">${l[s]||s}</span>`;
+      return`<span class="badge ${m[s]||'bPend'}">${l[s]||esc(s)}</span>`;
     };
 
     setC(`
@@ -3514,7 +3622,7 @@ async function pgDash(){
           <div class="cardTitle" style="color:var(--yellow)">⚠️ ${T('Low Stock Alert','কম স্টক সতর্কতা')}</div>
           ${lowStock.slice(0,4).map(p=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px">
             <span style="font-weight:500">${esc(p.name)}</span>
-            <span style="color:var(--red);font-weight:700">${p.stock} ${T('left','বাকি')}</span>
+            <span style="color:var(--red);font-weight:700">${Number(p.stock||0)} ${T('left','বাকি')}</span>
           </div>`).join('')}
         </div>`:''}
         <div class="card" style="border-color:rgba(99,102,241,.2)">
@@ -3631,13 +3739,13 @@ function renderProdsView(){
           <td style="color:var(--t2)">${cur(p.buyPrice)}</td>
           <td style="font-weight:700">${cur(p.sellPrice)}</td>
           <td><span style="color:var(--green);font-weight:700;background:rgba(16,185,129,.1);padding:3px 8px;border-radius:6px;font-size:12px">${cur((p.sellPrice||0)-(p.buyPrice||0))}</span></td>
-          <td><span style="${Number(p.stock)<=Number(p.alertAt||5)?'color:var(--red);font-weight:700':''}"> ${Number(p.stock)<=Number(p.alertAt||5)?'⚠️ ':''} ${p.stock}</span></td>
+          <td><span style="${Number(p.stock)<=Number(p.alertAt||5)?'color:var(--red);font-weight:700':''}"> ${Number(p.stock)<=Number(p.alertAt||5)?'⚠️ ':''} ${Number(p.stock||0)}</span></td>
           <td><span class="badge bCat">${esc(p.cat||'General')}</span></td>
           <td style="font-size:12px;color:var(--t2)">${cur((p.sellPrice||0)*Number(p.stock||0))}</td>
           <td><div style="display:flex;gap:5px">
-            <button class="btn bG bSm bIco" title="Restock" onclick="openRestock('${p.id}','${esc(p.name)}',${Number(p.stock||0)},${Number(p.buyPrice||0)})">📥</button>
+            <button class="btn bG bSm bIco" title="Restock" onclick="openRestock('${p.id}',${jsArg(p.name)},${Number(p.stock||0)},${Number(p.buyPrice||0)})">📥</button>
             <button class="btn bS bSm bIco" onclick="openProdMod('${p.id}')">✏️</button>
-            <button class="btn bD bSm bIco" onclick="delProd('${p.id}','${esc(p.name)}')">🗑️</button>
+            <button class="btn bD bSm bIco" onclick="delProd('${p.id}',${jsArg(p.name)})">🗑️</button>
           </div></td>
         </tr>`).join('')}</tbody>
       </table></div>`}
@@ -4473,14 +4581,14 @@ function showProductDetail(itemIdx,pid,dataset){
     if(mainImg&&!hasVariants){
       html+=`<img loading="lazy" src="${esc(mainImg)}" style="width:100%;max-height:120px;object-fit:contain;border-radius:8px;margin-bottom:8px;background:#fff" onerror="this.style.display='none'"/>`;
     }
-    html+=`<div style="font-size:12px;color:var(--t2);margin-bottom:6px">📦 Available stock: <strong style="color:${Number(p.stock)>5?'var(--green)':'var(--red)'}"> ${p.stock}</strong></div>`;
+    html+=`<div style="font-size:12px;color:var(--t2);margin-bottom:6px">📦 Available stock: <strong style="color:${Number(p.stock)>5?'var(--green)':'var(--red)'}"> ${Number(p.stock||0)}</strong></div>`;
     // Variants — shown as thumbnail+price cards so the admin can see color/design at a glance
     if(hasVariants){
       html+=`<div style="font-size:12px;font-weight:600;margin-bottom:6px">🎨 ভ্যারিয়েন্ট বাছুন:</div>`;
       html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px">`;
       p.variants.forEach((v,vi)=>{
         const vimg=(v.images&&v.images[0])||v.image||mainImg;
-        html+=`<div id="vbtn_${itemIdx}_${vi}" onclick="selectVariant(${itemIdx},${vi},${Number(v.buyPrice)||0},${Number(v.sellPrice)||0},${Number(v.stock)||0},'${esc(v.name).replace(/'/g,"\\'")}')" style="cursor:pointer;background:var(--bg2);border:2px solid var(--border);border-radius:8px;overflow:hidden;text-align:center;transition:border-color .15s">
+        html+=`<div id="vbtn_${itemIdx}_${vi}" onclick="selectVariant(${itemIdx},${vi},${Number(v.buyPrice)||0},${Number(v.sellPrice)||0},${Number(v.stock)||0},${jsArg(v.name)})" style="cursor:pointer;background:var(--bg2);border:2px solid var(--border);border-radius:8px;overflow:hidden;text-align:center;transition:border-color .15s">
           ${vimg?`<img loading="lazy" src="${esc(vimg)}" style="width:100%;height:48px;object-fit:cover;background:#fff"/>`:'<div style="width:100%;height:48px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px">🎨</div>'}
           <div style="padding:4px 3px 0;font-size:10px;font-weight:600;line-height:1.2">${esc(v.name)}</div>
           <div style="padding:0 3px 4px;font-size:10px;color:var(--green);font-weight:700">${cur(v.sellPrice)}</div>
@@ -4591,11 +4699,11 @@ function showReceipt(o){
     <div style="padding:22px 28px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:16px;font-size:13px;line-height:2">
         <div><strong>${isEn?'Order #:':'অর্ডার:'}</strong> <span style="color:${P.accent};font-weight:700">${esc(o.num)}</span></div>
-        <div><strong>${isEn?'Date:':'তারিখ:'}</strong> ${o.orderDate}</div>
+        <div><strong>${isEn?'Date:':'তারিখ:'}</strong> ${esc(o.orderDate||'')}</div>
         <div><strong>${isEn?'Customer:':'গ্রাহক:'}</strong> ${esc(o.recvName||o.cName)}</div>
         <div><strong>${isEn?'Phone:':'ফোন:'}</strong> ${esc(o.recvPhone||o.cPhone)}</div>
         <div style="grid-column:1/-1"><strong>${isEn?'Address:':'ঠিকানা:'}</strong> ${esc(o.cAddr)}</div>
-        ${o.delivDate?`<div><strong>${isEn?'Delivery:':'ডেলিভারি:'}</strong> ${o.delivDate}</div>`:''}
+        ${o.delivDate?`<div><strong>${isEn?'Delivery:':'ডেলিভারি:'}</strong> ${esc(o.delivDate)}</div>`:''}
         <div style="grid-column:${o.delivDate?'auto':'1/-1'}"><strong>${isEn?'Payment:':'পেমেন্ট:'}</strong> <span style="font-weight:700;color:${o.payMethod==='paid'?'#10B981':o.payMethod==='partial'?'#F97316':'#F59E0B'}">${o.payMethod==='paid'?(isEn?'Paid ✅':'পেইড ✅'):o.payMethod==='partial'?(isEn?'Partial':'আংশিক'):(isEn?'Cash on Delivery':'ক্যাশ অন ডেলিভারি')}</span></div>
       </div>
       <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px">
@@ -4607,7 +4715,7 @@ function showReceipt(o){
         </tr></thead>
         <tbody>${(o.items||[]).map(it=>`<tr style="border-bottom:1px solid #eee">
           <td style="padding:10px 8px;font-weight:500">${esc(!isEn&&it.nameBn?it.nameBn:it.name)}</td>
-          <td style="text-align:center;padding:10px 8px">${it.qty}</td>
+          <td style="text-align:center;padding:10px 8px">${esc(String(it.qty??''))}</td>
           <td style="text-align:right;padding:10px 8px">${cur(it.price)}</td>
           <td style="text-align:right;padding:10px 8px;font-weight:700">${cur(it.lineTotal)}</td>
         </tr>`).join('')}</tbody>
@@ -5643,7 +5751,7 @@ function renderOrdersView(){
     if(oSrch)orders=orders.filter(o=>o.num?.toLowerCase().includes(oSrch.toLowerCase())||o.cName?.toLowerCase().includes(oSrch.toLowerCase())||o.cPhone?.includes(oSrch)||o.ordererPhone?.includes(oSrch));
     // Priority (starred) orders float to top
     orders=[...orders].sort((a,b)=>(b.priority?1:0)-(a.priority?1:0));
-    const sb=s=>{const m={pending:'bPend',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent',returned:'bRet'};const l={pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Parcel Sent',returned:'Returned'};return`<span class="badge ${m[s]||'bPend'}">${l[s]||s}</span>`;};
+    const sb=s=>{const m={pending:'bPend',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent',returned:'bRet'};const l={pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Parcel Sent',returned:'Returned'};return`<span class="badge ${m[s]||'bPend'}">${l[s]||esc(s)}</span>`;};
     const totalShown=orders.reduce((s,o)=>s+(o.status!=='cancelled'?Number(o.total||0):0),0);
     const counts={
       all:allOrders.length,
@@ -5700,8 +5808,8 @@ function renderOrdersView(){
           <td style="font-size:13px">${esc(o.recvPhone&&o.recvPhone!==o.ordererPhone?o.recvPhone:'-')}</td>
           <td style="font-weight:700">${cur(o.total)}</td>
           <td><span class="badge ${o.payMethod==='paid'?'bDone':'bPend'}">${o.payMethod==='paid'?'PAID':'COD'}</span></td>
-          <td>${sb(o.status)}${o.status==='parcel_sent'&&o.expectedDate?`<div style="font-size:10px;color:${overdue?'var(--red)':'var(--t3)'};margin-top:2px">${overdue?'⏰ বিলম্বিত':'🗓️ '+o.expectedDate}</div>`:''}</td>
-          <td style="font-size:12px;color:var(--t2)">${o.orderDate||'-'}</td>
+          <td>${sb(o.status)}${o.status==='parcel_sent'&&o.expectedDate?`<div style="font-size:10px;color:${overdue?'var(--red)':'var(--t3)'};margin-top:2px">${overdue?'⏰ বিলম্বিত':'🗓️ '+esc(o.expectedDate)}</div>`:''}</td>
+          <td style="font-size:12px;color:var(--t2)">${esc(o.orderDate||'-')}</td>
           <td><div style="display:flex;gap:5px">
             <button class="btn bS bSm bIco" onclick="togglePriority('${o.id}',${o.priority?'true':'false'})" title="গুরুত্বপূর্ণ" style="${o.priority?'color:var(--yellow)':''}">${o.priority?'⭐':'☆'}</button>
             <button class="btn bS bSm bIco" onclick="viewOrder('${o.id}')">👁️</button>
@@ -5715,7 +5823,7 @@ function renderOrdersView(){
 }
 async function viewOrder(id){
   const d=await getDoc(BDoc('orders',id));const o={id,...d.data()};
-  const sb=s=>{const m={pending:'bPend',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent',returned:'bRet'};const l={pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Parcel Sent',returned:'Returned'};return`<span class="badge ${m[s]||'bPend'}">${l[s]||s}</span>`;};
+  const sb=s=>{const m={pending:'bPend',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent',returned:'bRet'};const l={pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Parcel Sent',returned:'Returned'};return`<span class="badge ${m[s]||'bPend'}">${l[s]||esc(s)}</span>`;};
   $('ordMod').innerHTML=`
   <div class="mH"><h3>📋 ${esc(o.num)}</h3><button class="btn bS bIco" onclick="closeMov('ordMOvl')">✕</button></div>
   <div class="mB">
@@ -5730,7 +5838,7 @@ async function viewOrder(id){
       <thead><tr style="border-bottom:1px solid var(--border)"><th style="padding:8px"></th><th style="padding:8px">Product</th><th style="text-align:center;padding:8px">Qty</th><th style="text-align:right;padding:8px">Price</th><th style="text-align:right;padding:8px">Total</th></tr></thead>
       <tbody>${(o.items||[]).map(it=>`<tr style="border-bottom:1px solid var(--border)">
         <td style="padding:8px;width:38px">${it.image?`<img loading="lazy" src="${esc(it.image)}" style="width:34px;height:34px;border-radius:7px;object-fit:cover;background:#fff"/>`:'<div style="width:34px;height:34px;border-radius:7px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px">📦</div>'}</td>
-        <td style="padding:10px 8px;font-weight:500">${esc(it.name)}</td><td style="text-align:center;padding:10px 8px">${it.qty}</td><td style="text-align:right;padding:10px 8px">${cur(it.price)}</td><td style="text-align:right;padding:10px 8px;font-weight:700">${cur(it.lineTotal)}</td></tr>`).join('')}</tbody>
+        <td style="padding:10px 8px;font-weight:500">${esc(it.name)}</td><td style="text-align:center;padding:10px 8px">${esc(String(it.qty??''))}</td><td style="text-align:right;padding:10px 8px">${cur(it.price)}</td><td style="text-align:right;padding:10px 8px;font-weight:700">${cur(it.lineTotal)}</td></tr>`).join('')}</tbody>
     </table>
     <div style="background:var(--card);border-radius:10px;padding:14px;margin-bottom:14px">
       <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--t2);margin-bottom:5px"><span>Subtotal</span><span>${cur(o.subtotal)}</span></div>
@@ -5757,7 +5865,7 @@ async function viewOrder(id){
       </div>
     </div>
     <div id="parcelDeadlineBox" style="display:none"></div>
-    ${o.status==='parcel_sent'&&o.expectedDate?`<div style="font-size:12px;color:${isOrderOverdue(o)?'var(--red)':'var(--t2)'};margin-top:8px;padding:8px 12px;background:var(--card);border-radius:8px">🗓️ প্রত্যাশিত ডেলিভারি: <strong>${o.expectedDate}</strong>${isOrderOverdue(o)?' — ⏰ সময় পার হয়েছে':''}${o.deadlineNote?`<br><span style="color:var(--t3)">📝 ${esc(o.deadlineNote)}</span>`:''}</div>`:''}
+    ${o.status==='parcel_sent'&&o.expectedDate?`<div style="font-size:12px;color:${isOrderOverdue(o)?'var(--red)':'var(--t2)'};margin-top:8px;padding:8px 12px;background:var(--card);border-radius:8px">🗓️ প্রত্যাশিত ডেলিভারি: <strong>${esc(o.expectedDate)}</strong>${isOrderOverdue(o)?' — ⏰ সময় পার হয়েছে':''}${o.deadlineNote?`<br><span style="color:var(--t3)">📝 ${esc(o.deadlineNote)}</span>`:''}</div>`:''}
     <div id="oNoteBox" style="margin-top:10px"></div>
     ${o.notes?`<div class="afG" style="margin-top:10px"><label class="afL">Notes</label><div style="padding:10px;background:var(--card);border-radius:8px;font-size:13px">${esc(o.notes)}</div></div>`:''}
     ${aiEnabled()?`
@@ -5985,7 +6093,7 @@ function renderCustsView(){
           <td style="color:var(--t2)">${cur((c.spent||0)/(c.orders||1))}</td>
           <td><div style="display:flex;gap:5px">
             <button class="btn bS bSm bIco" onclick="viewCust('${c.id}')">👁️</button>
-            <button class="btn bD bSm bIco" onclick="delCust('${c.id}','${esc(c.name)}')">🗑️</button>
+            <button class="btn bD bSm bIco" onclick="delCust('${c.id}',${jsArg(c.name)})">🗑️</button>
           </div></td>
         </tr>`).join('')}</tbody>
       </table></div>`}
@@ -5996,7 +6104,7 @@ function renderCustsView(){
 async function viewCust(id){
   const cd=await getDoc(BDoc('customers',id));const c={id,...cd.data()};
   let orders=[];try{const os=await getDocs(query(BCol('orders'),where('custId','==',id)));orders=os.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));}catch{}
-  const sb=s=>{const m={pending:'bPend',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent',returned:'bRet'};const l={pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Sent',returned:'Returned'};return`<span class="badge ${m[s]||'bPend'}">${l[s]||s}</span>`;};
+  const sb=s=>{const m={pending:'bPend',completed:'bDone',cancelled:'bCanc',parcel_sent:'bSent',returned:'bRet'};const l={pending:'Pending',completed:'Completed',cancelled:'Cancelled',parcel_sent:'Sent',returned:'Returned'};return`<span class="badge ${m[s]||'bPend'}">${l[s]||esc(s)}</span>`;};
   $('custMod').innerHTML=`
   <div class="mH"><h3>👤 ${esc(c.name)}</h3><button class="btn bS bIco" onclick="closeMov('custMOvl')">✕</button></div>
   <div class="mB">
@@ -6011,7 +6119,7 @@ async function viewCust(id){
     ${orders.length===0?'<p style="color:var(--t2);font-size:14px">No orders</p>':`
     <div class="tWrap"><table style="font-size:13px">
       <thead><tr style="border-bottom:1px solid var(--border)"><th style="padding:8px">#</th><th style="padding:8px;text-align:right">Total</th><th style="padding:8px">Status</th><th style="padding:8px;text-align:right">Date</th></tr></thead>
-      <tbody>${orders.map(o=>`<tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px"><code style="color:var(--acc2)">${esc(o.num)}</code></td><td style="text-align:right;padding:10px 8px;font-weight:700">${cur(o.total)}</td><td style="padding:10px 8px">${sb(o.status)}</td><td style="text-align:right;padding:10px 8px;color:var(--t2)">${o.orderDate||'-'}</td></tr>`).join('')}</tbody>
+      <tbody>${orders.map(o=>`<tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px"><code style="color:var(--acc2)">${esc(o.num)}</code></td><td style="text-align:right;padding:10px 8px;font-weight:700">${cur(o.total)}</td><td style="padding:10px 8px">${sb(o.status)}</td><td style="text-align:right;padding:10px 8px;color:var(--t2)">${esc(o.orderDate||'-')}</td></tr>`).join('')}</tbody>
     </table></div>`}
   </div>`;
   $('custMOvl').classList.add('open');
@@ -6383,7 +6491,7 @@ async function pgReports(){
         <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;align-items:center">
           <div>
             <div style="font-weight:600">${i+1}. ${esc(c.name)}</div>
-            <div style="color:var(--t2);font-size:11px">${esc(c.phone)} · ${c.orders} orders</div>
+            <div style="color:var(--t2);font-size:11px">${esc(c.phone)} · ${Number(c.orders||0)} orders</div>
           </div>
           <div style="font-weight:800;color:var(--acc2)">${cur(c.spend)}</div>
         </div>`).join('')}
@@ -6576,8 +6684,8 @@ async function pgTeam(){
           <td style="font-size:12px;color:var(--t3)">${u.createdAt?fdate(u.createdAt):'-'}</td>
           <td><div style="display:flex;gap:5px;flex-wrap:wrap">
             <button class="btn bP bSm" onclick="openEditMod('${u.id}')">✏️ Edit</button>
-            <button class="btn bY bSm" onclick="resetModPw('${u.id}','${esc(u.username)}','${esc(u.bizId||'')}')">🔑 Reset PW</button>
-            <button class="btn bD bSm" onclick="delMod('${u.id}','${esc(u.username)}')">🗑️ Remove</button>
+            <button class="btn bY bSm" onclick="resetModPw('${u.id}',${jsArg(u.username)},${jsArg(u.bizId||'')})">🔑 Reset PW</button>
+            <button class="btn bD bSm" onclick="delMod('${u.id}',${jsArg(u.username)})">🗑️ Remove</button>
           </div></td>
         </tr>`).join('')}</tbody>
       </table></div>`}
