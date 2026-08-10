@@ -19,17 +19,31 @@
 <script>
 (function(){
   // Force order link display if hash is present
-  if(location.hash.startsWith('#order/')){
+  const hash = location.hash.toLowerCase();
+  if(hash.startsWith('#order/') || hash.startsWith('#shop/')){
     document.addEventListener('DOMContentLoaded', ()=>{
+       const ls = document.getElementById('loadScreen');
        const app = document.getElementById('appWrap');
        const login = document.getElementById('loginWrap');
        if(app) app.classList.remove('show');
        if(login) login.classList.remove('show');
-       // Small delay to let Firebase initialize before calling checkOrderLink
-       setTimeout(()=>{ if(typeof checkOrderLink === 'function') checkOrderLink(); }, 100);
+       
+       // If it's an order or shop link, we'll handle the loading inside their own functions
+       // We can hide the main load screen sooner to show the specific spinner
+       if(ls) {
+         ls.classList.add('hide');
+         setTimeout(() => { ls.style.display = 'none'; }, 500);
+       }
+       
+       // Small delay to let Firebase initialize before calling check functions
+       setTimeout(()=>{ 
+         if(typeof checkOrderLink === 'function') checkOrderLink(); 
+         else if(typeof checkPublicShop === 'function') checkPublicShop();
+       }, 200);
     });
   }
 })();
+
 
 (function(){
   'use strict';
@@ -683,9 +697,9 @@ img{max-width:100%}
 
 <!-- LOADING -->
 <div id="loadScreen">
-  <div class="loadLogo">D</div>
-  <div class="spin"></div>
-  <p style="color:var(--t2);font-size:14px">Connecting to Drystan...</p>
+  <div class="loadLogo" style="animation:glowPulse 2s infinite">D</div>
+  <div class="spin" style="margin-top:20px;border-top-color:var(--acc)"></div>
+  <p style="color:var(--t2);font-size:14px;margin-top:15px;font-weight:600;letter-spacing:0.5px">Connecting to Drystan...</p>
 </div>
 
 <!-- OWNER PANEL -->
@@ -1480,7 +1494,10 @@ async function loadOrderLink(bizId,linkId){
   let host=$('publicWrap');
   if(!host){host=document.createElement('div');host.id='publicWrap';host.style.cssText='position:fixed;inset:0;z-index:600;overflow-y:auto;background:var(--bg)';document.body.appendChild(host);}
   host.style.display='block';
-  host.innerHTML='<div style="display:flex;align-items:center;justify-content:center;min-height:100vh"><div class="spin"></div></div>';
+  host.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)">
+    <div class="spin" style="border-top-color:var(--acc);width:40px;height:40px"></div>
+    <div style="margin-top:16px;font-size:14px;color:var(--t2);font-weight:600">অর্ডার লোড হচ্ছে...</div>
+  </div>`;
   try{
     // Reset state fresh for THIS link (prevents any cross-link mixing)
     _olBiz=bizId;_olId=linkId;_olCart=[];_olData=null;_olCfg=null;_olOpenCardIdx=null;_olSelectedVariant={};
