@@ -5107,22 +5107,14 @@ async function pgTools(){
 
     <!-- STEADFAST COURIER INTEGRATION -->
     <div class="card" id="toolSec_steadfast" style="border-color:rgba(16,185,129,.25)">
-      <div class="cardTitle">🚚 Steadfast Courier Integration</div>
-      <div class="al aI" style="font-size:12px;margin-bottom:14px">
-        📦 Steadfast API দিয়ে orders automatically courier এ পাঠানো যাবে। API key লাগবে।<br/>
-        <button onclick="showSteadfastGuide()" style="background:none;border:none;color:var(--acc2);text-decoration:underline;cursor:pointer;font-size:12px;padding:4px 0;font-family:inherit">📖 কীভাবে API key পাবো? — বিস্তারিত গাইড দেখুন</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <div class="cardTitle" style="margin:0">🚚 Steadfast Courier</div>
+        <span style="font-size:11px;font-weight:800;padding:6px 10px;border-radius:999px;background:${stConfigured?'rgba(16,185,129,.12)':'rgba(245,158,11,.12)'};color:${stConfigured?'var(--green)':'var(--yellow)'}">${stConfigured?'● Connected':'● Not configured'}</span>
       </div>
-      <div class="afG"><label class="afL">🔐 Secure Courier Backend Webhook <span style="font-size:10px;color:var(--t3)">(recommended — API secret backend এ রাখুন)</span></label><input class="afI" id="sf_webhook" value="${esc(G.cfg.courierWebhookUrl||'')}" placeholder="https://...cloudfunctions.net/sendCourier"/></div>
-      <div class="afG"><label class="afL">Steadfast API Key</label><input class="afI" id="sf_key" value="${esc(stKey)}" placeholder="${stConfigured?'Stored securely — enter only to replace':'Your API Key'}"/></div>
-      <div class="afG"><label class="afL">Steadfast Secret Key</label><input class="afI" id="sf_secret" value="${esc(stSecret)}" placeholder="${stConfigured?'Stored securely — enter only to replace':'Your Secret Key'}"/></div>
-      <div class="afG"><label class="afL">🛡️ Fraud-Check API Key <span style="font-size:10px;color:var(--t3)">(optional — fraudbd.com ইত্যাদি থেকে)</span></label><input class="afI" id="sf_fraud" value="${esc(G.cfg.fraudApiKey||'')}" placeholder="ঐচ্ছিক — না দিলে external site খুলবে"/></div>
-      <button class="btn bG bFull" onclick="saveSteadfastConfig()">💾 Save Steadfast Config</button>
-      ${(stConfigured||G.cfg.courierWebhookUrl)?`
-      <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
-        <div style="font-weight:600;font-size:13px;margin-bottom:10px">📋 Send Pending Orders to Steadfast</div>
-        <button class="btn bP bFull" onclick="sendToSteadfast()">🚀 Send All Pending Orders</button>
-        <div id="sfResult" style="margin-top:10px"></div>
-      </div>`:''}
+      <div class="afG"><label class="afL">Steadfast API Key</label><input class="afI" id="sf_key" autocomplete="off" spellcheck="false" placeholder="${stConfigured?'Stored securely — enter only to replace':'Enter API Key'}"/></div>
+      <div class="afG"><label class="afL">Steadfast Secret Key</label><input class="afI" id="sf_secret" type="password" autocomplete="new-password" spellcheck="false" placeholder="${stConfigured?'Stored securely — enter only to replace':'Enter Secret Key'}"/></div>
+      <button class="btn bG bFull" id="sfSaveBtn" onclick="saveSteadfastConfig()">💾 Save & Verify</button>
+      <div id="sfConfigMsg" style="font-size:11px;color:var(--t3);margin-top:8px;line-height:1.6">Credentials are stored encrypted on the secure backend.</div>
     </div>
 
     <!-- REDX COURIER -->
@@ -5832,35 +5824,40 @@ window.calcStockValue=async()=>{
 window.saveSteadfastConfig=async()=>{
   const key=$('sf_key')?.value.trim()||'';
   const secret=$('sf_secret')?.value.trim()||'';
-  const fraud=$('sf_fraud')?.value.trim()||'';
-  const webhook=$('sf_webhook')?.value.trim()||'';
+  const btn=$('sfSaveBtn');
+  const msg=$('sfConfigMsg');
+  if(!key&&!secret&&G.steadfastConfigured){toast('Steadfast already connected. নতুন key দিলে দুটো field পূরণ করুন।','info');return;}
+  if(!key||!secret){toast('Steadfast API Key এবং Secret Key দুটোই দিন','err');return;}
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Verifying...';}
+  if(msg){msg.style.color='var(--t2)';msg.textContent='Steadfast credentials verify করা হচ্ছে...';}
   try{
-    // If either credential field is entered, require both and move them to Worker/KV.
-    if(key||secret){
-      if(!key||!secret){toast('Steadfast API Key এবং Secret Key দুটোই দিন','err');return;}
-      const resp=await secureApiFetch('/v1/steadfast/config',{
-        method:'POST',
-        body:JSON.stringify({apiKey:key,secretKey:secret})
-      });
-      const data=await resp.json().catch(()=>({}));
-      if(!resp.ok||!data.ok)throw new Error(data.error||'Secure Steadfast config save failed');
-      G.steadfastConfigured=true;
-    }
-
-    // Keep only non-Steadfast-secret settings in Firestore and remove any legacy copies.
-    await updateDoc(BCfg(),{
-      steadfastKey:deleteField(),
-      steadfastSecret:deleteField(),
-      fraudApiKey:fraud,
-      courierWebhookUrl:webhook
+    const resp=await secureApiFetch('/v1/steadfast/config',{
+      method:'POST',
+      body:JSON.stringify({apiKey:key,secretKey:secret})
     });
-    delete G.cfg.steadfastKey;
-    delete G.cfg.steadfastSecret;
-    G.cfg.fraudApiKey=fraud;
-    G.cfg.courierWebhookUrl=webhook;
-    toast(key||secret?'✅ Steadfast credentials saved securely!':'✅ Config saved!');
-    pgTools();
-  }catch(e){toast(e.message,'err');}
+    const data=await resp.json().catch(()=>({}));
+    if(!resp.ok||!data.ok)throw new Error(data.error||'Steadfast credential verification failed');
+    G.steadfastConfigured=true;
+    try{
+      await updateDoc(BCfg(),{
+        steadfastKey:deleteField(),
+        steadfastSecret:deleteField(),
+        fraudApiKey:deleteField(),
+        courierWebhookUrl:deleteField()
+      });
+      delete G.cfg.steadfastKey;delete G.cfg.steadfastSecret;delete G.cfg.fraudApiKey;delete G.cfg.courierWebhookUrl;
+    }catch{}
+    if($('sf_key'))$('sf_key').value='';
+    if($('sf_secret'))$('sf_secret').value='';
+    if(msg){msg.style.color='var(--green)';msg.textContent='✅ Connected. Credentials verified and saved securely.';}
+    toast('✅ Steadfast connected successfully!','ok');
+    setTimeout(()=>pgTools(),600);
+  }catch(e){
+    if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}
+    toast(e.message,'err');
+  }finally{
+    if(btn){btn.disabled=false;btn.innerHTML='💾 Save & Verify';}
+  }
 };
 
 // ── REDX / PATHAO COURIER ──
@@ -5941,83 +5938,6 @@ window.shareCatalogText=async()=>{
       window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank','noopener,noreferrer');
     }
   }catch(e){toast(e.message,'err');}
-};
-
-async function sendPendingOrdersToCourierWebhook(){
-  const url=G.cfg.courierWebhookUrl||'';
-  if(!url)return false;
-  const res=$('sfResult');
-  if(res)res.innerHTML='<div class="spin spinSm" style="margin:0 auto"></div>';
-  const snap=await getDocs(query(BCol('orders'),where('status','==','pending')));
-  const orders=snap.docs.map(d=>({id:d.id,...d.data()}));
-  if(!orders.length){if(res)res.innerHTML='<div class="al aI">No pending orders to send.</div>';return true;}
-  const resp=await fetch(url,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({bizId:G.bizId,orders})
-  });
-  if(!resp.ok)throw new Error('Courier backend failed: '+resp.status);
-  const data=await resp.json().catch(()=>({}));
-  for(const o of orders){
-    await updateDoc(BDoc('orders',o.id),{status:'parcel_sent',courierRequestedAt:serverTimestamp(),courierBatchId:data.batchId||'',updatedAt:serverTimestamp()});
-  }
-  if(res)res.innerHTML=`<div class="al aO">✅ Backend courier request sent: ${orders.length} orders</div>`;
-  toast(`Courier backend: ${orders.length} orders sent`,'ok');
-  return true;
-}
-window.sendToSteadfast=async()=>{
-  if(G.cfg.courierWebhookUrl){
-    try{if(await sendPendingOrdersToCourierWebhook())return;}
-    catch(e){toast(e.message,'err');return;}
-  }
-  const res=$('sfResult');
-  if(res)res.innerHTML='<div class="spin spinSm" style="margin:0 auto"></div>';
-  try{
-    const statusResp=await secureApiFetch('/v1/steadfast/config-status',{method:'GET'});
-    const statusData=await statusResp.json().catch(()=>({}));
-    if(!statusResp.ok||!statusData.configured){
-      throw new Error(statusData.error||'Save Steadfast API keys first');
-    }
-
-    const snap=await getDocs(query(BCol('orders'),where('status','==','pending')));
-    const orders=snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(!orders.length){if(res)res.innerHTML='<div class="al aI">No pending orders to send.</div>';return;}
-
-    let success=0,fail=0;
-    for(const o of orders){
-      try{
-        const resp=await secureApiFetch('/v1/steadfast/create-order',{
-          method:'POST',
-          body:JSON.stringify({
-            invoice:o.num,
-            recipient_name:o.recvName||o.cName,
-            recipient_phone:o.recvPhone||o.cPhone,
-            recipient_address:o.cAddr,
-            cod_amount:o.payMethod==='cod'?Number(o.total||0):0,
-            note:o.notes||''
-          })
-        });
-        const data=await resp.json().catch(()=>({}));
-        if(resp.ok&&data.ok){
-          await updateDoc(BDoc('orders',o.id),{
-            status:'parcel_sent',
-            steadfastCN:data.consignment?.tracking_code||'',
-            sentAt:serverTimestamp(),
-            updatedAt:serverTimestamp()
-          });
-          success++;
-        }else{
-          fail++;
-          console.warn('Steadfast send failed',data.error||resp.status);
-        }
-      }catch(e){fail++;console.warn('Steadfast send failed',e.message);}
-    }
-    if(res)res.innerHTML=`<div class="al aO">✅ Sent: ${success} orders | ❌ Failed: ${fail}</div>`;
-    toast(`Steadfast: ${success} sent, ${fail} failed`,fail?'info':'ok');
-  }catch(e){
-    if(res)res.innerHTML=`<div class="al aE">❌ ${esc(e.message)}</div>`;
-    toast(e.message,'err');
-  }
 };
 
 // ── EXPORT CSV ──
