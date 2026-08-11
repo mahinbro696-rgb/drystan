@@ -1346,6 +1346,30 @@ async function secureApiFetch(path,options={}){
   if(options.body&&!headers.has('Content-Type'))headers.set('Content-Type','application/json');
   return fetch(DRYSTAN_API_BASE+path,{...options,headers});
 }
+
+async function telegramOrderAlert(bizId,orderId,order,{authenticated=false}={}){
+  const payload={bizId,orderId,order};
+  try{
+    let resp;
+    if(authenticated){
+      resp=await secureApiFetch('/v1/telegram/order-alert',{method:'POST',body:JSON.stringify(payload)});
+    }else{
+      resp=await fetch(DRYSTAN_API_BASE+'/v1/telegram/order-alert',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(payload)
+      });
+    }
+    const data=await resp.json().catch(()=>({}));
+    if(!resp.ok||data.ok===false)throw new Error(data.error||'Telegram alert failed');
+    return data;
+  }catch(e){
+    console.warn('Telegram order alert:',e?.message||e);
+    return {ok:false,error:e?.message||String(e)};
+  }
+}
+window.telegramOrderAlert=telegramOrderAlert;
+
 async function testSecureBackend(){
   try{
     const resp=await secureApiFetch('/auth-test',{method:'GET'});
@@ -2149,6 +2173,13 @@ window.olConfirmOrder=async()=>{
       tx.update(linkRef,linkUpdate);
     });
 
+    // Telegram alert is best-effort; checkout success never depends on Telegram.
+    await telegramOrderAlert(_olBiz,orderRef.id,{
+      num,cName:name,cPhone:phone,ordererPhone:phone,recvName:name,recvPhone:phone,cAddr:addr,
+      district:distEn,thana:thanaEn,items,subtotal:sub,delivery,discount:0,total,
+      status:'pending',payMethod:'cod',paidAmount:0,dueAmount:total,source:'orderlink',notes:'[অর্ডার লিংক থেকে]'
+    }).catch(()=>{});
+
     // Open customer's WhatsApp/Messenger helper after database commit.
     const waBiz=(_olCfg.bizWhatsapp||_olCfg.bizPhone||'').replace(/[^0-9]/g,'');
     const waNum=waBiz.startsWith('0')?'88'+waBiz:(waBiz.startsWith('88')?waBiz:'88'+waBiz);
@@ -2443,6 +2474,14 @@ window.pubSubmitOrder=async()=>{
       notes:note?('[পাবলিক অর্ডার] '+note):'[পাবলিক অর্ডার]',
       items:oItems,stockDeducted:false,source:'public',createdAt:serverTimestamp()
     });
+    // Telegram alert is best-effort; the customer order stays successful even if Telegram is temporarily unavailable.
+    await telegramOrderAlert(_pubBiz,orderRef.id,{
+      num,cName:name,cPhone:phone,ordererPhone:phone,recvPhone:phone,recvName:name,cAddr:addr,
+      district:distEn,thana:thanaEn,payMethod:'cod',delivery:del,subtotal:sub,discount:0,total,
+      status:'pending',payStatus:'pending',notes:note?('[পাবলিক অর্ডার] '+note):'[পাবলিক অর্ডার]',
+      items:oItems,source:'public',paidAmount:0,dueAmount:total
+    }).catch(()=>{});
+
     // Success screen
     $('pubCartMod').innerHTML=`
     <div class="mB" style="text-align:center;padding:36px 24px">
@@ -4788,7 +4827,11 @@ window.submitOrder=async()=>{
     });
     if(existingOrder){toast('ℹ️ Duplicate submit blocked — existing order opened','info');G.lastOrder=existingOrder;clearCreateDraft();G.oItems=[];G.oForm=null;showReceipt(G.lastOrder);return;}
     // Convert serverTimestamp placeholders in local receipt object to harmless local data fields.
-    const receipt={...finalOrder,createdAt:undefined,updatedAt:undefined,confirmedAt:undefined,reservedAt:undefined};toast(finalOrder.backorder?'⚠️ Order created as Backorder':'Order created! 🎉',finalOrder.backorder?'warn':'ok');clearCreateDraft();G.lastOrder=receipt;G.oItems=[];G.oForm=null;showReceipt(receipt);
+    const receipt={...finalOrder,createdAt:undefined,updatedAt:undefined,confirmedAt:undefined,reservedAt:undefined};
+    if(finalOrder.status==='pending'){
+      await telegramOrderAlert(G.bizId,orderRef.id,{...receipt,source:receipt.source||'manual'},{authenticated:true}).catch(()=>{});
+    }
+    toast(finalOrder.backorder?'⚠️ Order created as Backorder':'Order created! 🎉',finalOrder.backorder?'warn':'ok');clearCreateDraft();G.lastOrder=receipt;G.oItems=[];G.oForm=null;showReceipt(receipt);
   }catch(e){toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML=`✅ Create Order · ${cur(createOrderTotals().total)}`;}}
 };
 
@@ -4998,17 +5041,17 @@ window.downloadRcptImg=async()=>{
 
 // ══ BUSINESS TOOLS PAGE ══
 async function pgTools(){
-  let stConfigured=false,stVerified=false,stProvider='';
+  let tgConnected=false,tgTokenConfigured=false,tgChatId='',tgUsername='',tgFirstName='';
   try{
-    const r=await secureApiFetch('/v1/steadfast/config-status',{method:'GET'});
+    const r=await secureApiFetch('/v1/telegram/status',{method:'GET'});
     const d=await r.json().catch(()=>({}));
-    stConfigured=!!(r.ok&&d.configured);
-    stVerified=!!(r.ok&&d.verified);
-    stProvider=d.providerHost||'';
+    tgConnected=!!(r.ok&&d.connected);
+    tgTokenConfigured=!!(r.ok&&d.tokenConfigured);
+    tgChatId=d.chatId||'';
+    tgUsername=d.username||'';
+    tgFirstName=d.firstName||'';
   }catch{}
-  G.steadfastConfigured=stConfigured;
-  G.steadfastVerified=stVerified;
-  const stKey='';const stSecret='';
+  G.telegramConnected=tgConnected;
   setC(`
   <div class="pH"><div><h1>🛠️ Business Tools</h1><p>Useful tools for your business</p></div></div>
 
@@ -5017,7 +5060,7 @@ async function pgTools(){
     ${[
       {id:'shop',ico:'🌐',label:'Public Online Shop',clr:'99,102,241'},
       {id:'orderlink',ico:'🔗',label:'কাস্টম অর্ডার লিংক',clr:'168,85,247'},
-      {id:'steadfast',ico:'🚚',label:'Steadfast Courier',clr:'16,185,129'},
+      {id:'telegram',ico:'✈️',label:'Telegram Order Alerts',clr:'34,158,217'},
       {id:'redx',ico:'🔴',label:'RedX Courier',clr:'220,38,38'},
       {id:'pathao',ico:'🟠',label:'Pathao Courier',clr:'229,57,53'},
       {id:'calc',ico:'🧮',label:'Business Calculator',clr:'99,102,241'},
@@ -5108,16 +5151,22 @@ async function pgTools(){
 
   <div class="g g2" style="gap:16px;margin-bottom:16px">
 
-    <!-- STEADFAST COURIER INTEGRATION -->
-    <div class="card" id="toolSec_steadfast" style="border-color:rgba(16,185,129,.25)">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px">
-        <div class="cardTitle" style="margin:0">🚚 Steadfast Courier</div>
-        <span style="font-size:11px;font-weight:800;padding:6px 10px;border-radius:999px;background:${stVerified?'rgba(16,185,129,.12)':stConfigured?'rgba(245,158,11,.12)':'rgba(107,114,128,.12)'};color:${stVerified?'var(--green)':stConfigured?'var(--yellow)':'var(--t3)'}">${stVerified?'● Connected':stConfigured?'● Saved — verify required':'● Not configured'}</span>
+    <!-- TELEGRAM ORDER ALERTS -->
+    <div class="card" id="toolSec_telegram" style="border-color:rgba(34,158,217,.30)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+        <div class="cardTitle" style="margin:0">✈️ Telegram Order Alerts</div>
+        <span style="font-size:11px;font-weight:800;padding:6px 10px;border-radius:999px;background:${tgConnected?'rgba(16,185,129,.12)':'rgba(107,114,128,.12)'};color:${tgConnected?'var(--green)':'var(--t3)'}">${tgConnected?'● Connected':'● Not connected'}</span>
       </div>
-      <div class="afG"><label class="afL">Steadfast API Key</label><input class="afI" id="sf_key" type="password" autocomplete="new-password" spellcheck="false" placeholder="${stConfigured?'Enter new API Key to verify/replace':'Enter API Key'}"/></div>
-      <div class="afG"><label class="afL">Steadfast Secret Key</label><input class="afI" id="sf_secret" type="password" autocomplete="new-password" spellcheck="false" placeholder="${stConfigured?'Enter new Secret Key to verify/replace':'Enter Secret Key'}"/></div>
-      <button class="btn bG bFull" id="sfSaveBtn" onclick="saveSteadfastConfig()">💾 Save & Verify</button>
-      <div id="sfConfigMsg" style="font-size:11px;color:var(--t3);margin-top:8px;line-height:1.6">${stVerified?`✅ Verified${stProvider?' via '+esc(stProvider):''}. Credentials are encrypted.`:stConfigured?'Credentials are saved, but current connection has not been verified. Enter fresh credentials and Save & Verify.':'Enter API Key + Secret Key. They will be verified before being saved.'}</div>
+      <div class="al aI" style="font-size:12px;margin-bottom:12px;line-height:1.7">
+        নতুন <b>Pending Order</b> তৈরি হলে order number, customer, phone, address, products, total এবং <b>Steadfast COD</b> এই Telegram chat-এ যাবে। এরপর courier entry আপনি manually করবেন।
+      </div>
+      <div style="font-size:11px;color:var(--t2);padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg2);margin-bottom:12px;line-height:1.8">
+        Bot token: <b style="color:${tgTokenConfigured?'var(--green)':'var(--red)'}">${tgTokenConfigured?'✅ Configured':'❌ TELEGRAM_BOT_TOKEN missing'}</b><br/>
+        Chat ID: <b style="color:${tgChatIdConfigured?'var(--green)':'var(--red)'}">${tgChatIdConfigured?'✅ Configured':'❌ TELEGRAM_CHAT_ID missing'}</b><br/>
+        ${tgConnected?'Status: <b style="color:var(--green)">Ready for pending-order alerts</b>':'দুইটি Cloudflare Secret ঠিকভাবে configure করুন।'}
+      </div>
+      <div id="tgConfigMsg" style="font-size:11px;color:var(--t3);margin-bottom:10px;line-height:1.6"></div>
+      <button class="btn bP bFull" id="tgTestBtn" onclick="testTelegramAlert()" ${tgConnected?'':'disabled'}>🧪 Send Test Message</button>
     </div>
 
     <!-- REDX COURIER -->
@@ -5824,6 +5873,56 @@ window.calcStockValue=async()=>{
   btn.disabled=false;btn.innerHTML='Recalculate';
 };
 
+
+window.detectTelegramChat=async()=>{
+  const btn=$('tgDetectBtn'),msg=$('tgConfigMsg');
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Detecting...';}
+  if(msg){msg.style.color='var(--t2)';msg.textContent='Telegram-এ পাঠানো DRYSTAN CONNECT message খোঁজা হচ্ছে...';}
+  try{
+    const resp=await secureApiFetch('/v1/telegram/detect-chat',{method:'POST'});
+    const data=await resp.json().catch(()=>({}));
+    if(!resp.ok||!data.ok)throw new Error(data.error||'Telegram chat detect failed');
+    G.telegramConnected=true;
+    if(msg){msg.style.color='var(--green)';msg.textContent='✅ Connected. Test message Telegram-এ পাঠানো হয়েছে.';}
+    toast('✅ Telegram connected!','ok');
+    setTimeout(()=>pgTools(),500);
+  }catch(e){
+    if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}
+    toast(e.message,'err');
+  }finally{
+    if(btn){btn.disabled=false;btn.innerHTML='🔎 Detect My Chat';}
+  }
+};
+
+window.testTelegramAlert=async()=>{
+  const btn=$('tgTestBtn'),msg=$('tgConfigMsg');
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Sending...';}
+  try{
+    const resp=await secureApiFetch('/v1/telegram/test',{method:'POST'});
+    const data=await resp.json().catch(()=>({}));
+    if(!resp.ok||!data.ok)throw new Error(data.error||'Telegram test failed');
+    if(msg){msg.style.color='var(--green)';msg.textContent='✅ Test message sent successfully.';}
+    toast('✅ Telegram test message sent!','ok');
+  }catch(e){
+    if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}
+    toast(e.message,'err');
+  }finally{
+    if(btn){btn.disabled=false;btn.innerHTML='🧪 Send Test';}
+  }
+};
+
+window.disconnectTelegramAlert=async()=>{
+  if(!confirm('Telegram order alerts disconnect করবেন?'))return;
+  try{
+    const resp=await secureApiFetch('/v1/telegram/disconnect',{method:'DELETE'});
+    const data=await resp.json().catch(()=>({}));
+    if(!resp.ok||!data.ok)throw new Error(data.error||'Disconnect failed');
+    G.telegramConnected=false;
+    toast('Telegram disconnected','info');
+    pgTools();
+  }catch(e){toast(e.message,'err');}
+};
+
 window.saveSteadfastConfig=async()=>{
   const key=$('sf_key')?.value.trim()||'';
   const secret=$('sf_secret')?.value.trim()||'';
@@ -6080,7 +6179,7 @@ async function viewOrder(id){
     <div class="ordPanel"><div class="ordPanelTitle"><span>📝 Notes</span></div><div style="font-size:12px;color:${o.notes?'var(--t2)':'var(--t3)'};line-height:1.7;white-space:pre-wrap;word-break:break-word">${esc(o.notes||'No notes')}</div>${aiEnabled()?`<button class="btn bFull bSm" style="margin-top:10px;background:linear-gradient(135deg,#A855F7,#7C3AED);color:#fff" onclick='aiRiskCheck(${esc(JSON.stringify({name:o.cName,phone:o.cPhone||o.ordererPhone,addr:o.cAddr,total:o.total,pay:o.payMethod,source:o.source})).replace(/'/g,"&#39;")})'>🤖 AI Risk Check</button><div id="aiRiskResult" style="margin-top:8px"></div>`:''}</div>
   </div><div style="display:grid;gap:12px;align-content:start">
     <div class="ordPanel"><div class="ordPanelTitle"><span>💰 Payment</span>${orderPaymentChip(o)}</div><div class="ordMoney"><div class="ordMoneyLine"><span>Method</span><b>${esc(o.paymentMethod||o.payMethod||'cod')}</b></div>${o.paymentTxnId?`<div class="ordMoneyLine"><span>Transaction</span><b>${esc(o.paymentTxnId)}</b></div>`:''}${o.paymentPhone?`<div class="ordMoneyLine"><span>Payment account</span><b>${esc(o.paymentPhone)}</b></div>`:''}<div class="ordMoneyLine"><span>Subtotal</span><b>${cur(o.subtotal)}</b></div>${Number(o.discount||0)>0?`<div class="ordMoneyLine"><span>Discount</span><b style="color:var(--green)">- ${cur(o.discount)}</b></div>`:''}<div class="ordMoneyLine"><span>Delivery</span><b>${cur(o.delivery)}</b></div><div class="ordMoneyLine"><span>Paid</span><b>${cur(p.paid)}</b></div><div class="ordMoneyLine"><span>Due</span><b style="color:${p.due?'var(--yellow)':'var(--green)'}">${cur(p.due)}</b></div><div class="ordMoneyLine total"><span>Total</span><span style="color:var(--acc2)">${cur(o.total)}</span></div></div></div>
-    <div class="ordPanel"><div class="ordPanelTitle"><span>⚙️ Fulfillment</span></div><div class="afG"><label class="afL">Order Status</label><select class="afI" id="oStSel" onchange="onOrderStatusChange(this.value)">${statusOptions.map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${orderStatusMeta(s).ico} ${orderStatusMeta(s).label}</option>`).join('')}</select><div style="font-size:10px;color:var(--t3);margin-top:5px">Only valid next steps are shown.</div></div><div class="afG"><label class="afL">Payment Status</label><select class="afI" id="oPstSel" onchange="onOrderPaymentEdit(this.value,${Number(o.total||0)})"><option value="pending" ${p.status==='pending'?'selected':''}>Unpaid</option><option value="partial" ${p.status==='partial'?'selected':''}>Partial</option><option value="paid" ${p.status==='paid'?'selected':''}>Paid</option></select></div><div class="afG" id="oPaidAmtWrap" style="display:${p.status==='partial'?'block':'none'}"><label class="afL">Paid Amount</label><input class="afI" id="oPaidAmt" type="number" min="0" max="${Number(o.total||0)}" value="${p.paid}"/></div><div id="parcelDeadlineBox"></div>${o.status==='parcel_sent'&&o.expectedDate?`<div style="font-size:11px;color:${isOrderOverdue(o)?'var(--red)':'var(--t2)'};padding:8px;background:var(--bg2);border-radius:9px">🗓️ Expected: <b>${esc(o.expectedDate)}</b>${isOrderOverdue(o)?' · ⏰ Overdue':''}</div>`:''}${tracking?`<div class="ordCourierBox"><div style="font-size:10px;color:var(--t2)">Courier tracking</div><div class="ordNum" style="margin-top:4px">${esc(tracking)}</div><button class="btn bS bSm" style="margin-top:7px" onclick="orderCopy('${esc(tracking)}')">📋 Copy Tracking</button></div>`:''}${courierReady&&(G.role==='admin'||G.role==='owner')?`<button class="btn bG bFull" id="singleCourierBtn" style="margin-top:8px" onclick="sendSingleOrderToSteadfast('${id}')">🚚 Send this order to Steadfast</button>`:''}</div>
+    <div class="ordPanel"><div class="ordPanelTitle"><span>⚙️ Fulfillment</span></div><div class="afG"><label class="afL">Order Status</label><select class="afI" id="oStSel" onchange="onOrderStatusChange(this.value)">${statusOptions.map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${orderStatusMeta(s).ico} ${orderStatusMeta(s).label}</option>`).join('')}</select><div style="font-size:10px;color:var(--t3);margin-top:5px">Only valid next steps are shown.</div></div><div class="afG"><label class="afL">Payment Status</label><select class="afI" id="oPstSel" onchange="onOrderPaymentEdit(this.value,${Number(o.total||0)})"><option value="pending" ${p.status==='pending'?'selected':''}>Unpaid</option><option value="partial" ${p.status==='partial'?'selected':''}>Partial</option><option value="paid" ${p.status==='paid'?'selected':''}>Paid</option></select></div><div class="afG" id="oPaidAmtWrap" style="display:${p.status==='partial'?'block':'none'}"><label class="afL">Paid Amount</label><input class="afI" id="oPaidAmt" type="number" min="0" max="${Number(o.total||0)}" value="${p.paid}"/></div><div id="parcelDeadlineBox"></div>${o.status==='parcel_sent'&&o.expectedDate?`<div style="font-size:11px;color:${isOrderOverdue(o)?'var(--red)':'var(--t2)'};padding:8px;background:var(--bg2);border-radius:9px">🗓️ Expected: <b>${esc(o.expectedDate)}</b>${isOrderOverdue(o)?' · ⏰ Overdue':''}</div>`:''}${tracking?`<div class="ordCourierBox"><div style="font-size:10px;color:var(--t2)">Courier tracking</div><div class="ordNum" style="margin-top:4px">${esc(tracking)}</div><button class="btn bS bSm" style="margin-top:7px" onclick="orderCopy('${esc(tracking)}')">📋 Copy Tracking</button></div>`:''}</div>
     <div class="ordPanel"><div class="ordPanelTitle"><span>🕘 Activity</span></div><div id="orderTimelineBox"><div class="spin spinSm"></div></div></div>
   </div></div></div>
   <div class="mF" style="justify-content:space-between;gap:8px;flex-wrap:wrap"><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn bS" onclick="togglePriority('${id}',${!!o.priority});closeMov('ordMOvl')">${o.priority?'☆ Remove Priority':'⭐ Priority'}</button>${G.role==='admin'||G.role==='owner'?`<button class="btn bS" onclick="archiveOrder('${id}',${o.archived===true?'false':'true'});closeMov('ordMOvl')">${o.archived===true?'♻️ Restore':'🗄️ Archive'}</button>`:''}</div><div style="display:flex;gap:7px"><button class="btn bS" onclick="closeMov('ordMOvl')">Close</button><button class="btn bP" id="ordSaveBtn" onclick="updOrdSt('${id}')">💾 Save Changes</button></div></div>`;
@@ -6125,69 +6224,6 @@ async function updOrdSt(id){const newStatus=$('oStSel')?.value;const payStatus=$
   const btn=$('ordSaveBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';}try{await transitionOrderAtomic(id,newStatus,{payStatus,paidAmount,extra,note:'Order workspace update'});toast('✅ Order updated');closeMov('ordMOvl');pgOrders();}catch(e){toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='💾 Save Changes';}}
 }
 window.updOrdSt=updOrdSt;
-async function reserveOrderInventoryAtomic(id){
-  const ref=BDoc('orders',id),ev=doc(OEvents(id));
-  let result={newlyReserved:false,statusBefore:'',wasReserved:false};
-  await runTransaction(db,async tx=>{
-    const os=await tx.get(ref);if(!os.exists())throw new Error('Order not found');const o=os.data();
-    result.statusBefore=o.status||'';result.wasReserved=o.stockReserved===true;
-    if(o.stockReserved===true)return;
-    // Compatibility: older active orders may already have reduced stock with stockDeducted=true.
-    if(o.stockDeducted===true&&['pending','confirmed','ready','parcel_sent'].includes(o.status)){
-      tx.update(ref,{stockReserved:true,stockDeducted:false,inventoryState:'reserved',updatedAt:serverTimestamp()});
-      tx.set(ev,{type:'inventory',title:'Existing stock hold normalized',fromStatus:o.status||'',toStatus:o.status||'',actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:'Legacy active deduction converted to reservation',createdAt:serverTimestamp()});
-      result.newlyReserved=true;return;
-    }
-    const pids=[...new Set((o.items||[]).map(i=>i.pid).filter(Boolean))],snaps={};
-    for(const pid of pids){const ps=await tx.get(BDoc('products',pid));if(!ps.exists())throw new Error('Product missing during reservation');snaps[pid]=ps;}
-    for(const pid of pids){const base=snaps[pid].data();let work={...base,variants:Array.isArray(base.variants)?base.variants.map(v=>({...v})):[]};for(const it of (o.items||[]).filter(x=>x.pid===pid))work=orderApplyStockDelta(work,it,-Number(it.qty||1),true);const patch={stock:Number(work.stock||0),updatedAt:serverTimestamp()};if(Array.isArray(base.variants))patch.variants=work.variants;tx.update(BDoc('products',pid),patch);}
-    tx.update(ref,{stockReserved:true,stockDeducted:false,inventoryState:'reserved',backorder:false,stockShortage:[],reservedAt:serverTimestamp(),updatedAt:serverTimestamp()});
-    tx.set(ev,{type:'inventory',title:'Stock reserved for courier',fromStatus:o.status||'',toStatus:o.status||'',actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:'Temporary hold before courier request',createdAt:serverTimestamp()});
-    result.newlyReserved=true;
-  });
-  return result;
-}
-
-async function releasePendingCourierReservationAtomic(id,reason='Courier request failed'){
-  const ref=BDoc('orders',id),ev=doc(OEvents(id));
-  await runTransaction(db,async tx=>{
-    const os=await tx.get(ref);if(!os.exists())return;const o=os.data();
-    // Pending orders are not supposed to keep stock reserved if courier booking fails.
-    if(o.status!=='pending'||o.stockReserved!==true||o.courier||o.trackingCode||o.steadfastCN)return;
-    const pids=[...new Set((o.items||[]).map(i=>i.pid).filter(Boolean))],snaps={};
-    for(const pid of pids){const ps=await tx.get(BDoc('products',pid));if(!ps.exists())throw new Error('Product missing while releasing reservation');snaps[pid]=ps;}
-    for(const pid of pids){const base=snaps[pid].data();let work={...base,variants:Array.isArray(base.variants)?base.variants.map(v=>({...v})):[]};for(const it of (o.items||[]).filter(x=>x.pid===pid))work=orderApplyStockDelta(work,it,Number(it.qty||1),false);const patch={stock:Number(work.stock||0),updatedAt:serverTimestamp()};if(Array.isArray(base.variants))patch.variants=work.variants;tx.update(BDoc('products',pid),patch);}
-    tx.update(ref,{stockReserved:false,stockDeducted:false,inventoryState:'unreserved',reservedAt:null,releasedAt:serverTimestamp(),updatedAt:serverTimestamp()});
-    tx.set(ev,{type:'inventory',title:'Courier reservation released',fromStatus:o.status||'',toStatus:o.status||'',actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:String(reason||'Courier request failed').slice(0,500),createdAt:serverTimestamp()});
-  });
-}
-
-window.sendSingleOrderToSteadfast=async id=>{
-  const btn=$('singleCourierBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Sending...';}
-  let reservationInfo=null;
-  try{
-    let d=await getDoc(BDoc('orders',id));if(!d.exists())throw new Error('Order not found');let o=d.data();
-    if(!['pending','confirmed','ready'].includes(o.status))throw new Error('Only processing orders can be sent to courier');
-    const statusResp=await secureApiFetch('/v1/steadfast/config-status',{method:'GET'});const sd=await statusResp.json().catch(()=>({}));if(!statusResp.ok||!sd.configured)throw new Error(sd.error||'Steadfast is not configured');
-    reservationInfo=await reserveOrderInventoryAtomic(id);
-    d=await getDoc(BDoc('orders',id));o=d.data();
-    const pay=orderPaymentState(o);
-    const r=await secureApiFetch('/v1/steadfast/create-order',{method:'POST',body:JSON.stringify({invoice:o.num,recipient_name:o.recvName||o.cName,recipient_phone:o.recvPhone||o.cPhone||o.ordererPhone,recipient_address:o.cAddr,cod_amount:pay.due,note:o.notes||''})});
-    const data=await r.json().catch(()=>({}));if(!r.ok||!data.ok)throw new Error(data.error||'Courier request failed');
-    const tracking=data.consignment?.tracking_code||'';
-    await transitionOrderAtomic(id,'parcel_sent',{allowCourierJump:true,payStatus:pay.status,paidAmount:pay.paid,extra:{courier:'steadfast',courierStatus:data.consignment?.status||'sent',trackingCode:tracking,steadfastCN:tracking,consignmentId:data.consignment?.consignment_id||null,expectedDate:plusDays(Number(G.cfg.parcelDeadlineDays||3)),courierSentAt:serverTimestamp()},eventType:'courier',eventTitle:'Sent to Steadfast',note:tracking?`Tracking: ${tracking}`:''});
-    toast('🚚 Sent to Steadfast');closeMov('ordMOvl');pgOrders();
-  }catch(e){
-    try{
-      // Pending orders must not stay reserved after a failed courier request.
-      const current=await getDoc(BDoc('orders',id));const o=current.exists()?current.data():null;
-      if(o?.status==='pending'&&o?.stockReserved===true&&!o?.courier&&!o?.trackingCode&&!o?.steadfastCN){
-        await releasePendingCourierReservationAtomic(id,e.message||'Courier request failed');
-      }
-    }catch(rollbackErr){console.warn('Courier reservation rollback failed:',rollbackErr);}
-    toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='🚚 Send this order to Steadfast';}
-  }
-};
 window.archiveOrder=async(id,archive=true)=>{if(!confirm(archive?'Archive this order?':'Restore this order?'))return;try{const ref=BDoc('orders',id),ev=doc(OEvents(id));await runTransaction(db,async tx=>{const s=await tx.get(ref);if(!s.exists())throw new Error('Order not found');tx.update(ref,{archived:!!archive,archivedAt:archive?serverTimestamp():null,archivedBy:archive?(G.user?.uid||''):'',updatedAt:serverTimestamp()});tx.set(ev,{type:'archive',title:archive?'Order archived':'Order restored',actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:'',createdAt:serverTimestamp()});});toast(archive?'Archived':'Restored');pgOrders();}catch(e){toast(e.message,'err');}};
 window.delOrder=(id)=>archiveOrder(id,true); // compatibility: hard-delete removed
 window.togglePriority=async(id,current)=>{try{const ref=BDoc('orders',id),ev=doc(OEvents(id));await runTransaction(db,async tx=>{const s=await tx.get(ref);if(!s.exists())throw new Error('Order not found');tx.update(ref,{priority:!current,updatedAt:serverTimestamp()});tx.set(ev,{type:'priority',title:!current?'Marked priority':'Priority removed',actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:'',createdAt:serverTimestamp()});});if(_orderCacheAll){const o=_orderCacheAll.find(x=>x.id===id);if(o)o.priority=!current;}renderOrdersView();toast(!current?'⭐ Priority set':'Priority removed');}catch(e){toast(e.message,'err');}};
@@ -7373,7 +7409,7 @@ async function pgHelp(){
           [T('Order tracking & receipts','অর্ডার ট্র্যাকিং ও রসিদ'),'🧾'],
           [T('Customer database','গ্রাহক তালিকা'),'👥'],
           [T('Profit & revenue analytics','লাভ ও আয়ের বিশ্লেষণ'),'📊'],
-          [T('Steadfast courier integration','স্টেডফাস্ট কুরিয়ার যুক্ত'),'🚚'],
+          [T('Telegram pending-order alerts','টেলিগ্রামে পেন্ডিং অর্ডার অ্যালার্ট'),'✈️'],
           [T('Team & role management','টিম ও রোল ব্যবস্থাপনা'),'🛡️'],
         ].map(([t,e])=>`<div style="display:flex;align-items:center;gap:8px;color:var(--t2)"><span>${e}</span><span>${t}</span></div>`).join('')}
       </div>
