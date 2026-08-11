@@ -854,6 +854,33 @@ img{max-width:100%}
 @media(max-width:760px){.ordHead h1{font-size:23px}.ordStats{grid-template-columns:repeat(2,minmax(0,1fr))}.ordStat{padding:11px}.ordStatVal{font-size:20px}.ordFilters{grid-template-columns:1fr 1fr}.ordFilters .sBar{grid-column:1/-1}.ordDesktopTable{display:none}.ordMobileList{display:grid}.ordListCard{background:transparent;border:none;overflow:visible}.ordPager{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-top:10px}.ordInfoGrid{grid-template-columns:1fr}.ordWorkspace{display:block}.ordPanel{margin-bottom:10px}.ordCreateSection{padding:12px}.ordCreateBottom{position:sticky;bottom:8px;z-index:10;background:rgba(13,17,23,.94);padding:8px;border:1px solid var(--border);border-radius:14px;backdrop-filter:blur(8px)}}
 @media(max-width:480px){.ordStats{grid-template-columns:1fr 1fr;gap:7px}.ordFilters{grid-template-columns:1fr}.ordFilters .sBar{grid-column:auto}.ordMBody{grid-template-columns:1fr 1fr}.ordMActions{grid-template-columns:repeat(2,1fr)}.ordHeadActions{width:100%}.ordHeadActions .btn{flex:1}.ordCreateBottom{flex-direction:column}.ordCreateBottom .btn{width:100%}}
 
+
+/* ===== CREATE ORDER — FINAL PRODUCTION UX ===== */
+.coDraftNotice{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid rgba(99,102,241,.24);background:rgba(99,102,241,.07);border-radius:13px;margin-bottom:12px;font-size:11.5px;color:var(--t2)}
+.coDraftNotice strong{color:var(--t1)}
+.coCustomerHit{display:none;align-items:center;justify-content:space-between;gap:10px;padding:10px 11px;margin-top:8px;border-radius:12px;background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.22);font-size:11.5px}
+.coCustomerHit.show{display:flex}.coCustomerHit b{color:var(--green)}
+.coSourceGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.coPaymentExtra{display:grid;gap:9px;padding:10px;border:1px dashed var(--border2);border-radius:12px;background:rgba(255,255,255,.018);margin-bottom:10px}
+.coProductGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(126px,1fr));gap:11px;max-height:455px;overflow:auto;padding:2px 3px 5px}
+.coProd{cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;min-width:0}
+.coProd:hover{transform:translateY(-2px);border-color:rgba(99,102,241,.55);box-shadow:0 10px 24px rgba(0,0,0,.16)}
+.coProd.disabled{opacity:.5;cursor:not-allowed}.coProdImg{width:100%;height:92px;object-fit:cover;background:#fff;display:block}.coProdPh{height:92px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:25px}
+.coProdBody{padding:9px}.coProdName{font-size:11.5px;font-weight:750;line-height:1.35;min-height:31px;word-break:break-word}.coProdPrice{font-size:13px;color:var(--green);font-weight:900;margin-top:4px}.coProdMeta{display:flex;justify-content:space-between;gap:5px;font-size:9.5px;color:var(--t3);margin-top:4px}
+.coVariantHead{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-bottom:2px}.coVariantHead span{font-size:12px;font-weight:800;min-width:0;word-break:break-word}
+.coSelected{display:flex;align-items:center;gap:11px;background:var(--bg2);border:1px solid var(--border);border-radius:13px;padding:10px;margin-bottom:8px;animation:fadeUp .2s ease both}
+.coSelectedImg{width:52px;height:52px;border-radius:10px;object-fit:cover;flex-shrink:0;background:#fff}.coSelectedPh{width:52px;height:52px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.coQty{display:flex;align-items:center;gap:6px;flex-shrink:0}.coQty button{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--t1);cursor:pointer;font-size:17px}.coQty button:disabled{opacity:.35;cursor:not-allowed}.coQty span{min-width:24px;text-align:center;font-size:13px;font-weight:850}.coQty .del{background:rgba(239,68,68,.12);color:var(--red);border-color:rgba(239,68,68,.18);font-size:13px}
+.coInventoryWarn{margin:10px 0 0;padding:9px 10px;border-radius:11px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);font-size:10.5px;color:var(--yellow);line-height:1.55}
+.coChecklist{display:grid;gap:7px;margin:11px 0;padding:10px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid var(--border)}.coCheck{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--t2)}.coCheck b.ok{color:var(--green)}.coCheck b.bad{color:var(--red)}
+.coSummaryTotalBtn{font-weight:850}.coCouponApplied{font-size:10.5px;color:var(--green);margin-top:5px;line-height:1.5}
+.coLocationGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.coDeliveryHint{font-size:10px;color:var(--t3);margin-top:-4px;margin-bottom:9px;line-height:1.5}
+.coBackorderBadge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;background:rgba(245,158,11,.12);color:var(--yellow);border:1px solid rgba(245,158,11,.22);padding:3px 7px;font-size:9.5px;font-weight:750}
+@media(max-width:760px){
+  .coSourceGrid,.coLocationGrid{grid-template-columns:1fr}.coProductGrid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:none}.coProdImg,.coProdPh{height:110px}.coProd:hover{transform:none}.coSelected{align-items:flex-start;flex-wrap:wrap}.coSelected .coQty{width:100%;justify-content:flex-end}.coDraftNotice{align-items:flex-start;flex-direction:column}.coCustomerHit{align-items:flex-start;flex-direction:column}.ordCreateSide{padding-bottom:76px}.ordCreateBottom{position:fixed;left:calc(var(--sbw,0px) + 10px);right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:25;box-shadow:0 12px 35px rgba(0,0,0,.32)}
+}
+@media(max-width:480px){.coProductGrid{gap:8px}.coProdBody{padding:8px}.coProdName{font-size:11px}.coQty button{width:42px;height:42px}.ordCreateBottom{left:10px;flex-direction:row}.ordCreateBottom .btn{width:auto}.ordCreateBottom .bS{flex:0 0 82px}.ordCreateBottom .bP{flex:1}}
+
 </style>
 </head>
 <body>
@@ -1302,7 +1329,7 @@ img{max-width:100%}
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import{getAuth,getIdToken,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,createUserWithEmailAndPassword,updatePassword,reauthenticateWithCredential,EmailAuthProvider}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import{getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,deleteField,query,where,orderBy,serverTimestamp,limit,onSnapshot,runTransaction}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import{getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,deleteField,query,where,orderBy,serverTimestamp,limit,onSnapshot,runTransaction,getCountFromServer}from"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const FC={apiKey:"AIzaSyDtoVVHuMKUiIbyQEOmEPyspzBNT5zxGC4",authDomain:"drystan-cfe3b.firebaseapp.com",projectId:"drystan-cfe3b",storageBucket:"drystan-cfe3b.firebasestorage.app",messagingSenderId:"419259525007",appId:"1:419259525007:web:25c283364579b356d74dfa"};
 const app=initializeApp(FC);
@@ -1366,17 +1393,35 @@ function currentPlanLimits(){
 async function enforcePlanLimit(kind){
   if(G.user?.uid===OWNER_AUTH_UID)return true;
   const limits=currentPlanLimits();
-  if(kind==='product'){
-    const count=(await getDocs(BCol('products'))).size;
-    if(count>=limits.products){toast(`আপনার ${currentPlan().toUpperCase()} plan এ product limit ${limits.products}. Owner upgrade করুন।`,'err');return false;}
+  try{
+    if(kind==='product'){
+      const count=(await getCountFromServer(BCol('products'))).data().count;
+      if(count>=limits.products){toast(`আপনার ${currentPlan().toUpperCase()} plan এ product limit ${limits.products}. Owner upgrade করুন।`,'err');return false;}
+    }
+    if(kind==='order'){
+      const now=new Date();
+      const start=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+      const next=new Date(now.getFullYear(),now.getMonth()+1,1);
+      const end=`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,'0')}-01`;
+      const q=query(BCol('orders'),where('orderDate','>=',start),where('orderDate','<',end));
+      const count=(await getCountFromServer(q)).data().count;
+      if(count>=limits.ordersPerMonth){toast(`এই মাসে order limit শেষ। Plan upgrade করুন।`,'err');return false;}
+    }
+    return true;
+  }catch{
+    // Compatibility fallback for projects/indexes where aggregation is temporarily unavailable.
+    if(kind==='product'){
+      const count=(await getDocs(BCol('products'))).size;
+      if(count>=limits.products){toast(`আপনার ${currentPlan().toUpperCase()} plan এ product limit ${limits.products}. Owner upgrade করুন।`,'err');return false;}
+    }
+    if(kind==='order'){
+      const monthKey=new Date().toISOString().slice(0,7);
+      const snap=await getDocs(BCol('orders'));
+      const count=snap.docs.filter(d=>String(d.data().orderDate||d.data().createdDate||'').startsWith(monthKey)).length;
+      if(count>=limits.ordersPerMonth){toast(`এই মাসে order limit শেষ। Plan upgrade করুন।`,'err');return false;}
+    }
+    return true;
   }
-  if(kind==='order'){
-    const monthKey=new Date().toISOString().slice(0,7);
-    const snap=await getDocs(BCol('orders'));
-    const count=snap.docs.filter(d=>String(d.data().orderDate||d.data().createdDate||'').startsWith(monthKey)).length;
-    if(count>=limits.ordersPerMonth){toast(`এই মাসে order limit শেষ। Plan upgrade করুন।`,'err');return false;}
-  }
-  return true;
 }
 
 // OWNER SECRET (hardcoded — never in Firestore)
@@ -1410,8 +1455,9 @@ function distLabel(en,bn){
   return `${bn} (${en})`;
 }
 function renderDistrictPicker(prefix){
+  const req=prefix==='of'?'<span style="color:var(--red)">*</span>':'<span style="font-size:10px;color:var(--t3)">(ঐচ্ছিক)</span>';
   return `<div class="afG">
-    <label class="afL">📍 জেলা <span style="font-size:10px;color:var(--t3)">(ঐচ্ছিক)</span></label>
+    <label class="afL">📍 জেলা ${req}</label>
     <input class="afI" id="${prefix}_distSearch" placeholder="🔍 জেলা খুঁজুন..." autocomplete="off" oninput="distFilterList('${prefix}','dist')" onfocus="distShowList('${prefix}','dist')"/>
     <input type="hidden" id="${prefix}_dist"/>
     <div id="${prefix}_distList" style="display:none;max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;margin-top:4px;background:var(--bg2)"></div>
@@ -1456,6 +1502,7 @@ window.distSelect=(prefix,kind,en,bn)=>{
     $(`${prefix}_thanaSearch`).value='';
     const tw=$(`${prefix}_thanaWrap`);if(tw)tw.style.display='block';
   }
+  if(prefix==='of'&&typeof window.onCreateLocationSelected==='function')window.onCreateLocationSelected(kind,en,bn);
 };
 // Close any open dropdown when clicking elsewhere
 document.addEventListener('click',(e)=>{
@@ -4538,459 +4585,181 @@ window.aiWriteDesc=async()=>{
 async function delProd(id,name){if(!confirm(`Delete "${name}"?`))return;await updateDoc(BDoc('products',id),{active:false});toast('Deleted');pgProds();}
 window.delProd=delProd;
 
-// ══ CREATE ORDER ══
+// ══ CREATE ORDER — FINAL PRODUCTION FLOW ══
+const CREATE_DRAFT_MAX_AGE=24*60*60*1000;
+let _createCustTimer=null;
+
+function createDraftKey(){return `drystan:createOrderDraft:${G.bizId||'unknown'}`;}
+function createNewIdempotencyKey(){try{return crypto.randomUUID();}catch{return `${Date.now()}_${Math.random().toString(36).slice(2,12)}`;}}
+function defaultCreateOrderForm(){
+  return {cName:'',ordererPhone:'',recvPhone:'',recvName:'',cAddr:'',district:'',thana:'',source:'manual',initialStatus:(G.cfg.manualOrderStartStatus==='confirmed'?'confirmed':'pending'),allowBackorder:false,paymentMethod:'cod',payStatus:'pending',paidAmount:0,paymentTxnId:'',paymentPhone:'',paymentNote:'',deliveryZone:'auto',delivery:Number(G.cfg.delivIn??G.cfg.delCOD??60),rLang:G.lang,orderDate:today(),delivDate:plus3(),notes:'',discount:0,discountReason:'',appliedCoupon:null,idempotencyKey:createNewIdempotencyKey()};
+}
+function loadCreateDraft(){
+  try{const raw=localStorage.getItem(createDraftKey());if(!raw)return null;const d=JSON.parse(raw);if(!d?.savedAt||Date.now()-d.savedAt>CREATE_DRAFT_MAX_AGE){localStorage.removeItem(createDraftKey());return null;}return d;}catch{return null;}
+}
+function saveCreateDraft(){
+  if(!G.oForm)return;try{localStorage.setItem(createDraftKey(),JSON.stringify({savedAt:Date.now(),form:G.oForm,items:G.oItems||[]}));}catch{}
+}
+window.createOrderDraftTouch=()=>{saveCreateDraft();syncCreateOrderReady();};
+window.resetCreateOrder=()=>{try{localStorage.removeItem(createDraftKey());}catch{}G.oForm=null;G.oItems=[];window._createCustomerMatch=null;pgNewOrder();};
+function clearCreateDraft(){try{localStorage.removeItem(createDraftKey());}catch{}}
+
+function createOrderTotals(items=G.oItems,form=G.oForm){
+  const sub=(items||[]).reduce((s,it)=>s+(Number(it.price||0)*Number(it.qty||1)),0);
+  const disc=Math.max(0,Number(form?.discount||0));
+  const del=Math.max(0,Number(form?.delivery||0));
+  const total=Math.max(0,sub-disc+del);
+  let paid=0;if(form?.payStatus==='paid')paid=total;else if(form?.payStatus==='partial')paid=Math.min(total,Math.max(0,Number(form?.paidAmount||0)));
+  return{sub,disc,del,total,paid,due:Math.max(0,total-paid)};
+}
+function createOrderReadiness(){
+  const f=G.oForm||{},phone=String(f.ordererPhone||'').trim();
+  const payAmtOK=!(f.payStatus==='partial'&&!(Number(f.paidAmount)>0&&Number(f.paidAmount)<createOrderTotals().total)),txnOK=!(['bkash','nagad','bank'].includes(f.paymentMethod)&&['partial','paid'].includes(f.payStatus))||!!String(f.paymentTxnId||'').trim();
+  const discountOK=!(Number(f.discount||0)>0&&!f.appliedCoupon&&!String(f.discountReason||'').trim());
+  const checks={customer:!!String(f.cName||'').trim(),phone:/^01[3-9]\d{8}$/.test(phone),district:!!String(f.district||'').trim(),address:!!String(f.cAddr||'').trim(),product:(G.oItems||[]).some(it=>it.pid&&Number(it.qty)>0),payment:payAmtOK&&txnOK,audit:discountOK};
+  return{checks,ready:Object.values(checks).every(Boolean)};
+}
+function syncCreateOrderReady(){
+  const r=createOrderReadiness(),box=$('coChecklist');if(box)box.innerHTML=Object.entries({customer:'Customer name',phone:'Valid phone',district:'District selected',address:'Delivery address',product:'At least 1 product',payment:'Payment details',audit:'Discount audit'}).map(([k,l])=>`<div class="coCheck"><span>${l}</span><b class="${r.checks[k]?'ok':'bad'}">${r.checks[k]?'✓ Ready':'• Required'}</b></div>`).join('');
+  const b=$('subOBtn');if(b){b.disabled=!r.ready;const t=createOrderTotals();b.innerHTML=`✅ Create Order · ${cur(t.total)}`;}
+}
+function createDeliveryAmount(zone,district){
+  if(zone==='custom')return Math.max(0,Number(G.oForm?.delivery||0));
+  const inside=Number(G.cfg.delivIn??G.cfg.delCOD??60),outside=Number(G.cfg.delivOut??G.cfg.delCOD??120);
+  const z=zone==='auto'?(district?(district==='Dhaka'?'inside':'outside'):'inside'):zone;
+  return z==='outside'?outside:inside;
+}
+window.applyCreateDeliveryCharge=()=>{if(!G.oForm)return;G.oForm.delivery=createDeliveryAmount(G.oForm.deliveryZone||'auto',G.oForm.district||'');const e=$('of_del');if(e)e.value=G.oForm.delivery;updTotal();saveCreateDraft();};
+window.onCreateDeliveryZone=v=>{G.oForm.deliveryZone=v;applyCreateDeliveryCharge();};
+window.onCreateLocationSelected=(kind,en)=>{if(!G.oForm)return;if(kind==='dist'){G.oForm.district=en;G.oForm.thana='';}else G.oForm.thana=en;applyCreateDeliveryCharge();saveCreateDraft();syncCreateOrderReady();};
+function syncCreateLocationUI(){
+  const f=G.oForm||{};if(f.district&&BD_DISTRICTS[f.district]){const bn=BD_DISTRICTS[f.district].bn;if($('of_dist'))$('of_dist').value=f.district;if($('of_distSearch'))$('of_distSearch').value=distLabel(f.district,bn);const tw=$('of_thanaWrap');if(tw)tw.style.display='block';if(f.thana){const pair=BD_DISTRICTS[f.district].t.find(x=>x[0]===f.thana);if($('of_thana'))$('of_thana').value=f.thana;if($('of_thanaSearch'))$('of_thanaSearch').value=distLabel(f.thana,pair?.[1]||f.thana);}}
+}
+
+function couponDate(v){try{if(!v)return null;if(v.toDate)return v.toDate();if(v.seconds)return new Date(v.seconds*1000);const d=new Date(v);return Number.isNaN(d.getTime())?null:d;}catch{return null;}}
+function couponEligibleSubtotal(c,items){
+  const pids=Array.isArray(c.productIds)?c.productIds:Array.isArray(c.products)?c.products:[],cats=Array.isArray(c.categories)?c.categories:Array.isArray(c.categoryIds)?c.categoryIds:[];
+  if(!pids.length&&!cats.length)return (items||[]).reduce((s,it)=>s+Number(it.lineTotal??(Number(it.price||0)*Number(it.qty||1))),0);
+  return (items||[]).filter(it=>(pids.length&&pids.includes(it.pid))||(cats.length&&cats.includes(it.category))).reduce((s,it)=>s+Number(it.lineTotal??(Number(it.price||0)*Number(it.qty||1))),0);
+}
+function validateCouponData(c,sub,items=null,customerUses=0){
+  const now=new Date(),start=couponDate(c.startsAt||c.startAt||c.startDate),end=couponDate(c.expiresAt||c.endAt||c.endDate||c.expiryDate);
+  if(c.active===false)throw new Error('Coupon inactive');if(start&&now<start)throw new Error('Coupon এখনো শুরু হয়নি');if(end&&now>end)throw new Error('Coupon expired');
+  const min=Number(c.minPurchase||c.minimum||0);if(min>0&&sub<min)throw new Error(`Minimum purchase ${cur(min)}`);
+  const limitN=Number(c.usageLimit||c.maxUses||0),uses=Number(c.uses||0);if(limitN>0&&uses>=limitN)throw new Error('Coupon usage limit শেষ');
+  const perCustomer=Number(c.perCustomerLimit||c.customerLimit||0);if(perCustomer>0&&Number(customerUses||0)>=perCustomer)throw new Error('এই customer coupon limit ব্যবহার করে ফেলেছেন');
+  const eligible=couponEligibleSubtotal(c,items||[]);if((Array.isArray(c.productIds)&&c.productIds.length||Array.isArray(c.products)&&c.products.length||Array.isArray(c.categories)&&c.categories.length||Array.isArray(c.categoryIds)&&c.categoryIds.length)&&eligible<=0)throw new Error('এই coupon selected product-এ প্রযোজ্য নয়');
+  const base=items?eligible:sub;let discount=c.type==='percent'?Math.round(base*Number(c.val||0)/100):Number(c.val||0);const max=Number(c.maxDiscount||0);if(max>0)discount=Math.min(discount,max);discount=Math.max(0,Math.min(base,discount));
+  return{discount,uses,limitN,eligible,perCustomer};
+}
+window.applyCoupon=async()=>{
+  const code=$('of_coupon')?.value.trim().toUpperCase(),msg=$('couponMsg');if(!code){if(msg){msg.style.color='var(--red)';msg.textContent='কোড লিখুন';}return;}
+  try{const snap=await getDocs(query(BCol('coupons'),where('code','==',code),limit(2)));if(snap.empty)throw new Error('কোড সঠিক নয়');const d=snap.docs[0],c=d.data(),sub=createOrderTotals().sub;if(sub<=0)throw new Error('আগে পণ্য যোগ করুন');const cartItems=(G.oItems||[]).map(it=>{const p=(window._opProdsCache||[]).find(x=>x.id===it.pid);return{...it,category:p?.category||p?.categoryId||'',lineTotal:Number(it.price||0)*Number(it.qty||1)}});const v=validateCouponData(c,sub,cartItems);G.oForm.appliedCoupon={id:d.id,code,type:c.type||'fixed',val:Number(c.val||0),discount:v.discount};G.oForm.discount=v.discount;G.oForm.discountReason='';if($('of_disc'))$('of_disc').value=v.discount;if($('coDiscountReason'))$('coDiscountReason').style.display='none';updTotal();saveCreateDraft();if(msg){msg.style.color='var(--green)';msg.textContent=`✅ ${code} applied · ${cur(v.discount)} discount`;}}
+  catch(e){G.oForm.appliedCoupon=null;if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}}
+};
+window.clearCreateCoupon=()=>{G.oForm.appliedCoupon=null;G.oForm.discount=0;G.oForm.discountReason='';if($('of_coupon'))$('of_coupon').value='';if($('of_disc'))$('of_disc').value=0;updTotal();saveCreateDraft();};
+
+function paymentExtraVisible(){return['bkash','nagad','bank'].includes(G.oForm?.paymentMethod);}
+window.syncCreatePaymentUI=()=>{const f=G.oForm||{},wrap=$('of_paidWrap'),extra=$('coPaymentExtra');if(wrap)wrap.style.display=f.payStatus==='partial'?'block':'none';if(extra)extra.style.display=paymentExtraVisible()?'grid':'none';const paid=$('of_paidAmount');if(paid&&f.payStatus!=='partial')paid.value=f.payStatus==='paid'?createOrderTotals().total:0;updTotal();saveCreateDraft();};
+window.onCreatePaymentMethodChange=v=>{G.oForm.paymentMethod=v;if(v==='cod'&&G.oForm.payStatus==='paid')G.oForm.payStatus='pending';const s=$('of_payStatus');if(s)s.value=G.oForm.payStatus;syncCreatePaymentUI();};
+window.onCreatePayStatusChange=v=>{G.oForm.payStatus=v;if(v==='pending')G.oForm.paidAmount=0;syncCreatePaymentUI();};
+window.updDel=()=>applyCreateDeliveryCharge();
+window.updTotal=()=>{const t=createOrderTotals();const tr=$('totRow');if(tr)tr.innerHTML=`<span>Total</span><span style="color:var(--acc2)">${cur(t.total)}</span>`;const sr=$('subRow');if(sr)sr.innerHTML=`<span>Subtotal</span><span>${cur(t.sub)}</span>`;const dr=$('delRow');if(dr)dr.innerHTML=`<span>Delivery</span><span>${cur(t.del)}</span>`;const dcr=$('discRow');if(dcr)dcr.innerHTML=`<span>Discount</span><span>${t.disc?'- '+cur(t.disc):cur(0)}</span>`;const pr=$('paidRow');if(pr)pr.textContent=cur(t.paid);const due=$('dueRow');if(due){due.textContent=cur(t.due);due.style.color=t.due?'var(--yellow)':'var(--green)';}syncCreateOrderReady();};
+
+window.lookupCreateCustomer=phone=>{clearTimeout(_createCustTimer);_createCustTimer=setTimeout(()=>lookupCreateCustomerNow(phone),350);};
+async function lookupCreateCustomerNow(phone){
+  const p=String(phone||'').replace(/\D/g,'');const box=$('coCustomerHit');if(box){box.classList.remove('show');box.innerHTML='';}window._createCustomerMatch=null;if(!/^01[3-9]\d{8}$/.test(p))return;
+  try{const qy=query(BCol('customers'),where('phone','==',p),limit(1)),s=await getDocs(qy);if(s.empty)return;const c={id:s.docs[0].id,...s.docs[0].data()};window._createCustomerMatch=c;if(box){box.classList.add('show');box.innerHTML=`<div><b>👤 Existing customer</b><div style="color:var(--t2);margin-top:2px">${esc(c.name||'Customer')} · ${Number(c.totalOrders||c.orders||0)} orders${c.addr?' · '+esc(String(c.addr).slice(0,55)):''}</div></div><button class="btn bG bSm" onclick="applyCreateCustomer()">Use saved info</button>`;}}
+  catch{}
+}
+window.applyCreateCustomer=()=>{const c=window._createCustomerMatch;if(!c||!G.oForm)return;G.oForm.cName=c.name||G.oForm.cName;G.oForm.cAddr=c.addressLine||c.addr||G.oForm.cAddr;G.oForm.district=c.district||G.oForm.district;G.oForm.thana=c.thana||G.oForm.thana;if($('of_cn'))$('of_cn').value=G.oForm.cName;if($('of_addr'))$('of_addr').value=G.oForm.cAddr;syncCreateLocationUI();applyCreateDeliveryCharge();saveCreateDraft();syncCreateOrderReady();toast('Saved customer info loaded','ok');};
+
+function findDistrictInText(text){const lo=String(text||'').toLowerCase();for(const [en,d] of Object.entries(BD_DISTRICTS)){if(lo.includes(en.toLowerCase())||String(text).includes(d.bn))return en;}return'';}
+function findThanaInText(text,district){if(!district||!BD_DISTRICTS[district])return'';const lo=String(text||'').toLowerCase();for(const [en,bn] of BD_DISTRICTS[district].t){if(lo.includes(en.toLowerCase())||String(text).includes(bn))return en;}return'';}
+window.doSmartPaste=()=>{const raw=$('smartPasteBox')?.value.trim();if(!raw){toast('Paste করার পর Auto Fill ক্লিক করুন','warn');return;}const lines=raw.split(/\n+/).map(x=>x.trim()).filter(Boolean);const phones=[];let name='',addr=[];for(const line of lines){const clean=line.replace(/\D/g,'');const ph=clean.startsWith('8801')?clean.slice(-11):clean;if(/^01[3-9]\d{8}$/.test(ph)){if(!phones.includes(ph))phones.push(ph);continue;}if(!name&&line.length>1&&line.length<70&&!/\d{4,}/.test(line)){name=line;continue;}addr.push(line);}const district=findDistrictInText(raw),thana=findThanaInText(raw,district);const preview=`নাম: ${name||'-'}\nOrderer: ${phones[0]||'-'}${phones[1]?`\nReceiver: ${phones[1]}`:''}\nDistrict: ${district||'-'}${thana?`\nThana: ${thana}`:''}\nAddress: ${addr.join(', ')||'-'}`;if(!confirm(`Auto Fill preview:\n\n${preview}\n\nApply করবেন?`))return;if(name)G.oForm.cName=name;if(phones[0])G.oForm.ordererPhone=phones[0];if(phones[1])G.oForm.recvPhone=phones[1];if(addr.length)G.oForm.cAddr=addr.join(', ');if(district)G.oForm.district=district;if(thana)G.oForm.thana=thana;if($('of_cn'))$('of_cn').value=G.oForm.cName;if($('of_op'))$('of_op').value=G.oForm.ordererPhone;if($('of_rph'))$('of_rph').value=G.oForm.recvPhone||'';if($('of_addr'))$('of_addr').value=G.oForm.cAddr;if($('smartPasteBox'))$('smartPasteBox').value='';syncCreateLocationUI();applyCreateDeliveryCharge();lookupCreateCustomer(G.oForm.ordererPhone);saveCreateDraft();syncCreateOrderReady();toast('✅ Auto Fill applied','ok');};
+
 async function pgNewOrder(){
-  if(G.lastOrder){showReceipt(G.lastOrder);return;}
-  loading();
+  if(G.lastOrder){showReceipt(G.lastOrder);return;}loading();
   try{
-    const snap=await getDocs(query(BCol('products'),where('active','==',true)));
-    const prods=snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>Number(p.stock)>0||(p.variants&&p.variants.some(v=>Number(v.stock||0)>0)));
-    window._opProdsCache=prods;
-    if(!G.oForm)G.oForm={cName:'',ordererPhone:'',recvPhone:'',recvName:'',cAddr:'',paymentMethod:'cod',payStatus:'pending',paidAmount:0,payMethod:'cod',delivery:G.cfg.delCOD||'150',rLang:G.lang,orderDate:today(),delivDate:plus3(),notes:'',discount:0};
-    const f=G.oForm;
-    if(!f.paymentMethod)f.paymentMethod=f.payMethod==='cod'?'cod':'cash';
-    if(!f.payStatus)f.payStatus=f.payMethod==='paid'?'paid':f.payMethod==='partial'?'partial':'pending';
-    if(f.paidAmount===undefined)f.paidAmount=f.payStatus==='paid'?999999:0;
-    const sub=G.oItems.reduce((s,it)=>s+(Number(it.price||0)*Number(it.qty||1)),0);
-    const disc=Number(f.discount)||0;
-    const del=Number(f.delivery)||0;
-    const total=Math.max(0,sub-disc+del);
-    const paid=f.payStatus==='paid'?total:Math.min(total,Math.max(0,Number(f.paidAmount)||0));
-    const due=Math.max(0,total-paid);
+    const snap=await getDocs(query(BCol('products'),where('active','==',true)));window._opProdsCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+    let restored=false;if(!G.oForm){const draft=loadCreateDraft();if(draft?.form){G.oForm={...defaultCreateOrderForm(),...draft.form,idempotencyKey:draft.form.idempotencyKey||createNewIdempotencyKey()};G.oItems=Array.isArray(draft.items)?draft.items:[];restored=true;}else G.oForm=defaultCreateOrderForm();}
+    if(!Array.isArray(G.oItems))G.oItems=[];const f=G.oForm;if(f.initialStatus==='confirmed')f.allowBackorder=false;const t=createOrderTotals();
     setC(`
-    <div class="ordHead"><div><h1>Create Order</h1><p>Customer → Product → Payment → Confirm. মোবাইল ও ডেস্কটপ—দুই জায়গায় দ্রুত order entry-এর জন্য সাজানো।</p></div><div class="ordHeadActions"><button class="btn bS" onclick="nav('orders')">← Orders</button></div></div>
+    <div class="ordHead"><div><h1>Create Order</h1><p>Fast, safe order entry — customer, delivery, products, payment and inventory in one flow.</p></div><div class="ordHeadActions"><button class="btn bS" onclick="nav('orders')">← Orders</button></div></div>
+    ${restored?`<div class="coDraftNotice"><div><strong>💾 Draft restored</strong><div style="margin-top:2px">গত ২৪ ঘণ্টার অসম্পূর্ণ order আবার চালু হয়েছে।</div></div><button class="btn bS bSm" onclick="resetCreateOrder()">Discard draft</button></div>`:''}
     <div class="ordCreateLayout">
       <div class="ordCreateMain">
-        <div class="ordCreateSection" style="border-color:rgba(99,102,241,.26)">
-          <div class="ordCreateSectionTitle">✨ Smart Paste</div>
-          <div style="font-size:11.5px;color:var(--t2);margin-bottom:9px">নাম, ফোন, ঠিকানা একসাথে paste করুন — Auto Fill সঠিক field-এ বসাবে।</div>
-          <textarea class="afI" id="smartPasteBox" rows="3" placeholder="Md Rahim&#10;01711234567&#10;Mirpur-10, Dhaka" style="font-size:13px"></textarea>
-          <button class="btn bP bSm" style="margin-top:8px" onclick="doSmartPaste()">⚡ Auto Fill</button>
-        </div>
-
-        <div class="ordCreateSection">
-          <div class="ordCreateSectionTitle">👤 Customer & Delivery</div>
-          <div class="afG"><label class="afL">Customer Name *</label><input class="afI" id="of_cn" value="${esc(f.cName)}" placeholder="Full name" oninput="G.oForm.cName=this.value"/></div>
-          <div class="afRow">
-            <div class="afG"><label class="afL">Orderer Phone *</label><input class="afI" id="of_op" inputmode="numeric" value="${esc(f.ordererPhone)}" placeholder="01XXXXXXXXX" oninput="G.oForm.ordererPhone=this.value"/></div>
-            <div class="afG"><label class="afL">Receiver Phone <span style="font-size:10px;color:var(--t3)">(blank = same)</span></label><input class="afI" id="of_rph" inputmode="numeric" value="${esc(f.recvPhone)}" placeholder="01XXXXXXXXX" oninput="G.oForm.recvPhone=this.value"/></div>
-          </div>
-          <div class="afG"><label class="afL">Receiver Name <span style="font-size:10px;color:var(--t3)">(if different)</span></label><input class="afI" id="of_rv" value="${esc(f.recvName)}" placeholder="Blank = same" oninput="G.oForm.recvName=this.value"/></div>
-          <div class="afG"><label class="afL">Delivery Address *</label><textarea class="afI" id="of_addr" rows="3" placeholder="House / Road / Area / District" oninput="G.oForm.cAddr=this.value">${esc(f.cAddr)}</textarea></div>
-        </div>
-
-        <div class="ordCreateSection">
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px"><div class="ordCreateSectionTitle" style="margin:0">📦 Products</div><button class="btn bP bSm" onclick="opShowProductGrid()" id="opAddMoreBtn" style="display:none">➕ Add More</button></div>
-          <div id="opBrowseArea">
-            <input class="afI" id="opSearchBox" placeholder="🔍 Search product..." oninput="filterProductPicker(this.value)" style="margin-bottom:12px"/>
-            <div id="productPickerGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;max-height:420px;overflow-y:auto;padding:2px"></div>
-          </div>
-          <div id="opSelectedItems" style="margin-top:6px"></div>
-        </div>
+        <div class="ordCreateSection" style="border-color:rgba(99,102,241,.26)"><div class="ordCreateSectionTitle">✨ Smart Paste V2</div><div style="font-size:11.5px;color:var(--t2);margin-bottom:9px">Name, one/two phone, district, thana ও address paste করুন — apply করার আগে preview দেখাবে।</div><textarea class="afI" id="smartPasteBox" rows="3" placeholder="Md Rahim&#10;01711234567&#10;Mirpur, Dhaka&#10;House 10, Road 5"></textarea><button class="btn bP bSm" style="margin-top:8px" onclick="doSmartPaste()">⚡ Preview & Auto Fill</button></div>
+        <div class="ordCreateSection"><div class="ordCreateSectionTitle">👤 Customer</div><div class="afG"><label class="afL">Customer Name *</label><input class="afI" id="of_cn" value="${esc(f.cName)}" maxlength="100" placeholder="Full name" oninput="G.oForm.cName=this.value;createOrderDraftTouch()"/></div><div class="afRow"><div class="afG"><label class="afL">Orderer Phone *</label><input class="afI" id="of_op" inputmode="numeric" maxlength="11" value="${esc(f.ordererPhone)}" placeholder="01XXXXXXXXX" oninput="G.oForm.ordererPhone=this.value;createOrderDraftTouch();lookupCreateCustomer(this.value)"/></div><div class="afG"><label class="afL">Receiver Phone <span style="font-size:10px;color:var(--t3)">(blank = same)</span></label><input class="afI" id="of_rph" inputmode="numeric" maxlength="11" value="${esc(f.recvPhone)}" placeholder="01XXXXXXXXX" oninput="G.oForm.recvPhone=this.value;createOrderDraftTouch()"/></div></div><div id="coCustomerHit" class="coCustomerHit"></div><div class="afG"><label class="afL">Receiver Name <span style="font-size:10px;color:var(--t3)">(if different)</span></label><input class="afI" id="of_rv" value="${esc(f.recvName)}" maxlength="100" placeholder="Blank = same" oninput="G.oForm.recvName=this.value;createOrderDraftTouch()"/></div></div>
+        <div class="ordCreateSection"><div class="ordCreateSectionTitle">📍 Delivery Location</div><div class="coLocationGrid">${renderDistrictPicker('of')}</div><div class="afG"><label class="afL">Detailed Address *</label><textarea class="afI" id="of_addr" rows="3" maxlength="500" placeholder="House / Road / Area / Landmark" oninput="G.oForm.cAddr=this.value;createOrderDraftTouch()">${esc(f.cAddr)}</textarea></div><div class="afG"><label class="afL">Delivery Zone</label><select class="afI" id="of_zone" onchange="onCreateDeliveryZone(this.value)"><option value="auto" ${f.deliveryZone==='auto'?'selected':''}>✨ Auto from district</option><option value="inside" ${f.deliveryZone==='inside'?'selected':''}>🏙️ Inside Dhaka</option><option value="outside" ${f.deliveryZone==='outside'?'selected':''}>🚚 Outside Dhaka</option><option value="custom" ${f.deliveryZone==='custom'?'selected':''}>✍️ Custom charge</option></select></div><div class="coDeliveryHint">Auto mode: Dhaka district → Inside Dhaka charge; অন্য district → Outside Dhaka charge. চাইলে Custom নির্বাচন করুন।</div></div>
+        <div class="ordCreateSection"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px"><div class="ordCreateSectionTitle" style="margin:0">📦 Products</div><button class="btn bP bSm" onclick="opShowProductGrid()" id="opAddMoreBtn" style="display:none">➕ Add More</button></div><div id="opBrowseArea"><input class="afI" id="opSearchBox" placeholder="🔍 Search name / বাংলা নাম / SKU / variant..." oninput="filterProductPicker(this.value)" style="margin-bottom:12px"/><div id="productPickerGrid" class="coProductGrid"></div></div><div id="opSelectedItems" style="margin-top:8px"></div><div class="coInventoryWarn">ℹ️ Pending order stock reserve করে না। Confirmed হলে stock atomically reserve হবে। Stock কম থাকলে Pending order Backorder হিসেবে save হবে এবং stock replenishment না হওয়া পর্যন্ত Confirm করা যাবে না।</div></div>
       </div>
-
       <div class="ordCreateSide">
-        <div class="ordCreateSection">
-          <div class="ordCreateSectionTitle">💳 Payment & Order Settings</div>
-          <div class="afG"><label class="afL">Payment Method</label><select class="afI" id="of_paymentMethod" onchange="onCreatePaymentMethodChange(this.value)">
-            <option value="cod" ${f.paymentMethod==='cod'?'selected':''}>🚚 Cash on Delivery</option>
-            <option value="bkash" ${f.paymentMethod==='bkash'?'selected':''}>📱 bKash</option>
-            <option value="nagad" ${f.paymentMethod==='nagad'?'selected':''}>📱 Nagad</option>
-            <option value="bank" ${f.paymentMethod==='bank'?'selected':''}>🏦 Bank Transfer</option>
-            <option value="cash" ${f.paymentMethod==='cash'?'selected':''}>💵 Cash / Manual</option>
-          </select></div>
-          <div class="afG"><label class="afL">Payment Status</label><select class="afI" id="of_payStatus" onchange="onCreatePayStatusChange(this.value)">
-            <option value="pending" ${f.payStatus==='pending'?'selected':''}>⏳ Unpaid</option>
-            <option value="partial" ${f.payStatus==='partial'?'selected':''}>🔄 Partial</option>
-            <option value="paid" ${f.payStatus==='paid'?'selected':''}>✅ Paid</option>
-          </select></div>
-          <div class="afG" id="of_paidWrap" style="display:${f.payStatus==='partial'?'block':'none'}"><label class="afL">Paid Amount (৳)</label><input class="afI" id="of_paidAmount" type="number" min="0" value="${Number(f.paidAmount)||0}" oninput="G.oForm.paidAmount=this.value;updTotal()"/></div>
-          <div class="afRow"><div class="afG"><label class="afL">Delivery Charge</label><input class="afI" type="number" id="of_del" value="${f.delivery}" min="0" oninput="G.oForm.delivery=this.value;updTotal()"/></div><div class="afG"><label class="afL">Discount</label><input class="afI" type="number" id="of_disc" value="${f.discount||0}" min="0" oninput="G.oForm.discount=this.value;updTotal()"/></div></div>
-          <div class="afG"><label class="afL">🏷️ Coupon</label><div style="display:flex;gap:6px"><input class="afI" id="of_coupon" placeholder="EID20" style="flex:1" oninput="this.value=this.value.toUpperCase()"/><button class="btn bS bSm" type="button" onclick="applyCoupon()">Apply</button></div><div id="couponMsg" style="font-size:11px;margin-top:3px"></div></div>
-          <div class="afRow"><div class="afG"><label class="afL">Order Date</label><input class="afI" type="date" value="${f.orderDate}" oninput="G.oForm.orderDate=this.value"/></div><div class="afG"><label class="afL">Delivery By</label><input class="afI" type="date" value="${f.delivDate}" oninput="G.oForm.delivDate=this.value"/></div></div>
-          <div class="afG"><label class="afL">Receipt Language</label><select class="afI" onchange="G.oForm.rLang=this.value"><option value="en" ${f.rLang==='en'?'selected':''}>🇬🇧 English</option><option value="bn" ${f.rLang==='bn'?'selected':''}>🇧🇩 বাংলা</option></select></div>
-          <div class="afG"><label class="afL">Notes</label><textarea class="afI" rows="2" maxlength="1000" oninput="G.oForm.notes=this.value">${esc(f.notes)}</textarea></div>
-        </div>
-
-        <div class="ordCreateSummary">
-          <div class="ordCreateSectionTitle">🧾 Order Summary</div>
-          <div class="ordCreateSummaryLine" id="subRow"><span>Subtotal</span><span>${cur(sub)}</span></div>
-          <div class="ordCreateSummaryLine" id="discRow"><span>Discount</span><span>${disc?'- '+cur(disc):cur(0)}</span></div>
-          <div class="ordCreateSummaryLine" id="delRow"><span>Delivery</span><span>${cur(del)}</span></div>
-          <div class="ordCreateSummaryLine"><span>Paid</span><span id="paidRow">${cur(paid)}</span></div>
-          <div class="ordCreateSummaryLine"><span>Due</span><span id="dueRow" style="color:${due?'var(--yellow)':'var(--green)'};font-weight:800">${cur(due)}</span></div>
-          <div class="ordCreateSummaryLine total" id="totRow"><span>Total</span><span style="color:var(--acc2)">${cur(total)}</span></div>
-          <div class="ordCreateBottom"><button class="btn bS" onclick="G.oForm=null;G.oItems=[];pgNewOrder()">🔄 Reset</button><button class="btn bP" id="subOBtn" onclick="submitOrder()">✅ Create Order</button></div>
-        </div>
+        <div class="ordCreateSection"><div class="ordCreateSectionTitle">⚙️ Order Settings</div><div class="coSourceGrid"><div class="afG"><label class="afL">Order Source</label><select class="afI" onchange="G.oForm.source=this.value;createOrderDraftTouch()"><option value="manual" ${f.source==='manual'?'selected':''}>✍️ Manual</option><option value="facebook" ${f.source==='facebook'?'selected':''}>📘 Facebook</option><option value="messenger" ${f.source==='messenger'?'selected':''}>💬 Messenger</option><option value="whatsapp" ${f.source==='whatsapp'?'selected':''}>🟢 WhatsApp</option><option value="phone" ${f.source==='phone'?'selected':''}>📞 Phone</option><option value="walkin" ${f.source==='walkin'?'selected':''}>🏪 Walk-in</option></select></div><div class="afG"><label class="afL">Start Status</label><select class="afI" onchange="onCreateInitialStatus(this.value)"><option value="pending" ${f.initialStatus!=='confirmed'?'selected':''}>⏳ Pending</option><option value="confirmed" ${f.initialStatus==='confirmed'?'selected':''}>✅ Confirmed (reserve stock)</option></select></div></div><label style="display:flex;align-items:flex-start;gap:9px;padding:9px 10px;margin-bottom:10px;border:1px solid var(--border);border-radius:11px;background:rgba(245,158,11,.04);cursor:pointer"><input id="of_backorder" type="checkbox" ${f.allowBackorder&&f.initialStatus!=='confirmed'?'checked':''} ${f.initialStatus==='confirmed'?'disabled':''} onchange="G.oForm.allowBackorder=this.checked;createOrderDraftTouch();renderProductPickerGrid($('opSearchBox')?.value||'');renderSelectedItems()" style="margin-top:2px;accent-color:var(--yellow)"/><span style="font-size:10.5px;line-height:1.55;color:var(--t2)"><b style="color:var(--yellow)">Allow Backorder</b><br>Pending order-এ stock-এর চেয়ে বেশি quantity নেওয়া যাবে। কোনো stock আংশিক deduct হবে না; Confirm করার সময় full stock available থাকা বাধ্যতামূলক।</span></label><div class="afRow"><div class="afG"><label class="afL">Order Date</label><input class="afI" type="date" value="${esc(f.orderDate)}" oninput="G.oForm.orderDate=this.value;createOrderDraftTouch()"/></div><div class="afG"><label class="afL">Delivery By</label><input class="afI" type="date" value="${esc(f.delivDate)}" oninput="G.oForm.delivDate=this.value;createOrderDraftTouch()"/></div></div><div class="afG"><label class="afL">Receipt Language</label><select class="afI" onchange="G.oForm.rLang=this.value;createOrderDraftTouch()"><option value="en" ${f.rLang==='en'?'selected':''}>🇬🇧 English</option><option value="bn" ${f.rLang==='bn'?'selected':''}>🇧🇩 বাংলা</option></select></div></div>
+        <div class="ordCreateSection"><div class="ordCreateSectionTitle">💳 Payment</div><div class="afG"><label class="afL">Payment Method</label><select class="afI" id="of_paymentMethod" onchange="onCreatePaymentMethodChange(this.value)"><option value="cod" ${f.paymentMethod==='cod'?'selected':''}>🚚 Cash on Delivery</option><option value="bkash" ${f.paymentMethod==='bkash'?'selected':''}>📱 bKash</option><option value="nagad" ${f.paymentMethod==='nagad'?'selected':''}>📱 Nagad</option><option value="bank" ${f.paymentMethod==='bank'?'selected':''}>🏦 Bank Transfer</option><option value="cash" ${f.paymentMethod==='cash'?'selected':''}>💵 Cash / Manual</option></select></div><div class="afG"><label class="afL">Payment Status</label><select class="afI" id="of_payStatus" onchange="onCreatePayStatusChange(this.value)"><option value="pending" ${f.payStatus==='pending'?'selected':''}>⏳ Unpaid</option><option value="partial" ${f.payStatus==='partial'?'selected':''}>◐ Partial</option><option value="paid" ${f.payStatus==='paid'?'selected':''}>✅ Paid</option></select></div><div class="afG" id="of_paidWrap" style="display:${f.payStatus==='partial'?'block':'none'}"><label class="afL">Paid Amount (৳)</label><input class="afI" id="of_paidAmount" type="number" min="0" value="${Number(f.paidAmount)||0}" oninput="G.oForm.paidAmount=this.value;createOrderDraftTouch();updTotal()"/></div><div class="coPaymentExtra" id="coPaymentExtra" style="display:${paymentExtraVisible()?'grid':'none'}"><div class="afG" style="margin:0"><label class="afL">Transaction ID</label><input class="afI" maxlength="100" value="${esc(f.paymentTxnId)}" placeholder="Txn / reference" oninput="G.oForm.paymentTxnId=this.value;createOrderDraftTouch()"/></div><div class="afG" style="margin:0"><label class="afL">Payment Phone / Account</label><input class="afI" maxlength="100" value="${esc(f.paymentPhone)}" placeholder="Optional" oninput="G.oForm.paymentPhone=this.value;createOrderDraftTouch()"/></div><div class="afG" style="margin:0"><label class="afL">Payment Note</label><input class="afI" maxlength="250" value="${esc(f.paymentNote)}" placeholder="Optional verification note" oninput="G.oForm.paymentNote=this.value;createOrderDraftTouch()"/></div></div><div class="afRow"><div class="afG"><label class="afL">Delivery Charge</label><input class="afI" type="number" id="of_del" value="${Number(f.delivery)||0}" min="0" oninput="G.oForm.delivery=this.value;G.oForm.deliveryZone='custom';if($('of_zone'))$('of_zone').value='custom';createOrderDraftTouch();updTotal()"/></div><div class="afG"><label class="afL">Discount</label><input class="afI" type="number" id="of_disc" value="${Number(f.discount)||0}" min="0" oninput="G.oForm.discount=this.value;G.oForm.appliedCoupon=null;const w=$('coDiscountReason');if(w)w.style.display=Number(this.value)>0?'block':'none';createOrderDraftTouch();updTotal()"/></div></div><div class="afG" id="coDiscountReason" style="display:${Number(f.discount)>0&&!f.appliedCoupon?'block':'none'}"><label class="afL">Manual Discount Reason *</label><input class="afI" maxlength="200" value="${esc(f.discountReason||'')}" placeholder="Why is this discount being given?" oninput="G.oForm.discountReason=this.value;createOrderDraftTouch()"/></div><div class="afG"><label class="afL">🏷️ Coupon</label><div style="display:flex;gap:6px"><input class="afI" id="of_coupon" value="${esc(f.appliedCoupon?.code||'')}" placeholder="EID20" style="flex:1" oninput="this.value=this.value.toUpperCase()"/><button class="btn bS bSm" type="button" onclick="applyCoupon()">Apply</button>${f.appliedCoupon?'<button class="btn bD bSm" type="button" onclick="clearCreateCoupon()">✕</button>':''}</div><div id="couponMsg" class="coCouponApplied">${f.appliedCoupon?`✅ ${esc(f.appliedCoupon.code)} · ${cur(f.appliedCoupon.discount||0)} discount`:''}</div></div><div class="afG"><label class="afL">Notes</label><textarea class="afI" rows="2" maxlength="1000" oninput="G.oForm.notes=this.value;createOrderDraftTouch()">${esc(f.notes)}</textarea></div></div>
+        <div class="ordCreateSummary"><div class="ordCreateSectionTitle">🧾 Live Order Summary</div><div class="ordCreateSummaryLine" id="subRow"><span>Subtotal</span><span>${cur(t.sub)}</span></div><div class="ordCreateSummaryLine" id="discRow"><span>Discount</span><span>${t.disc?'- '+cur(t.disc):cur(0)}</span></div><div class="ordCreateSummaryLine" id="delRow"><span>Delivery</span><span>${cur(t.del)}</span></div><div class="ordCreateSummaryLine"><span>Paid</span><span id="paidRow">${cur(t.paid)}</span></div><div class="ordCreateSummaryLine"><span>Due</span><span id="dueRow" style="color:${t.due?'var(--yellow)':'var(--green)'};font-weight:800">${cur(t.due)}</span></div><div class="ordCreateSummaryLine total" id="totRow"><span>Total</span><span style="color:var(--acc2)">${cur(t.total)}</span></div><div id="coChecklist" class="coChecklist"></div><div class="ordCreateBottom"><button class="btn bS" onclick="resetCreateOrder()">🔄 Reset</button><button class="btn bP coSummaryTotalBtn" id="subOBtn" onclick="submitOrder()">✅ Create Order · ${cur(t.total)}</button></div></div>
       </div>
     </div>`);
-    renderProductPickerGrid();renderSelectedItems();syncCreatePaymentUI();
-    if(G.oItems.length>0){const ba=$('opBrowseArea'),ab=$('opAddMoreBtn');if(ba)ba.style.display='none';if(ab)ab.style.display='inline-flex';}
+    syncCreateLocationUI();renderProductPickerGrid();renderSelectedItems();syncCreatePaymentUI();syncCreateOrderReady();if(f.ordererPhone)lookupCreateCustomer(f.ordererPhone);if(G.oItems.length>0&&matchMedia('(max-width:760px)').matches){const ba=$('opBrowseArea'),ab=$('opAddMoreBtn');if(ba)ba.style.display='none';if(ab)ab.style.display='inline-flex';}
   }catch(e){setC(`<div class="al aE">❌ ${esc(e.message)}</div>`);}
 }
-// ── VISUAL PRODUCT PICKER (animated thumbnail grid for Create Order) ──
-// ── Real-time available stock: total stock minus what's already in this order's cart ──
-function opAvailable(pid,variantName){
-  const p=(window._opProdsCache||[]).find(x=>x.id===pid);if(!p)return 0;
-  const stockTotal=variantName?(p.variants?.find(v=>v.name===variantName)?.stock||0):Number(p.stock||0);
-  const used=G.oItems.filter(it=>it.pid===pid&&(it.variantName||'')===(variantName||'')).reduce((s,it)=>s+Number(it.qty||0),0);
-  return Math.max(0,stockTotal-used);
-}
+
+function createCanBackorder(){return G.oForm?.allowBackorder===true&&G.oForm?.initialStatus!=='confirmed';}
+window.onCreateInitialStatus=v=>{G.oForm.initialStatus=v;if(v==='confirmed')G.oForm.allowBackorder=false;const cb=$('of_backorder');if(cb){cb.checked=!!G.oForm.allowBackorder;cb.disabled=v==='confirmed';}createOrderDraftTouch();renderProductPickerGrid($('opSearchBox')?.value||'');renderSelectedItems();};
+function opAvailable(pid,variantName){const p=(window._opProdsCache||[]).find(x=>x.id===pid);if(!p)return 0;const total=variantName?Number(p.variants?.find(v=>v.name===variantName)?.stock||0):Number(p.stock||0);const used=(G.oItems||[]).filter(it=>it.pid===pid&&(it.variantName||'')===(variantName||'')).reduce((s,it)=>s+Number(it.qty||0),0);return Math.max(0,total-used);}
+function createEffectivePrice(base){const regular=Number(base?.sellPrice??base?.price??0),offer=Number(base?.offerPrice||0);return offer>0&&offer<regular?offer:regular;}
+function productSearchText(p){return [p.name,p.nameBn,p.sku,p.code,p.productCode,...(p.variants||[]).flatMap(v=>[v.name,v.sku,v.code])].filter(Boolean).join(' ').toLowerCase();}
 function renderProductPickerGrid(filter=''){
-  const grid=$('productPickerGrid');if(!grid)return;
-  const prods=window._opProdsCache||[];
-  const q=filter.trim().toLowerCase();
-  const list=q?prods.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.nameBn||'').includes(filter.trim())):prods;
-  if(list.length===0){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--t3);font-size:12px;padding:20px">কোনো পণ্য পাওয়া যায়নি</div>';return;}
-  grid.innerHTML=list.map((p,i)=>{
-    const img=(p.images&&p.images[0])||p.imageUrl||'';
-    const hasVar=p.variants&&p.variants.length>0;
-    const price=hasVar?p.variants[0].sellPrice:p.sellPrice;
-    const avail=hasVar?p.variants.reduce((s,v)=>s+opAvailable(p.id,v.name),0):opAvailable(p.id,'');
-    const extraVariants=hasVar&&p.variants.length>1?p.variants.length-1:0;
-    return `<div onclick="opPickProduct('${p.id}')" onmouseover="this.style.transform='translateY(-3px)';this.style.borderColor='var(--acc)'" onmouseout="this.style.transform='';this.style.borderColor='var(--border)'" style="cursor:${avail>0?'pointer':'default'};background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;animation:fadeUp .35s ease both;animation-delay:${Math.min(i*0.03,0.6)}s;transition:transform .15s,border-color .15s;${avail<=0?'opacity:.5':''}">
-      ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:78px;object-fit:cover;background:#fff"/>`:`<div style="width:100%;height:78px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:22px">📦</div>`}
-      <div style="padding:7px">
-        <div style="font-size:11px;font-weight:600;line-height:1.3;margin-bottom:3px;min-height:28px">${esc(p.name)}</div>
-        <div style="font-size:12px;color:var(--green);font-weight:800">${cur(price)}${extraVariants?` <span style="font-size:9px;color:var(--t3);font-weight:400">+${extraVariants}</span>`:''}</div>
-        <div style="font-size:9px;color:${avail>0?'var(--t3)':'var(--red)'};margin-top:2px">${avail>0?'স্টক: '+avail:'স্টক শেষ'}</div>
-      </div>
-    </div>`;
-  }).join('');
+  const grid=$('productPickerGrid');if(!grid)return;const q=String(filter||'').trim().toLowerCase();const list=(window._opProdsCache||[]).filter(p=>!q||productSearchText(p).includes(q));if(!list.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--t3);font-size:12px;padding:24px">কোনো পণ্য পাওয়া যায়নি</div>';return;}
+  grid.innerHTML=list.map((p,i)=>{const img=(p.images&&p.images[0])||p.imageUrl||'',hasVar=Array.isArray(p.variants)&&p.variants.length>0,prices=hasVar?p.variants.map(v=>createEffectivePrice(v)).filter(x=>x>0):[createEffectivePrice(p)],price=prices.length?Math.min(...prices):0,avail=hasVar?p.variants.reduce((s,v)=>s+opAvailable(p.id,v.name),0):opAvailable(p.id,'');const blocked=avail<=0&&!createCanBackorder();return `<div class="coProd ${blocked?'disabled':''}" onclick="${!blocked?`opPickProduct('${p.id}')`:''}" style="animation:fadeUp .3s ease both;animation-delay:${Math.min(i*.025,.35)}s">${img?`<img class="coProdImg" loading="lazy" src="${esc(img)}"/>`:'<div class="coProdPh">📦</div>'}<div class="coProdBody"><div class="coProdName">${esc(p.name||'Product')}</div><div class="coProdPrice">${hasVar?'From ':''}${cur(price)}</div><div class="coProdMeta"><span>${hasVar?`${p.variants.length} variants`:esc(p.sku||p.code||'')}</span><span style="color:${avail>0?'var(--t3)':createCanBackorder()?'var(--yellow)':'var(--red)'}">${avail>0?'Stock '+avail:createCanBackorder()?'Backorder':'Out'}</span></div></div></div>`;}).join('');
 }
-window.filterProductPicker=(val)=>renderProductPickerGrid(val);
+window.filterProductPicker=v=>renderProductPickerGrid(v);
+window.opPickProduct=pid=>{const p=(window._opProdsCache||[]).find(x=>x.id===pid);if(!p)return;if(Array.isArray(p.variants)&&p.variants.length)renderVariantPickerForOrder(pid);else{if(opAvailable(pid,'')<=0&&!createCanBackorder()){toast('স্টক নেই','err');return;}opAddItem(pid,null);toast('✅ যুক্ত হয়েছে');}};
+function renderVariantPickerForOrder(pid){const p=(window._opProdsCache||[]).find(x=>x.id===pid),grid=$('productPickerGrid');if(!p||!grid)return;const main=(p.images&&p.images[0])||p.imageUrl||'';grid.innerHTML=`<div class="coVariantHead"><button onclick="opShowProductGridInline()" class="btn bS bSm">← সব পণ্য</button><span>${esc(p.name)} — variant বাছুন</span></div>`+(p.variants||[]).map((v,vi)=>{const img=(v.images&&v.images[0])||v.image||main,avail=opAvailable(pid,v.name),inCart=(G.oItems||[]).find(it=>it.pid===pid&&it.variantName===v.name);const blocked=avail<=0&&!createCanBackorder();return `<div class="coProd ${blocked?'disabled':''}" onclick="${!blocked?`opPickVariantForOrder('${pid}',${vi})`:''}">${img?`<img class="coProdImg" loading="lazy" src="${esc(img)}"/>`:'<div class="coProdPh">🎨</div>'}<div class="coProdBody"><div class="coProdName">${esc(v.name)}${inCart?` <span style="color:var(--green)">✓×${inCart.qty}</span>`:''}</div><div class="coProdPrice">${cur(createEffectivePrice(v))}</div><div class="coProdMeta"><span>${esc(v.sku||'')}</span><span>${avail>0?'Stock '+avail:createCanBackorder()?'Backorder':'Out'}</span></div></div></div>`;}).join('');}
+window.opShowProductGridInline=()=>renderProductPickerGrid($('opSearchBox')?.value||'');
+window.opShowProductGrid=()=>{if($('opBrowseArea'))$('opBrowseArea').style.display='block';if($('opAddMoreBtn'))$('opAddMoreBtn').style.display='none';renderProductPickerGrid($('opSearchBox')?.value||'');$('opBrowseArea')?.scrollIntoView({behavior:'smooth',block:'start'});};
+window.opPickVariantForOrder=(pid,vi)=>{const p=(window._opProdsCache||[]).find(x=>x.id===pid),v=p?.variants?.[vi];if(!v)return;if(opAvailable(pid,v.name)<=0&&!createCanBackorder()){toast('স্টক নেই','err');return;}opAddItem(pid,vi);toast('✅ '+v.name+' যুক্ত হয়েছে');renderVariantPickerForOrder(pid);};
+function opAddItem(pid,variantIdx){const p=(window._opProdsCache||[]).find(x=>x.id===pid);if(!p)return;const v=variantIdx!==null&&variantIdx!==undefined?p.variants?.[variantIdx]:null,variantName=v?.name||'',price=createEffectivePrice(v||p),buyPrice=Number(v?.buyPrice??p.buyPrice??0),existing=(G.oItems||[]).find(it=>it.pid===pid&&(it.variantName||'')===variantName);if(existing)existing.qty=Number(existing.qty||1)+1;else G.oItems.push({pid,qty:1,price,buyPrice,variantName});renderSelectedItems();updTotal();saveCreateDraft();if(matchMedia('(max-width:760px)').matches){if($('opBrowseArea'))$('opBrowseArea').style.display='none';if($('opAddMoreBtn'))$('opAddMoreBtn').style.display='inline-flex';}}
+function renderSelectedItems(){const el=$('opSelectedItems');if(!el)return;if(!(G.oItems||[]).length){el.innerHTML='';syncCreateOrderReady();return;}const prods=window._opProdsCache||[];el.innerHTML=G.oItems.map((it,i)=>{const p=prods.find(x=>x.id===it.pid),v=it.variantName?p?.variants?.find(x=>x.name===it.variantName):null,thumb=(v?.images&&v.images[0])||v?.image||(p?.images&&p.images[0])||p?.imageUrl||'',avail=opAvailable(it.pid,it.variantName||'');return `<div class="coSelected">${thumb?`<img class="coSelectedImg" loading="lazy" src="${esc(thumb)}"/>`:'<div class="coSelectedPh">📦</div>'}<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:750;word-break:break-word">${esc(p?.name||'Product')}${it.variantName?` <span style="font-size:10.5px;color:var(--green)">· ${esc(it.variantName)}</span>`:''}</div><div style="font-size:11.5px;color:var(--t2);margin-top:3px">${cur(it.price)} × ${it.qty} = <b>${cur(Number(it.price)*Number(it.qty))}</b></div>${avail<=0?`<div style="font-size:10px;color:${createCanBackorder()?'var(--yellow)':'var(--red)'};margin-top:3px">${createCanBackorder()?'⚠️ Extra quantity will become Backorder':'⚠️ Cart quantity reached current stock'}</div>`:''}</div><div class="coQty"><button onclick="opChangeQty(${i},-1)" aria-label="Decrease">−</button><span>${it.qty}</span><button onclick="opChangeQty(${i},1)" ${avail<=0&&!createCanBackorder()?'disabled':''} aria-label="Increase">+</button><button class="del" onclick="opRemoveItem(${i})" aria-label="Remove">🗑️</button></div></div>`;}).join('');syncCreateOrderReady();}
+window.opChangeQty=(i,d)=>{const it=G.oItems[i];if(!it)return;if(d>0&&opAvailable(it.pid,it.variantName||'')<=0&&!createCanBackorder()){toast('আরও stock নেই','err');return;}it.qty=Number(it.qty||1)+d;if(it.qty<=0)G.oItems.splice(i,1);renderSelectedItems();updTotal();saveCreateDraft();};
+window.opRemoveItem=i=>{G.oItems.splice(i,1);renderSelectedItems();updTotal();saveCreateDraft();if(!G.oItems.length)opShowProductGrid();};
+// Legacy compatibility wrappers used by older UI fragments/bookmarks.
+window.addOI=()=>{};window.rmOI=i=>opRemoveItem(i);window.setOI=()=>{};window.selectVariant=()=>{};
 
-// Clicking a product card: show its variants (with animation) right in the same grid, or add directly if no variants
-window.opPickProduct=(pid)=>{
-  const p=(window._opProdsCache||[]).find(x=>x.id===pid);if(!p)return;
-  if(opAvailable(pid,p.variants?.length?p.variants[0].name:'')<=0&&!(p.variants&&p.variants.length>1))
-    {} // fallthrough — still allow opening variant view even if first variant is out, other variants may have stock
-  if(p.variants&&p.variants.length>0){
-    renderVariantPickerForOrder(pid);
-  }else{
-    if(opAvailable(pid,'')<=0){toast('স্টক নেই','err');return;}
-    opAddItem(pid,null);
-    toast('✅ যুক্ত হয়েছে');
-  }
-};
-function renderVariantPickerForOrder(pid){
-  const p=(window._opProdsCache||[]).find(x=>x.id===pid);if(!p)return;
-  const grid=$('productPickerGrid');if(!grid)return;
-  const mainImg=(p.images&&p.images[0])||p.imageUrl||'';
-  grid.style.gridTemplateColumns='repeat(auto-fill,minmax(100px,1fr))';
-  grid.innerHTML=`<div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-bottom:4px">
-      <button onclick="opShowProductGridInline()" class="btn bS bSm" style="font-size:11px">← সব পণ্য</button>
-      <span style="font-size:12px;font-weight:700">${esc(p.name)} — ভ্যারিয়েন্ট বাছুন</span>
-    </div>` +
-    p.variants.map((v,vi)=>{
-      const img=(v.images&&v.images[0])||v.image||mainImg;
-      const avail=opAvailable(pid,v.name);
-      const inCart=G.oItems.find(it=>it.pid===pid&&it.variantName===v.name);
-      return `<div onclick="${avail>0?`opPickVariantForOrder('${pid}',${vi})`:''}" style="cursor:${avail>0?'pointer':'default'};background:var(--card);border:2px solid ${inCart?'var(--green)':'var(--border)'};border-radius:12px;overflow:hidden;animation:fadeUp .3s ease both;animation-delay:${Math.min(vi*0.04,0.4)}s;${avail<=0?'opacity:.5':''}">
-        ${img?`<img loading="lazy" src="${esc(img)}" style="width:100%;height:78px;object-fit:cover;background:#fff"/>`:`<div style="width:100%;height:78px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:22px">🎨</div>`}
-        <div style="padding:7px">
-          <div style="font-size:11px;font-weight:600;line-height:1.3;margin-bottom:2px">${esc(v.name)}${inCart?` <span style="color:var(--green)">✓${inCart.qty>1?' ×'+inCart.qty:''}</span>`:''}</div>
-          <div style="font-size:12px;color:var(--green);font-weight:800">${cur(v.sellPrice)}</div>
-          <div style="font-size:9px;color:${avail>0?'var(--t3)':'var(--red)'};margin-top:2px">${avail>0?'স্টক: '+avail:'স্টক শেষ'}</div>
-        </div>
-      </div>`;
-    }).join('');
-}
-window.opShowProductGridInline=()=>{renderProductPickerGrid($('opSearchBox')?.value||'');};
-window.opShowProductGrid=()=>{
-  $('opBrowseArea').style.display='block';
-  $('opAddMoreBtn').style.display='none';
-  renderProductPickerGrid($('opSearchBox')?.value||'');
-  $('opBrowseArea').scrollIntoView({behavior:'smooth',block:'start'});
-};
-window.opPickVariantForOrder=(pid,vi)=>{
-  const p=(window._opProdsCache||[]).find(x=>x.id===pid);const v=p?.variants?.[vi];if(!v)return;
-  if(opAvailable(pid,v.name)<=0){toast('স্টক নেই','err');return;}
-  opAddItem(pid,vi);
-  toast('✅ '+v.name+' যুক্ত হয়েছে');
-  renderVariantPickerForOrder(pid); // refresh to show updated real-time stock + checkmark
-};
-function opAddItem(pid,variantIdx){
-  const p=(window._opProdsCache||[]).find(x=>x.id===pid);if(!p)return;
-  const hasVar=variantIdx!==null&&variantIdx!==undefined&&p.variants;
-  const v=hasVar?p.variants[variantIdx]:null;
-  const variantName=v?v.name:'';
-  const price=v?Number(v.sellPrice||0):Number(p.sellPrice||0);
-  const buyPrice=v?Number(v.buyPrice||0):Number(p.buyPrice||0);
-  const existing=G.oItems.find(it=>it.pid===pid&&(it.variantName||'')===variantName);
-  if(existing)existing.qty=Number(existing.qty||1)+1;
-  else G.oItems.push({pid,qty:1,price,buyPrice,variantName});
-  renderSelectedItems();
-  updTotal();
-  // After first item, collapse the browse grid behind a prominent "add more" button
-  $('opBrowseArea').style.display='none';
-  $('opAddMoreBtn').style.display='inline-flex';
-}
-function renderSelectedItems(){
-  const el=$('opSelectedItems');if(!el)return;
-  const prods=window._opProdsCache||[];
-  if(G.oItems.length===0){el.innerHTML='';return;}
-  el.innerHTML=G.oItems.map((it,i)=>{
-    const p=prods.find(x=>x.id===it.pid);
-    const img=p?((p.images&&p.images[0])||p.imageUrl||''):'';
-    const variantImg=(it.variantName&&p?.variants)?((p.variants.find(v=>v.name===it.variantName)?.images||[])[0]||p.variants.find(v=>v.name===it.variantName)?.image):null;
-    const thumb=variantImg||img;
-    const avail=opAvailable(it.pid,it.variantName||'');
-    return `<div style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin-bottom:8px;animation:fadeUp .25s ease both">
-      ${thumb?`<img loading="lazy" src="${esc(thumb)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0"/>`:'<div style="width:44px;height:44px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0">📦</div>'}
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600">${esc(p?.name||'পণ্য')}${it.variantName?` <span style="color:var(--green);font-size:11px">(${esc(it.variantName)})</span>`:''}</div>
-        <div style="font-size:12px;color:var(--t2)">${cur(it.price)} × ${it.qty} = <strong>${cur(it.price*it.qty)}</strong></div>
-        ${avail<=0?'<div style="font-size:10px;color:var(--red);margin-top:1px">⚠️ আরও স্টক নেই</div>':''}
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-        <button onclick="opChangeQty(${i},-1)" style="width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--t1);cursor:pointer;font-size:14px">−</button>
-        <span style="min-width:22px;text-align:center;font-weight:700;font-size:13px">${it.qty}</span>
-        <button onclick="opChangeQty(${i},1)" ${avail<=0?'disabled style="opacity:.4"':''} style="width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--t1);cursor:pointer;font-size:14px">+</button>
-        <button onclick="opRemoveItem(${i})" style="width:26px;height:26px;border-radius:6px;border:none;background:rgba(239,68,68,.15);color:var(--red);cursor:pointer;font-size:12px;margin-left:4px">🗑️</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-window.opChangeQty=(i,delta)=>{
-  const it=G.oItems[i];if(!it)return;
-  if(delta>0&&opAvailable(it.pid,it.variantName||'')<=0){toast('আরও স্টক নেই','err');return;}
-  it.qty=Number(it.qty||1)+delta;
-  if(it.qty<=0){G.oItems.splice(i,1);}
-  renderSelectedItems();updTotal();
-  // If a variant picker happens to be open for this product, refresh it too
-  if($('productPickerGrid')?.innerHTML.includes('সব পণ্য'))renderVariantPickerForOrder(it.pid);
-};
-window.opRemoveItem=(i)=>{
-  G.oItems.splice(i,1);
-  renderSelectedItems();updTotal();
-  if(G.oItems.length===0)opShowProductGrid();
-};
+function createOrderFullAddress(f){const addr=String(f.cAddr||'').trim(),parts=[addr],lo=addr.toLowerCase();const th=String(f.thana||'').trim(),di=String(f.district||'').trim();if(th&&!lo.includes(th.toLowerCase()))parts.push(th);if(di&&!lo.includes(di.toLowerCase()))parts.push(di);return parts.filter(Boolean).join(', ');}
+function shortageForItems(finalItems,prodSnaps){const list=[];for(const it of finalItems){const pd=prodSnaps[it.pid].data(),v=it.variantName&&Array.isArray(pd.variants)?pd.variants.find(x=>x.name===it.variantName):null,available=Number(v?.stock??pd.stock??0),need=Number(it.qty||0);if(available<need)list.push({pid:it.pid,name:pd.name||it.name,variantName:it.variantName||'',available,required:need,short:need-available});}return list;}
 
-// ── SMART PASTE ──
-window.doSmartPaste=()=>{
-  const raw=$('smartPasteBox')?.value.trim();
-  if(!raw){toast('Paste করার পর Auto Fill ক্লিক করুন','warn');return;}
-  const lines=raw.split(/\n/).map(l=>l.trim()).filter(Boolean);
-  let name='',phone='',addr=[];
-  const phoneRx=/^(01[3-9]\d{8}|\+8801[3-9]\d{8}|008801[3-9]\d{8})$/;
-  for(const line of lines){
-    const clean=line.replace(/[^\d]/g,'');
-    if(phoneRx.test(line)||clean.length===11&&clean.startsWith('01')){
-      if(!phone)phone=clean.length===11?clean:clean.slice(-11);
-    } else if(!name&&line.length>1&&line.length<50&&!/\d{3}/.test(line)){
-      name=line;
-    } else {
-      addr.push(line);
-    }
-  }
-  if(name){$('of_cn').value=name;G.oForm.cName=name;}
-  if(phone){$('of_op').value=phone;G.oForm.ordererPhone=phone;}
-  if(addr.length){const a=addr.join(', ');$('of_addr').value=a;G.oForm.cAddr=a;}
-  $('smartPasteBox').value='';
-  toast(`✅ Auto filled! Name: ${name||'?'} | Phone: ${phone||'?'} | Address: ${addr.join(', ')||'?'}`,'ok');
-};
-
-function createOrderTotals(){
-  const sub=G.oItems.reduce((s,it)=>s+(Number(it.price||0)*Number(it.qty||1)),0);
-  const disc=Math.max(0,Number(G.oForm?.discount||0));
-  const del=Math.max(0,Number(G.oForm?.delivery||0));
-  const total=Math.max(0,sub-disc+del);
-  let paid=0;
-  if(G.oForm?.payStatus==='paid')paid=total;
-  else if(G.oForm?.payStatus==='partial')paid=Math.min(total,Math.max(0,Number(G.oForm?.paidAmount||0)));
-  const due=Math.max(0,total-paid);
-  return{sub,disc,del,total,paid,due};
-}
-window.syncCreatePaymentUI=()=>{
-  const f=G.oForm||{};
-  const wrap=$('of_paidWrap');if(wrap)wrap.style.display=f.payStatus==='partial'?'block':'none';
-  const paidInput=$('of_paidAmount');if(paidInput&&f.payStatus!=='partial')paidInput.value=f.payStatus==='paid'?createOrderTotals().total:0;
-  updTotal();
-};
-window.onCreatePaymentMethodChange=(v)=>{G.oForm.paymentMethod=v;if(v==='cod'&&G.oForm.payStatus==='paid'){}updDel();};
-window.onCreatePayStatusChange=(v)=>{G.oForm.payStatus=v;if(v==='pending')G.oForm.paidAmount=0;syncCreatePaymentUI();};
-window.updDel=()=>{G.oForm.delivery=G.oForm.paymentMethod==='cod'?(G.cfg.delCOD||'150'):(G.cfg.delPaid||'0');const el=$('of_del');if(el)el.value=G.oForm.delivery;updTotal();};
-window.updTotal=()=>{
-  const t=createOrderTotals();
-  const tr=$('totRow');if(tr)tr.innerHTML=`<span>Total</span><span style="color:var(--acc2)">${cur(t.total)}</span>`;
-  const sr=$('subRow');if(sr)sr.innerHTML=`<span>Subtotal</span><span>${cur(t.sub)}</span>`;
-  const dr=$('delRow');if(dr)dr.innerHTML=`<span>Delivery</span><span>${cur(t.del)}</span>`;
-  const dcr=$('discRow');if(dcr)dcr.innerHTML=`<span>Discount</span><span>${t.disc?'- '+cur(t.disc):cur(0)}</span>`;
-  const pr=$('paidRow');if(pr)pr.textContent=cur(t.paid);
-  const due=$('dueRow');if(due){due.textContent=cur(t.due);due.style.color=t.due?'var(--yellow)':'var(--green)';}
-};
-window.applyCoupon=async()=>{
-  const code=$('of_coupon')?.value.trim().toUpperCase();
-  const msg=$('couponMsg');
-  if(!code){if(msg){msg.style.color='var(--red)';msg.textContent='কোড লিখুন';}return;}
-  try{
-    const snap=await getDocs(query(BCol('coupons'),where('code','==',code)));
-    if(snap.empty){if(msg){msg.style.color='var(--red)';msg.textContent='❌ কোড সঠিক নয়';}return;}
-    const c=snap.docs[0].data();
-    const sub=G.oItems.reduce((s,it)=>s+(Number(it.price||0)*Number(it.qty||1)),0);
-    if(sub<=0){if(msg){msg.style.color='var(--red)';msg.textContent='আগে পণ্য যোগ করুন';}return;}
-    const discount=c.type==='percent'?Math.round(sub*c.val/100):c.val;
-    G.oForm.discount=discount;
-    if($('of_disc'))$('of_disc').value=discount;
-    updTotal();
-    if(msg){msg.style.color='var(--green)';msg.textContent=`✅ ${c.type==='percent'?c.val+'% ছাড় (৳'+discount+')':'৳'+c.val+' ছাড়'} প্রয়োগ হয়েছে`;}
-  }catch(e){if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}}
-};
-window.addOI=()=>{G.oItems.push({pid:'',qty:1,price:''});pgNewOrder();};
-window.rmOI=i=>{G.oItems.splice(i,1);pgNewOrder();};
-window.setOI=(i,field,val)=>{
-  G.oItems[i][field]=val;
-  if(field==='pid'&&val){
-    const sel=$('psel_'+i);
-    if(sel){
-      const opt=sel.querySelector(`option[value="${val}"]`);
-      if(opt){
-        G.oItems[i].price=opt.dataset.price||'';
-        G.oItems[i].variantName='';
-        const pinp=$('pprice_'+i);
-        if(pinp){pinp.value=opt.dataset.price||'';pinp.style.color='var(--green)';pinp.style.fontWeight='700';}
-        // Show product detail card (image + variants)
-        showProductDetail(i,val,opt.dataset);
-      }
-    }
-  }
-  updTotal();
-};
-
-function showProductDetail(itemIdx,pid,dataset){
-  const detailDiv=$('pdetail_'+itemIdx);
-  if(!detailDiv)return;
-  // Fetch product to get variants and image
-  getDoc(BDoc('products',pid)).then(d=>{
-    if(!d.exists()){detailDiv.innerHTML='';return;}
-    const p=d.data();
-    const hasVariants=p.variants&&p.variants.length>0;
-    const mainImg=(p.images&&p.images[0])||p.imageUrl||'';
-    let html='<div style="padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border);margin-top:6px">';
-    // Image
-    if(mainImg&&!hasVariants){
-      html+=`<img loading="lazy" src="${esc(mainImg)}" style="width:100%;max-height:120px;object-fit:contain;border-radius:8px;margin-bottom:8px;background:#fff" onerror="this.style.display='none'"/>`;
-    }
-    html+=`<div style="font-size:12px;color:var(--t2);margin-bottom:6px">📦 Available stock: <strong style="color:${Number(p.stock)>5?'var(--green)':'var(--red)'}"> ${Number(p.stock||0)}</strong></div>`;
-    // Variants — shown as thumbnail+price cards so the admin can see color/design at a glance
-    if(hasVariants){
-      html+=`<div style="font-size:12px;font-weight:600;margin-bottom:6px">🎨 ভ্যারিয়েন্ট বাছুন:</div>`;
-      html+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:6px">`;
-      p.variants.forEach((v,vi)=>{
-        const vimg=(v.images&&v.images[0])||v.image||mainImg;
-        html+=`<div id="vbtn_${itemIdx}_${vi}" onclick="selectVariant(${itemIdx},${vi},${Number(v.buyPrice)||0},${Number(v.sellPrice)||0},${Number(v.stock)||0},${jsArg(v.name)})" style="cursor:pointer;background:var(--bg2);border:2px solid var(--border);border-radius:8px;overflow:hidden;text-align:center;transition:border-color .15s">
-          ${vimg?`<img loading="lazy" src="${esc(vimg)}" style="width:100%;height:48px;object-fit:cover;background:#fff"/>`:'<div style="width:100%;height:48px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px">🎨</div>'}
-          <div style="padding:4px 3px 0;font-size:10px;font-weight:600;line-height:1.2">${esc(v.name)}</div>
-          <div style="padding:0 3px 4px;font-size:10px;color:var(--green);font-weight:700">${cur(v.sellPrice)}</div>
-        </div>`;
-      });
-      html+=`</div>`;
-      html+=`<div id="variantSel_${itemIdx}" style="font-size:12px;color:var(--green);margin-top:6px;font-weight:600"></div>`;
-    }
-    html+='</div>';
-    detailDiv.innerHTML=html;
-  }).catch(()=>{});
-}
-
-window.selectVariant=(itemIdx,vi,buyP,sellP,stock,name)=>{
-  G.oItems[itemIdx].price=sellP;
-  G.oItems[itemIdx].buyPrice=buyP;
-  G.oItems[itemIdx].variantName=name;
-  G.oItems[itemIdx].variantStock=stock;
-  // Update price input
-  const pinp=$('pprice_'+itemIdx);
-  if(pinp){pinp.value=sellP;pinp.style.color='var(--green)';pinp.style.fontWeight='700';}
-  // Highlight selected variant card (border, so the thumbnail stays visible)
-  const container=$('pdetail_'+itemIdx);
-  if(container){
-    container.querySelectorAll('[id^="vbtn_'+itemIdx+'_"]').forEach(b=>b.style.borderColor='var(--border)');
-    const btn=$('vbtn_'+itemIdx+'_'+vi);
-    if(btn)btn.style.borderColor='var(--acc)';
-  }
-  const sel=$('variantSel_'+itemIdx);
-  if(sel)sel.textContent=`✅ Selected: ${name} — Stock: ${stock}`;
-  updTotal();
-};
 window.submitOrder=async()=>{
-  const f=G.oForm||{};const ordPhone=String(f.ordererPhone||'').trim();const recvPhone=String(f.recvPhone||'').trim()||ordPhone;
-  if(!String(f.cName||'').trim()||!ordPhone||!String(f.cAddr||'').trim()){toast('Name, phone এবং address পূরণ করুন','err');return;}
-  if(!/^01[3-9]\d{8}$/.test(ordPhone)){toast('Orderer phone must be valid 11-digit BD number','err');return;}
-  if(f.recvPhone&&!/^01[3-9]\d{8}$/.test(String(f.recvPhone).trim())){toast('Receiver phone must be valid 11-digit BD number','err');return;}
-  const validItems=G.oItems.filter(it=>it.pid&&Number(it.price)>0&&Number(it.qty)>0);
-  if(!validItems.length){toast('কমপক্ষে একটি product যোগ করুন','err');return;}
-  const t=createOrderTotals();
-  if(t.disc>t.sub){toast('Discount subtotal-এর চেয়ে বেশি হতে পারবে না','err');return;}
-  if(f.payStatus==='partial'&&(t.paid<=0||t.paid>=t.total)){toast('Partial payment amount 0-এর বেশি এবং total-এর কম হতে হবে','err');return;}
-  const btn=$('subOBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Creating...';}
+  const f=G.oForm||{},ordPhone=String(f.ordererPhone||'').trim(),recvPhone=String(f.recvPhone||'').trim()||ordPhone,r=createOrderReadiness();if(!r.ready){toast('Required তথ্যগুলো সম্পূর্ণ করুন','err');syncCreateOrderReady();return;}if(f.recvPhone&&!/^01[3-9]\d{8}$/.test(String(f.recvPhone).trim())){toast('Receiver phone must be valid 11-digit BD number','err');return;}
+  const prelim=createOrderTotals();if(prelim.disc>prelim.sub){toast('Discount subtotal-এর চেয়ে বেশি হতে পারবে না','err');return;}if(prelim.disc>0&&!f.appliedCoupon&&!String(f.discountReason||'').trim()){toast('Manual discount-এর reason লিখুন','err');return;}if(f.payStatus==='partial'&&(prelim.paid<=0||prelim.paid>=prelim.total)){toast('Partial amount 0-এর বেশি এবং total-এর কম হতে হবে','err');return;}if(['bkash','nagad','bank'].includes(f.paymentMethod)&&['partial','paid'].includes(f.payStatus)&&!String(f.paymentTxnId||'').trim()){toast('Paid/Partial digital payment-এর Transaction ID দিন','err');return;}if(!(await enforcePlanLimit('order')))return;
+  const btn=$('subOBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Creating safely...';}
   try{
-    // Up-to-date stock check, variant-aware. Advance order can still be confirmed by admin.
-    const low=[];
-    for(const it of validItems){
-      const ps=await getDoc(BDoc('products',it.pid));
-      if(!ps.exists())throw new Error('একটি product আর database-এ নেই. Refresh করুন.');
-      const pd=ps.data();
-      let available=Number(pd.stock||0);
-      if(it.variantName&&Array.isArray(pd.variants))available=Number(pd.variants.find(v=>v.name===it.variantName)?.stock||0);
-      if(available<Number(it.qty||1))low.push(`${pd.name}${it.variantName?' ('+it.variantName+')':''} — stock ${available}`);
-    }
-    if(low.length&&!confirm(`⚠️ পর্যাপ্ত stock নেই:\n${low.join('\n')}\n\nAdvance order হিসেবে create করবেন?`)){if(btn){btn.disabled=false;btn.innerHTML='✅ Create Order';}return;}
-    if(!(await enforcePlanLimit('order'))){if(btn){btn.disabled=false;btn.innerHTML='✅ Create Order';}return;}
-
-    const orderRef=doc(BCol('orders'));
-    const num=`DRY-${today().replace(/-/g,'')}-${orderRef.id.slice(0,8).toUpperCase()}`;
-    const cSnap=await getDocs(query(BCol('customers'),where('phone','==',ordPhone),limit(1)));
-    const custRef=cSnap.empty?doc(BCol('customers')):cSnap.docs[0].ref;
-    const custExists=!cSnap.empty;
-    const eventRef=doc(OEvents(orderRef.id));
-    const deductNow=G.cfg.stockDeductTiming==='creation';
-    let finalItems=[];
-
+    const validItems=G.oItems.filter(it=>it.pid&&Number(it.qty)>0);if(!validItems.length)throw new Error('কমপক্ষে একটি product যোগ করুন');
+    // Existing random-ID customers remain compatible. New customers use a deterministic phone ID to prevent duplicate-customer races.
+    const cQuery=await getDocs(query(BCol('customers'),where('phone','==',ordPhone),limit(1)));const custRef=cQuery.empty?doc(BCol('customers'),`phone_${ordPhone}`):cQuery.docs[0].ref;
+    const safeKey=String(f.idempotencyKey||createNewIdempotencyKey()).replace(/[^A-Za-z0-9_-]/g,'').slice(0,80),orderRef=doc(BCol('orders'),`m_${safeKey}`),eventRef=doc(OEvents(orderRef.id));let existingOrder=null,finalOrder=null;
     await runTransaction(db,async tx=>{
-      // All reads first.
-      const uniquePids=[...new Set(validItems.map(it=>it.pid))];
-      const prodSnaps={};
-      for(const pid of uniquePids){const s=await tx.get(BDoc('products',pid));if(!s.exists())throw new Error('Product missing: '+pid);prodSnaps[pid]=s;}
-      const custSnapTx=custExists?await tx.get(custRef):null;
-
-      // Build immutable order-item snapshot from current product data.
-      finalItems=validItems.map(it=>{
-        const pd=prodSnaps[it.pid].data();
-        const variant=it.variantName&&Array.isArray(pd.variants)?pd.variants.find(v=>v.name===it.variantName):null;
-        const buy=Number(it.buyPrice||variant?.buyPrice||pd.buyPrice||0);
-        const price=Number(it.price||variant?.sellPrice||pd.sellPrice||0);
-        const qty=Number(it.qty||1);
-        const img=(variant?.images&&variant.images[0])||variant?.image||(pd.images&&pd.images[0])||pd.imageUrl||'';
-        return{pid:it.pid,name:pd.name+(it.variantName?` (${it.variantName})`:''),nameBn:(pd.nameBn||pd.name)+(it.variantName?` (${it.variantName})`:''),variantName:it.variantName||'',qty,price,buyPrice:buy,lineTotal:price*qty,profit:(price-buy)*qty,image:img};
-      });
-
-      // Optional stock deduction at order creation. Handles variant stock atomically.
-      if(deductNow){
-        for(const pid of uniquePids){
-          const base=prodSnaps[pid].data();let work={...base,variants:Array.isArray(base.variants)?base.variants.map(v=>({...v})):[]};
-          for(const it of finalItems.filter(x=>x.pid===pid))work=orderApplyStockDelta(work,it,-Number(it.qty||1),false);
-          const patch={stock:Number(work.stock||0),updatedAt:serverTimestamp()};if(Array.isArray(base.variants))patch.variants=work.variants;
-          tx.update(BDoc('products',pid),patch);
-        }
-      }
-
-      const legacyPay=f.payStatus==='paid'?'paid':f.payStatus==='partial'?'partial':'cod';
-      const orderData={num,custId:custRef.id,cName:String(f.cName).trim(),cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:String(f.recvName||f.cName).trim(),cAddr:String(f.cAddr).trim(),paymentMethod:f.paymentMethod||'cod',payMethod:legacyPay,payStatus:f.payStatus||'pending',paidAmount:t.paid,dueAmount:t.due,delivery:t.del,subtotal:t.sub,discount:t.disc,total:t.total,status:'pending',source:'manual',archived:false,orderDate:f.orderDate||today(),delivDate:f.delivDate||'',rLang:f.rLang||G.lang,notes:String(f.notes||'').slice(0,1000),items:finalItems,stockDeducted:deductNow,createdBy:G.user?.uid||'',createdByName:G.user?.displayName||'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
-      tx.set(orderRef,orderData);
-
-      if(custExists){
-        const c=custSnapTx.data();
-        tx.update(custRef,{name:String(f.cName).trim(),addr:String(f.cAddr).trim(),orders:Number(c.orders||c.totalOrders||0)+1,totalOrders:Number(c.totalOrders||c.orders||0)+1,lastOrder:serverTimestamp(),lastOrderStatus:'pending',updatedAt:serverTimestamp()});
-      }else{
-        tx.set(custRef,{name:String(f.cName).trim(),phone:ordPhone,addr:String(f.cAddr).trim(),orders:1,totalOrders:1,spent:0,completedSpend:0,completedOrders:0,cancelledOrders:0,returnedOrders:0,lastOrder:serverTimestamp(),lastOrderStatus:'pending',createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
-      }
-      tx.set(eventRef,{type:'created',title:'Order created',fromStatus:'',toStatus:'pending',actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:'Manual order created',createdAt:serverTimestamp()});
+      // READ PHASE — Firestore transactions require all reads before writes.
+      const existing=await tx.get(orderRef);if(existing.exists()){existingOrder={id:orderRef.id,...existing.data()};return;}
+      const uniquePids=[...new Set(validItems.map(it=>it.pid))],prodSnaps={};for(const pid of uniquePids){const s=await tx.get(BDoc('products',pid));if(!s.exists())throw new Error('Product missing: '+pid);prodSnaps[pid]=s;}
+      const custSnap=await tx.get(custRef);let couponSnap=null,couponRef=null,couponUsageRef=null,couponUsageSnap=null;if(f.appliedCoupon?.id){couponRef=BDoc('coupons',f.appliedCoupon.id);couponSnap=await tx.get(couponRef);if(!couponSnap.exists())throw new Error('Coupon আর available নেই');couponUsageRef=BDoc('couponUsages',`${f.appliedCoupon.id}_${ordPhone}`);couponUsageSnap=await tx.get(couponUsageRef);}
+      // AUTHORITATIVE PRICE SNAPSHOT — browser price is ignored.
+      const finalItems=validItems.map(it=>{const pd=prodSnaps[it.pid].data(),variant=it.variantName&&Array.isArray(pd.variants)?pd.variants.find(v=>v.name===it.variantName):null;if(it.variantName&&!variant)throw new Error(`Variant not found: ${it.variantName}`);const price=createEffectivePrice(variant||pd),buy=Number(variant?.buyPrice??pd.buyPrice??0),qty=Math.max(1,Math.floor(Number(it.qty||1))),img=(variant?.images&&variant.images[0])||variant?.image||(pd.images&&pd.images[0])||pd.imageUrl||'';if(price<=0)throw new Error(`${pd.name||'Product'}-এর valid selling price নেই`);return{pid:it.pid,name:(pd.name||'Product')+(it.variantName?` (${it.variantName})`:''),nameBn:(pd.nameBn||pd.name||'Product')+(it.variantName?` (${it.variantName})`:''),category:pd.category||pd.categoryId||'',variantName:it.variantName||'',qty,price,buyPrice:buy,lineTotal:price*qty,profit:(price-buy)*qty,image:img};});
+      const sub=finalItems.reduce((s,it)=>s+it.lineTotal,0);let discount=Math.max(0,Number(f.discount||0));let couponCode='',couponId='';if(couponSnap){const c=couponSnap.data(),customerUses=couponUsageSnap?.exists()?Number(couponUsageSnap.data().uses||0):0,v=validateCouponData(c,sub,finalItems,customerUses);discount=v.discount;couponCode=String(c.code||f.appliedCoupon.code||'');couponId=couponSnap.id;}
+      discount=Math.min(sub,discount);const delivery=Math.max(0,Number(f.delivery||0)),total=Math.max(0,sub-discount+delivery);let paid=0;if(f.payStatus==='paid')paid=total;else if(f.payStatus==='partial')paid=Math.min(total,Math.max(0,Number(f.paidAmount||0)));if(f.payStatus==='partial'&&(paid<=0||paid>=total))throw new Error('Partial payment amount invalid');const due=Math.max(0,total-paid);
+      const shortages=shortageForItems(finalItems,prodSnaps),initialStatus=f.initialStatus==='confirmed'?'confirmed':'pending';if(shortages.length&&(initialStatus==='confirmed'||!f.allowBackorder))throw new Error(`${initialStatus==='confirmed'?'Confirmed order-এর জন্য':'Stock changed — Backorder enable না থাকায়'} stock insufficient: `+shortages.map(x=>`${x.name}${x.variantName?' '+x.variantName:''} (${x.available}/${x.required})`).join(', '));
+      // Confirmed-at-create reserves stock atomically. Pending/backorder never deducts partial stock.
+      if(initialStatus==='confirmed'){for(const pid of uniquePids){const base=prodSnaps[pid].data();let work={...base,variants:Array.isArray(base.variants)?base.variants.map(v=>({...v})):[]};for(const it of finalItems.filter(x=>x.pid===pid))work=orderApplyStockDelta(work,it,-Number(it.qty||1),true);const patch={stock:Number(work.stock||0),updatedAt:serverTimestamp()};if(Array.isArray(base.variants))patch.variants=work.variants;tx.update(BDoc('products',pid),patch);}}
+      const fullAddress=createOrderFullAddress(f),num=`DRY-${today().replace(/-/g,'')}-${orderRef.id.slice(-10).toUpperCase()}`,legacyPay=f.payStatus==='paid'?'paid':f.payStatus==='partial'?'partial':'cod',isBackorder=initialStatus==='pending'&&f.allowBackorder===true&&shortages.length>0;
+      finalOrder={id:orderRef.id,num,custId:custRef.id,cName:String(f.cName).trim(),cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:String(f.recvName||f.cName).trim(),cAddr:fullAddress,addressLine:String(f.cAddr).trim(),district:f.district||'',thana:f.thana||'',source:f.source||'manual',paymentMethod:f.paymentMethod||'cod',payMethod:legacyPay,payStatus:f.payStatus||'pending',paidAmount:paid,dueAmount:due,paymentTxnId:String(f.paymentTxnId||'').trim().slice(0,100),paymentPhone:String(f.paymentPhone||'').trim().slice(0,100),paymentNote:String(f.paymentNote||'').trim().slice(0,250),deliveryZone:f.deliveryZone||'auto',delivery,subtotal:sub,discount,discountReason:String(f.discountReason||'').trim().slice(0,200),total,couponId,couponCode,status:initialStatus,archived:false,backorder:isBackorder,stockShortage:shortages,inventoryState:initialStatus==='confirmed'?'reserved':isBackorder?'backorder':'unreserved',stockReserved:initialStatus==='confirmed',stockDeducted:false,orderDate:f.orderDate||today(),delivDate:f.delivDate||'',rLang:f.rLang||G.lang,notes:String(f.notes||'').slice(0,1000),items:finalItems,idempotencyKey:safeKey,createdBy:G.user?.uid||'',createdByName:G.user?.displayName||'',createdAt:serverTimestamp(),updatedAt:serverTimestamp()};if(initialStatus==='confirmed')finalOrder.confirmedAt=serverTimestamp(),finalOrder.reservedAt=serverTimestamp();tx.set(orderRef,finalOrder);
+      if(couponSnap&&couponRef){const c=couponSnap.data();tx.update(couponRef,{uses:Number(c.uses||0)+1,updatedAt:serverTimestamp()});const prev=couponUsageSnap?.exists()?couponUsageSnap.data():null;if(prev)tx.update(couponUsageRef,{uses:Number(prev.uses||0)+1,lastUsedAt:serverTimestamp(),updatedAt:serverTimestamp()});else tx.set(couponUsageRef,{couponId:couponRef.id,phone:ordPhone,uses:1,lastUsedAt:serverTimestamp(),createdAt:serverTimestamp(),updatedAt:serverTimestamp()});}
+      if(custSnap.exists()){const c=custSnap.data();tx.update(custRef,{name:String(f.cName).trim(),addr:fullAddress,addressLine:String(f.cAddr).trim(),district:f.district||'',thana:f.thana||'',orders:Number(c.orders||c.totalOrders||0)+1,totalOrders:Number(c.totalOrders||c.orders||0)+1,lastOrder:serverTimestamp(),lastOrderStatus:initialStatus,updatedAt:serverTimestamp()});}else{tx.set(custRef,{name:String(f.cName).trim(),phone:ordPhone,addr:fullAddress,addressLine:String(f.cAddr).trim(),district:f.district||'',thana:f.thana||'',orders:1,totalOrders:1,spent:0,completedSpend:0,completedOrders:0,cancelledOrders:0,returnedOrders:0,lastOrder:serverTimestamp(),lastOrderStatus:initialStatus,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});}
+      tx.set(eventRef,{type:'created',title:initialStatus==='confirmed'?'Order created & stock reserved':'Order created',fromStatus:'',toStatus:initialStatus,actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:isBackorder?'Created as backorder due to stock shortage':'Manual order created',createdAt:serverTimestamp()});
     });
-
-    toast('Order created! 🎉');
-    G.lastOrder={id:orderRef.id,num,cName:String(f.cName).trim(),cPhone:ordPhone,ordererPhone:ordPhone,recvPhone,recvName:String(f.recvName||f.cName).trim(),cAddr:String(f.cAddr).trim(),paymentMethod:f.paymentMethod,payMethod:f.payStatus==='paid'?'paid':f.payStatus==='partial'?'partial':'cod',payStatus:f.payStatus,paidAmount:t.paid,dueAmount:t.due,delivery:t.del,subtotal:t.sub,discount:t.disc,total:t.total,orderDate:f.orderDate,delivDate:f.delivDate,rLang:f.rLang,notes:f.notes,items:finalItems};
-    G.oItems=[];G.oForm=null;showReceipt(G.lastOrder);
-  }catch(e){toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='✅ Create Order';}}
+    if(existingOrder){toast('ℹ️ Duplicate submit blocked — existing order opened','info');G.lastOrder=existingOrder;clearCreateDraft();G.oItems=[];G.oForm=null;showReceipt(G.lastOrder);return;}
+    // Convert serverTimestamp placeholders in local receipt object to harmless local data fields.
+    const receipt={...finalOrder,createdAt:undefined,updatedAt:undefined,confirmedAt:undefined,reservedAt:undefined};toast(finalOrder.backorder?'⚠️ Order created as Backorder':'Order created! 🎉',finalOrder.backorder?'warn':'ok');clearCreateDraft();G.lastOrder=receipt;G.oItems=[];G.oForm=null;showReceipt(receipt);
+  }catch(e){toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML=`✅ Create Order · ${cur(createOrderTotals().total)}`;}}
 };
 
 // ── RECEIPT PRESETS (admin picks in Settings) ──
@@ -5082,7 +4851,7 @@ window.sendWhatsAppConfirm=()=>{
   const msg=bn?
 `আসসালামু আলাইকুম ${o.recvName||o.cName} 🙂
 
-আপনার অর্ডারটি নিশ্চিত হয়েছে ✅
+${o.status==='confirmed'?'আপনার অর্ডারটি নিশ্চিত হয়েছে ✅':'আপনার অর্ডারটি গ্রহণ করা হয়েছে ✅'}
 
 🧾 অর্ডার নং: ${o.num}
 ${items}
@@ -5090,7 +4859,7 @@ ${items}
 সাবটোটাল: ৳${o.subtotal||0}
 ডেলিভারি: ৳${o.delivery||0}${o.discount?`\nছাড়: ৳${o.discount}`:''}
 ━━━━━━━━━━━
-মোট বিল: ৳${o.total} (${o.payMethod==='paid'?'পরিশোধিত':'ক্যাশ অন ডেলিভারি'})
+মোট বিল: ৳${o.total} (${o.payMethod==='paid'?'পরিশোধিত':o.payMethod==='partial'?'আংশিক পরিশোধিত':'ক্যাশ অন ডেলিভারি'})
 
 📍 ঠিকানা: ${o.cAddr}
 
@@ -5098,7 +4867,7 @@ ${items}
 :
 `Hello ${o.recvName||o.cName} 🙂
 
-Your order is confirmed ✅
+${o.status==='confirmed'?'Your order is confirmed ✅':'Your order has been received ✅'}
 
 🧾 Order No: ${o.num}
 ${items}
@@ -5106,7 +4875,7 @@ ${items}
 Subtotal: ৳${o.subtotal||0}
 Delivery: ৳${o.delivery||0}${o.discount?`\nDiscount: ৳${o.discount}`:''}
 ━━━━━━━━━━━
-Total: ৳${o.total} (${o.payMethod==='paid'?'Paid':'Cash on Delivery'})
+Total: ৳${o.total} (${o.payMethod==='paid'?'Paid':o.payMethod==='partial'?'Partially Paid':'Cash on Delivery'})
 
 📍 Address: ${o.cAddr}
 
@@ -5120,7 +4889,7 @@ window.sendSMSConfirm=()=>{
   if(!o){toast('No order found','err');return;}
   const biz=G.cfg.bizName||'আমাদের দোকান';
   // Short SMS message (SMS has 160-char limits, keep it concise)
-  const msg=`${biz}: আপনার অর্ডার ${o.num} কনফার্ম হয়েছে। মোট বিল ৳${o.total} (${o.payMethod==='paid'?'পরিশোধিত':'COD'})। ধন্যবাদ।`;
+  const msg=`${biz}: আপনার অর্ডার ${o.num} ${o.status==='confirmed'?'নিশ্চিত হয়েছে':'গ্রহণ করা হয়েছে'}। মোট বিল ৳${o.total} (${o.payMethod==='paid'?'পরিশোধিত':o.payMethod==='partial'?'আংশিক':'COD'})। ধন্যবাদ।`;
   const phone=(o.recvPhone||o.cPhone||o.ordererPhone||'').replace(/[^0-9]/g,'');
   // Opens device's SMS app pre-filled — user taps Send. Works on mobile, free, no gateway.
   window.location.href=`sms:${phone}?body=${encodeURIComponent(msg)}`;
@@ -6268,7 +6037,7 @@ function orderStatusMeta(s){
   };return m[s]||{ico:'•',label:String(s||'Unknown'),bn:String(s||'Unknown')};
 }
 function orderStatusChip(s){const m=orderStatusMeta(s);return`<span class="ordStatus ${esc(s||'pending')}">${m.ico} ${m.label}</span>`;}
-function orderSourceMeta(s){const m={manual:['✍️','Manual'],public:['🌐','Website'],orderlink:['🔗','Custom Link'],custom_link:['🔗','Custom Link'],facebook:['📘','Facebook'],whatsapp:['💬','WhatsApp'],messenger:['💬','Messenger'],phone:['📞','Phone']};return m[s]||['📥',s||'Unknown'];}
+function orderSourceMeta(s){const m={manual:['✍️','Manual'],public:['🌐','Website'],orderlink:['🔗','Custom Link'],custom_link:['🔗','Custom Link'],facebook:['📘','Facebook'],whatsapp:['💬','WhatsApp'],messenger:['💬','Messenger'],phone:['📞','Phone'],walkin:['🏪','Walk-in']};return m[s]||['📥',s||'Unknown'];}
 function orderSourceChip(s){const m=orderSourceMeta(s);return`<span class="ordSource">${m[0]} ${esc(m[1])}</span>`;}
 function orderPaymentState(o){const st=o.payStatus||(o.payMethod==='paid'?'paid':o.payMethod==='partial'?'partial':'pending');const paid=st==='paid'?Number(o.total||0):Math.max(0,Number(o.paidAmount||0));const due=Math.max(0,Number(o.total||0)-paid);return{status:st,paid,due};}
 function orderPaymentChip(o){const p=orderPaymentState(o);return`<span class="ordPay ${p.status}">${p.status==='paid'?'✅ Paid':p.status==='partial'?'◐ Partial':'⏳ Unpaid'}${p.due>0?` · ${cur(p.due)} due`:''}</span>`;}
@@ -6333,7 +6102,7 @@ function renderOrdersView(){
     const row=o=>{const img=o.items?.[0]?.image||'';const phone=o.recvPhone||o.cPhone||o.ordererPhone||'';return`<tr>
       <td><div class="ordCust">${img?`<img class="ordThumb" loading="lazy" src="${esc(img)}"/>`:'<div class="ordThumbPh">📦</div>'}<div style="min-width:0"><div class="ordCustName">${esc(o.cName||o.recvName||'-')}</div><div class="ordCustPhone">${esc(phone||'-')} · ${(o.items||[]).reduce((s,i)=>s+Number(i.qty||0),0)} item</div></div></div></td>
       <td><div class="ordNum">${esc(o.num||'-')}</div>${o.priority?'<div style="font-size:9px;color:var(--yellow);margin-top:3px">⭐ Priority</div>':''}</td>
-      <td style="font-weight:850;white-space:nowrap">${cur(o.total)}</td><td>${orderPaymentChip(o)}</td><td>${orderStatusChip(o.status)}${isOrderOverdue(o)?'<div style="font-size:9px;color:var(--red);margin-top:4px">⏰ Overdue</div>':''}</td><td>${orderSourceChip(o.source||'manual')}</td><td style="font-size:10.5px;color:var(--t2);white-space:nowrap">${esc(o.orderDate||orderFmtTs(o.createdAt)||'-')}</td>
+      <td style="font-weight:850;white-space:nowrap">${cur(o.total)}</td><td>${orderPaymentChip(o)}</td><td>${orderStatusChip(o.status)}${o.backorder?' <span class="coBackorderBadge">⚠️ Backorder</span>':''}${isOrderOverdue(o)?'<div style="font-size:9px;color:var(--red);margin-top:4px">⏰ Overdue</div>':''}</td><td>${orderSourceChip(o.source||'manual')}</td><td style="font-size:10.5px;color:var(--t2);white-space:nowrap">${esc(o.orderDate||orderFmtTs(o.createdAt)||'-')}</td>
       <td><div class="ordRowActions"><button class="btn bS bSm bIco" onclick="togglePriority('${o.id}',${!!o.priority})" title="Priority">${o.priority?'⭐':'☆'}</button><button class="btn bS bSm bIco" onclick="viewOrder('${o.id}')" title="View">👁️</button>${G.role==='admin'||G.role==='owner'?`<button class="btn bS bSm bIco" onclick="archiveOrder('${o.id}',true)" title="Archive">🗄️</button>`:''}</div></td></tr>`;};
     const mcard=o=>{const phone=o.recvPhone||o.cPhone||o.ordererPhone||'';const img=o.items?.[0]?.image||'';return`<div class="ordMCard"><div class="ordMTop"><div class="ordMCustomer">${img?`<img class="ordThumb" src="${esc(img)}"/>`:'<div class="ordThumbPh">📦</div>'}<div style="min-width:0"><div class="ordNum">${esc(o.num||'-')}</div><div class="ordCustName" style="margin-top:4px">${esc(o.cName||'-')}</div><div class="ordCustPhone">${esc(phone||'-')}</div></div></div><div style="display:grid;gap:5px;justify-items:end">${orderStatusChip(o.status)}${orderSourceChip(o.source||'manual')}</div></div><div class="ordMBody"><div class="ordMInfo"><span>Total</span><b>${cur(o.total)}</b></div><div class="ordMInfo"><span>Payment</span><b>${orderPaymentState(o).status}${orderPaymentState(o).due?` · ${cur(orderPaymentState(o).due)} due`:''}</b></div><div class="ordMInfo"><span>Date</span><b>${esc(o.orderDate||'-')}</b></div><div class="ordMInfo"><span>Items</span><b>${(o.items||[]).reduce((s,i)=>s+Number(i.qty||0),0)}</b></div></div><div class="ordMActions"><button class="btn bS bSm" onclick="orderCall('${esc(phone)}')">📞 Call</button><button class="btn bS bSm" onclick="orderWhatsapp('${esc(phone)}')">💬 WhatsApp</button><button class="btn bS bSm" onclick="togglePriority('${o.id}',${!!o.priority})">${o.priority?'⭐':'☆'} Priority</button><button class="btn bP bSm" onclick="viewOrder('${o.id}')">Open →</button></div></div>`;};
     setC(`<div class="ordHead"><div><h1>Orders</h1><p>${orders.length} matching · Completed revenue <strong style="color:var(--green)">${cur(revenue)}</strong></p></div><div class="ordHeadActions"><button class="btn bS" onclick="bulkPrintLabels()">🖨️ Labels</button><button class="btn bP" onclick="nav('newOrder')">➕ New Order</button></div></div>
@@ -6350,13 +6119,13 @@ async function loadOrderTimeline(id){
 }
 async function viewOrder(id){
   const d=await getDoc(BDoc('orders',id));if(!d.exists()){toast('Order not found','err');return;}const o={id,...d.data()};window._activeOrderStatus=o.status||'pending';const p=orderPaymentState(o),phone=o.recvPhone||o.cPhone||o.ordererPhone||'';const transitions=orderAllowedTransitions(o.status);const statusOptions=[o.status,...transitions].filter((v,i,a)=>a.indexOf(v)===i);const courierReady=['pending','confirmed','ready'].includes(o.status);const tracking=o.trackingCode||o.steadfastCN||'';
-  $('ordMod').innerHTML=`<div class="mH"><div><h3 style="margin-bottom:3px">${esc(o.num||'Order')}</h3><div style="display:flex;gap:6px;flex-wrap:wrap">${orderStatusChip(o.status)} ${orderSourceChip(o.source||'manual')} ${o.priority?'<span class="ordStatus parcel_sent">⭐ Priority</span>':''}</div></div><button class="btn bS bIco" onclick="closeMov('ordMOvl')">✕</button></div>
+  $('ordMod').innerHTML=`<div class="mH"><div><h3 style="margin-bottom:3px">${esc(o.num||'Order')}</h3><div style="display:flex;gap:6px;flex-wrap:wrap">${orderStatusChip(o.status)} ${o.backorder?'<span class="coBackorderBadge">⚠️ Backorder</span>':''} ${orderSourceChip(o.source||'manual')} ${o.priority?'<span class="ordStatus parcel_sent">⭐ Priority</span>':''}</div></div><button class="btn bS bIco" onclick="closeMov('ordMOvl')">✕</button></div>
   <div class="mB"><div class="ordWorkspace"><div style="display:grid;gap:12px">
-    <div class="ordPanel"><div class="ordPanelTitle"><span>👤 Customer & Delivery</span><span style="font-size:10px;color:var(--t3)">${esc(o.orderDate||'')}</span></div><div class="ordInfoGrid"><div class="ordInfoBox"><small>Customer</small><b>${esc(o.cName||'-')}</b></div><div class="ordInfoBox"><small>Receiver</small><b>${esc(o.recvName||o.cName||'-')}</b></div><div class="ordInfoBox"><small>Phone</small><b>${esc(phone||'-')}</b></div><div class="ordInfoBox"><small>Orderer Phone</small><b>${esc(o.ordererPhone||o.cPhone||'-')}</b></div><div class="ordInfoBox" style="grid-column:1/-1"><small>Address</small><div>${esc(o.cAddr||'-')}</div></div></div><div class="ordQuickActions"><button class="btn bS bSm" onclick="orderCall('${esc(phone)}')">📞 Call</button><button class="btn bS bSm" onclick="orderWhatsapp('${esc(phone)}')">💬 WhatsApp</button><button class="btn bS bSm" onclick="orderCopy('${esc(phone)}')">📋 Copy Phone</button><button class="btn bS bSm" onclick='orderCopy(${jsArg(o.cAddr||'')})'>📍 Copy Address</button></div></div>
+    <div class="ordPanel"><div class="ordPanelTitle"><span>👤 Customer & Delivery</span><span style="font-size:10px;color:var(--t3)">${esc(o.orderDate||'')}</span></div><div class="ordInfoGrid"><div class="ordInfoBox"><small>Customer</small><b>${esc(o.cName||'-')}</b></div><div class="ordInfoBox"><small>Receiver</small><b>${esc(o.recvName||o.cName||'-')}</b></div><div class="ordInfoBox"><small>Phone</small><b>${esc(phone||'-')}</b></div><div class="ordInfoBox"><small>Orderer Phone</small><b>${esc(o.ordererPhone||o.cPhone||'-')}</b></div><div class="ordInfoBox"><small>District / Thana</small><b>${esc([o.district,o.thana].filter(Boolean).join(' · ')||'-')}</b></div><div class="ordInfoBox"><small>Inventory</small><b>${o.backorder?'<span class="coBackorderBadge">⚠️ Backorder</span>':esc(o.inventoryState|| (o.stockDeducted?'finalized':'unreserved'))}</b></div><div class="ordInfoBox" style="grid-column:1/-1"><small>Address</small><div>${esc(o.cAddr||'-')}</div></div></div><div class="ordQuickActions"><button class="btn bS bSm" onclick="orderCall('${esc(phone)}')">📞 Call</button><button class="btn bS bSm" onclick="orderWhatsapp('${esc(phone)}')">💬 WhatsApp</button><button class="btn bS bSm" onclick="orderCopy('${esc(phone)}')">📋 Copy Phone</button><button class="btn bS bSm" onclick='orderCopy(${jsArg(o.cAddr||'')})'>📍 Copy Address</button></div></div>
     <div class="ordPanel"><div class="ordPanelTitle"><span>📦 Products (${(o.items||[]).length})</span></div>${(o.items||[]).map(it=>`<div class="ordItem">${it.image?`<img class="ordThumb" src="${esc(it.image)}"/>`:'<div class="ordThumbPh">📦</div>'}<div class="ordItemInfo"><div class="ordItemName">${esc(it.name||'Product')}</div><div class="ordItemMeta">${it.variantName?'🎨 '+esc(it.variantName)+' · ':''}${cur(it.price)} × ${Number(it.qty||1)}</div></div><div class="ordItemTotal">${cur(Number(it.price||0)*Number(it.qty||1))}</div></div>`).join('')||'<div style="color:var(--t3);font-size:11px">No items</div>'}</div>
     <div class="ordPanel"><div class="ordPanelTitle"><span>📝 Notes</span></div><div style="font-size:12px;color:${o.notes?'var(--t2)':'var(--t3)'};line-height:1.7;white-space:pre-wrap;word-break:break-word">${esc(o.notes||'No notes')}</div>${aiEnabled()?`<button class="btn bFull bSm" style="margin-top:10px;background:linear-gradient(135deg,#A855F7,#7C3AED);color:#fff" onclick='aiRiskCheck(${esc(JSON.stringify({name:o.cName,phone:o.cPhone||o.ordererPhone,addr:o.cAddr,total:o.total,pay:o.payMethod,source:o.source})).replace(/'/g,"&#39;")})'>🤖 AI Risk Check</button><div id="aiRiskResult" style="margin-top:8px"></div>`:''}</div>
   </div><div style="display:grid;gap:12px;align-content:start">
-    <div class="ordPanel"><div class="ordPanelTitle"><span>💰 Payment</span>${orderPaymentChip(o)}</div><div class="ordMoney"><div class="ordMoneyLine"><span>Subtotal</span><b>${cur(o.subtotal)}</b></div>${Number(o.discount||0)>0?`<div class="ordMoneyLine"><span>Discount</span><b style="color:var(--green)">- ${cur(o.discount)}</b></div>`:''}<div class="ordMoneyLine"><span>Delivery</span><b>${cur(o.delivery)}</b></div><div class="ordMoneyLine"><span>Paid</span><b>${cur(p.paid)}</b></div><div class="ordMoneyLine"><span>Due</span><b style="color:${p.due?'var(--yellow)':'var(--green)'}">${cur(p.due)}</b></div><div class="ordMoneyLine total"><span>Total</span><span style="color:var(--acc2)">${cur(o.total)}</span></div></div></div>
+    <div class="ordPanel"><div class="ordPanelTitle"><span>💰 Payment</span>${orderPaymentChip(o)}</div><div class="ordMoney"><div class="ordMoneyLine"><span>Method</span><b>${esc(o.paymentMethod||o.payMethod||'cod')}</b></div>${o.paymentTxnId?`<div class="ordMoneyLine"><span>Transaction</span><b>${esc(o.paymentTxnId)}</b></div>`:''}${o.paymentPhone?`<div class="ordMoneyLine"><span>Payment account</span><b>${esc(o.paymentPhone)}</b></div>`:''}<div class="ordMoneyLine"><span>Subtotal</span><b>${cur(o.subtotal)}</b></div>${Number(o.discount||0)>0?`<div class="ordMoneyLine"><span>Discount</span><b style="color:var(--green)">- ${cur(o.discount)}</b></div>`:''}<div class="ordMoneyLine"><span>Delivery</span><b>${cur(o.delivery)}</b></div><div class="ordMoneyLine"><span>Paid</span><b>${cur(p.paid)}</b></div><div class="ordMoneyLine"><span>Due</span><b style="color:${p.due?'var(--yellow)':'var(--green)'}">${cur(p.due)}</b></div><div class="ordMoneyLine total"><span>Total</span><span style="color:var(--acc2)">${cur(o.total)}</span></div></div></div>
     <div class="ordPanel"><div class="ordPanelTitle"><span>⚙️ Fulfillment</span></div><div class="afG"><label class="afL">Order Status</label><select class="afI" id="oStSel" onchange="onOrderStatusChange(this.value)">${statusOptions.map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${orderStatusMeta(s).ico} ${orderStatusMeta(s).label}</option>`).join('')}</select><div style="font-size:10px;color:var(--t3);margin-top:5px">Only valid next steps are shown.</div></div><div class="afG"><label class="afL">Payment Status</label><select class="afI" id="oPstSel" onchange="onOrderPaymentEdit(this.value,${Number(o.total||0)})"><option value="pending" ${p.status==='pending'?'selected':''}>Unpaid</option><option value="partial" ${p.status==='partial'?'selected':''}>Partial</option><option value="paid" ${p.status==='paid'?'selected':''}>Paid</option></select></div><div class="afG" id="oPaidAmtWrap" style="display:${p.status==='partial'?'block':'none'}"><label class="afL">Paid Amount</label><input class="afI" id="oPaidAmt" type="number" min="0" max="${Number(o.total||0)}" value="${p.paid}"/></div><div id="parcelDeadlineBox"></div>${o.status==='parcel_sent'&&o.expectedDate?`<div style="font-size:11px;color:${isOrderOverdue(o)?'var(--red)':'var(--t2)'};padding:8px;background:var(--bg2);border-radius:9px">🗓️ Expected: <b>${esc(o.expectedDate)}</b>${isOrderOverdue(o)?' · ⏰ Overdue':''}</div>`:''}${tracking?`<div class="ordCourierBox"><div style="font-size:10px;color:var(--t2)">Courier tracking</div><div class="ordNum" style="margin-top:4px">${esc(tracking)}</div><button class="btn bS bSm" style="margin-top:7px" onclick="orderCopy('${esc(tracking)}')">📋 Copy Tracking</button></div>`:''}${courierReady&&(G.role==='admin'||G.role==='owner')?`<button class="btn bG bFull" id="singleCourierBtn" style="margin-top:8px" onclick="sendSingleOrderToSteadfast('${id}')">🚚 Send this order to Steadfast</button>`:''}</div>
     <div class="ordPanel"><div class="ordPanelTitle"><span>🕘 Activity</span></div><div id="orderTimelineBox"><div class="spin spinSm"></div></div></div>
   </div></div></div>
@@ -6369,34 +6138,56 @@ window.onOrderStatusChange=val=>{const box=$('parcelDeadlineBox');if(!box)return
 window.onDeadlineDaysChange=val=>{const cb=$('oCustomDaysBox'),rb=$('oReasonBox'),pv=$('oExpectedDatePreview');let days=3;if(val==='custom'){if(cb)cb.style.display='block';days=Number($('oCustomDays')?.value||0);if(rb)rb.style.display=days>3?'block':'none';}else{if(cb)cb.style.display='none';days=Number(val);}if(pv&&days>0)pv.textContent=plusDays(days);};
 function plusDays(n){const d=new Date();d.setDate(d.getDate()+Number(n||3));return d.toISOString().slice(0,10);}
 
+function orderInventoryPlan(o,oldStatus,newStatus){
+  const compatReserved=o.stockReserved!==true&&o.stockDeducted===true&&['pending','confirmed','ready','parcel_sent'].includes(oldStatus);
+  const held=o.stockReserved===true||compatReserved;
+  const finalized=o.stockDeducted===true&&!compatReserved&&oldStatus==='completed';
+  const reserve=!held&&!finalized&&(newStatus==='confirmed'||(newStatus==='parcel_sent'&&['pending','confirmed','ready'].includes(oldStatus)));
+  const finalize=newStatus==='completed'&&held;
+  const directDeduct=newStatus==='completed'&&!held&&!finalized;
+  const release=['returned','cancelled'].includes(newStatus)&&(held||finalized);
+  return{compatReserved,held,finalized,reserve,finalize,directDeduct,release};
+}
 async function transitionOrderAtomic(id,newStatus,opts={}){
   const orderRef=BDoc('orders',id),eventRef=doc(OEvents(id));
   await runTransaction(db,async tx=>{
-    const os=await tx.get(orderRef);if(!os.exists())throw new Error('Order not found');const o=os.data();const oldStatus=o.status||'pending';
-    if(!orderCanTransition(oldStatus,newStatus,!!opts.allowCourierJump))throw new Error(`Invalid status change: ${oldStatus} → ${newStatus}`);
-    const needDeduct=newStatus==='completed'&&o.stockDeducted!==true;const needRestore=['returned','cancelled'].includes(newStatus)&&o.stockDeducted===true;
-    const productIds=(needDeduct||needRestore)?[...new Set((o.items||[]).map(i=>i.pid).filter(Boolean))]:[];const productSnaps={};
-    for(const pid of productIds){const ps=await tx.get(BDoc('products',pid));if(!ps.exists())throw new Error('Product missing during stock update');productSnaps[pid]=ps;}
-    const custSnap=o.custId?await tx.get(BDoc('customers',o.custId)):null;
-
-    if(needDeduct||needRestore){const deltaSign=needDeduct?-1:1;for(const pid of productIds){const base=productSnaps[pid].data();let work={...base,variants:Array.isArray(base.variants)?base.variants.map(v=>({...v})):[]};for(const it of (o.items||[]).filter(x=>x.pid===pid))work=orderApplyStockDelta(work,it,deltaSign*Number(it.qty||1),needDeduct);const patch={stock:Number(work.stock||0),updatedAt:serverTimestamp()};if(Array.isArray(base.variants))patch.variants=work.variants;tx.update(BDoc('products',pid),patch);}}
-
+    const os=await tx.get(orderRef);if(!os.exists())throw new Error('Order not found');const o=os.data(),oldStatus=o.status||'pending';if(!orderCanTransition(oldStatus,newStatus,!!opts.allowCourierJump))throw new Error(`Invalid status change: ${oldStatus} → ${newStatus}`);
+    const plan=orderInventoryPlan(o,oldStatus,newStatus),touchStock=plan.reserve||plan.directDeduct||plan.release,productIds=touchStock?[...new Set((o.items||[]).map(i=>i.pid).filter(Boolean))]:[],productSnaps={};for(const pid of productIds){const ps=await tx.get(BDoc('products',pid));if(!ps.exists())throw new Error('Product missing during inventory update');productSnaps[pid]=ps;}const custSnap=o.custId?await tx.get(BDoc('customers',o.custId)):null;
+    if(touchStock){const sign=(plan.reserve||plan.directDeduct)?-1:1;for(const pid of productIds){const base=productSnaps[pid].data();let work={...base,variants:Array.isArray(base.variants)?base.variants.map(v=>({...v})):[]};for(const it of (o.items||[]).filter(x=>x.pid===pid))work=orderApplyStockDelta(work,it,sign*Number(it.qty||1),sign<0);const patch={stock:Number(work.stock||0),updatedAt:serverTimestamp()};if(Array.isArray(base.variants))patch.variants=work.variants;tx.update(BDoc('products',pid),patch);}}
     const pStatus=opts.payStatus||o.payStatus||(o.payMethod==='paid'?'paid':o.payMethod==='partial'?'partial':'pending');let paid=Number(opts.paidAmount!==undefined?opts.paidAmount:o.paidAmount||0);if(pStatus==='paid')paid=Number(o.total||0);if(pStatus==='pending')paid=0;paid=Math.min(Number(o.total||0),Math.max(0,paid));if(pStatus==='partial'&&(paid<=0||paid>=Number(o.total||0)))throw new Error('Partial paid amount must be between 0 and total');
-    const samePay=(o.payStatus||(o.payMethod==='paid'?'paid':o.payMethod==='partial'?'partial':'pending'))===pStatus&&Number(o.paidAmount||0)===paid;const noExtra=!opts.extra||Object.keys(opts.extra).length===0;if(oldStatus===newStatus&&samePay&&noExtra)throw new Error('No changes to save');
+    const samePay=(o.payStatus||(o.payMethod==='paid'?'paid':o.payMethod==='partial'?'partial':'pending'))===pStatus&&Number(o.paidAmount||0)===paid,noExtra=!opts.extra||Object.keys(opts.extra).length===0;if(oldStatus===newStatus&&samePay&&noExtra&&!(plan.reserve||plan.finalize||plan.directDeduct||plan.release||plan.compatReserved))throw new Error('No changes to save');
     const patch={status:newStatus,payStatus:pStatus,payMethod:pStatus==='paid'?'paid':pStatus==='partial'?'partial':'cod',paidAmount:paid,dueAmount:Math.max(0,Number(o.total||0)-paid),updatedAt:serverTimestamp(),...opts.extra};
-    if(needDeduct)patch.stockDeducted=true;if(needRestore)patch.stockDeducted=false;
-    if(newStatus==='confirmed'&&oldStatus!=='confirmed')patch.confirmedAt=serverTimestamp();if(newStatus==='ready'&&oldStatus!=='ready')patch.readyAt=serverTimestamp();if(newStatus==='parcel_sent'&&oldStatus!=='parcel_sent')patch.parcelSentAt=serverTimestamp();if(newStatus==='completed'&&oldStatus!=='completed')patch.completedAt=serverTimestamp();if(newStatus==='returned'&&oldStatus!=='returned')patch.returnedAt=serverTimestamp();if(newStatus==='cancelled'&&oldStatus!=='cancelled')patch.cancelledAt=serverTimestamp();
-    tx.update(orderRef,patch);
-
-    if(custSnap?.exists()){const c=custSnap.data();const cp={lastOrderStatus:newStatus,updatedAt:serverTimestamp()};if(newStatus==='completed'&&oldStatus!=='completed'){cp.completedOrders=Number(c.completedOrders||0)+1;cp.completedSpend=Number(c.completedSpend||0)+Number(o.total||0);}if(newStatus==='returned'&&oldStatus!=='returned'){cp.returnedOrders=Number(c.returnedOrders||0)+1;if(oldStatus==='completed'){cp.completedOrders=Math.max(0,Number(c.completedOrders||0)-1);cp.completedSpend=Math.max(0,Number(c.completedSpend||0)-Number(o.total||0));}}if(newStatus==='cancelled'&&oldStatus!=='cancelled')cp.cancelledOrders=Number(c.cancelledOrders||0)+1;tx.update(BDoc('customers',o.custId),cp);}
-    const changedStatus=oldStatus!==newStatus;const payChanged=(o.payStatus||'pending')!==pStatus||Number(o.paidAmount||0)!==paid;const type=opts.eventType||(opts.extra?.courier?'courier':changedStatus?'status':payChanged?'payment':'status');const title=opts.eventTitle||(changedStatus?`${orderStatusMeta(oldStatus).label} → ${orderStatusMeta(newStatus).label}`:'Payment updated');tx.set(eventRef,{type,title,fromStatus:oldStatus,toStatus:newStatus,actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:String(opts.note||'').slice(0,500),createdAt:serverTimestamp()});
+    if(plan.compatReserved){patch.stockReserved=true;patch.stockDeducted=false;patch.inventoryState='reserved';}
+    if(plan.reserve){patch.stockReserved=true;patch.stockDeducted=false;patch.inventoryState='reserved';patch.backorder=false;patch.stockShortage=[];patch.reservedAt=serverTimestamp();}
+    if(plan.finalize){patch.stockReserved=false;patch.stockDeducted=true;patch.inventoryState='finalized';patch.inventoryFinalizedAt=serverTimestamp();}
+    if(plan.directDeduct){patch.stockReserved=false;patch.stockDeducted=true;patch.inventoryState='finalized';patch.inventoryFinalizedAt=serverTimestamp();}
+    if(plan.release){patch.stockReserved=false;patch.stockDeducted=false;patch.inventoryState='released';patch.releasedAt=serverTimestamp();}
+    if(newStatus==='confirmed'&&oldStatus!=='confirmed')patch.confirmedAt=serverTimestamp();if(newStatus==='ready'&&oldStatus!=='ready')patch.readyAt=serverTimestamp();if(newStatus==='parcel_sent'&&oldStatus!=='parcel_sent')patch.parcelSentAt=serverTimestamp();if(newStatus==='completed'&&oldStatus!=='completed')patch.completedAt=serverTimestamp();if(newStatus==='returned'&&oldStatus!=='returned')patch.returnedAt=serverTimestamp();if(newStatus==='cancelled'&&oldStatus!=='cancelled')patch.cancelledAt=serverTimestamp();tx.update(orderRef,patch);
+    if(custSnap?.exists()){const c=custSnap.data(),cp={lastOrderStatus:newStatus,updatedAt:serverTimestamp()};if(newStatus==='completed'&&oldStatus!=='completed'){cp.completedOrders=Number(c.completedOrders||0)+1;cp.completedSpend=Number(c.completedSpend||0)+Number(o.total||0);}if(newStatus==='returned'&&oldStatus!=='returned'){cp.returnedOrders=Number(c.returnedOrders||0)+1;if(oldStatus==='completed'){cp.completedOrders=Math.max(0,Number(c.completedOrders||0)-1);cp.completedSpend=Math.max(0,Number(c.completedSpend||0)-Number(o.total||0));}}if(newStatus==='cancelled'&&oldStatus!=='cancelled')cp.cancelledOrders=Number(c.cancelledOrders||0)+1;tx.update(BDoc('customers',o.custId),cp);}
+    const changed=oldStatus!==newStatus,payChanged=(o.payStatus||'pending')!==pStatus||Number(o.paidAmount||0)!==paid,type=opts.eventType||(opts.extra?.courier?'courier':changed?'status':payChanged?'payment':'status'),title=opts.eventTitle||(changed?`${orderStatusMeta(oldStatus).label} → ${orderStatusMeta(newStatus).label}`:'Payment updated'),inventoryNote=plan.reserve?'Stock reserved':plan.finalize||plan.directDeduct?'Inventory finalized':plan.release?'Stock released':'';tx.set(eventRef,{type,title,fromStatus:oldStatus,toStatus:newStatus,actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:String(opts.note||inventoryNote||'').slice(0,500),createdAt:serverTimestamp()});
   });
 }
 async function updOrdSt(id){const newStatus=$('oStSel')?.value;const payStatus=$('oPstSel')?.value||'pending';let paidAmount=Number($('oPaidAmt')?.value||0);let extra={};if(newStatus==='parcel_sent'&&window._activeOrderStatus!=='parcel_sent'){const sel=$('oDeadlineDays')?.value;let days=sel==='custom'?Number($('oCustomDays')?.value||0):Number(sel||G.cfg.parcelDeadlineDays||3);if(!days||days<1){toast('Valid delivery days দিন','err');return;}let reason='';if(days>3){reason=$('oDeadlineReason')?.value.trim()||'';if(!reason){toast('৩ দিনের বেশি হলে reason দিন','err');return;}}extra={expectedDate:plusDays(days),deadlineDays:days,deadlineNote:reason,deadlineSetBy:G.role};}
   const btn=$('ordSaveBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';}try{await transitionOrderAtomic(id,newStatus,{payStatus,paidAmount,extra,note:'Order workspace update'});toast('✅ Order updated');closeMov('ordMOvl');pgOrders();}catch(e){toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='💾 Save Changes';}}
 }
 window.updOrdSt=updOrdSt;
-window.sendSingleOrderToSteadfast=async id=>{const btn=$('singleCourierBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Sending...';}try{const d=await getDoc(BDoc('orders',id));if(!d.exists())throw new Error('Order not found');const o=d.data();if(!['pending','confirmed','ready'].includes(o.status))throw new Error('Only processing orders can be sent to courier');const statusResp=await secureApiFetch('/v1/steadfast/config-status',{method:'GET'});const sd=await statusResp.json().catch(()=>({}));if(!statusResp.ok||!sd.configured)throw new Error(sd.error||'Steadfast is not configured');const pay=orderPaymentState(o);const r=await secureApiFetch('/v1/steadfast/create-order',{method:'POST',body:JSON.stringify({invoice:o.num,recipient_name:o.recvName||o.cName,recipient_phone:o.recvPhone||o.cPhone||o.ordererPhone,recipient_address:o.cAddr,cod_amount:pay.due,note:o.notes||''})});const data=await r.json().catch(()=>({}));if(!r.ok||!data.ok)throw new Error(data.error||'Courier request failed');const tracking=data.consignment?.tracking_code||'';await transitionOrderAtomic(id,'parcel_sent',{allowCourierJump:true,payStatus:pay.status,paidAmount:pay.paid,extra:{courier:'steadfast',courierStatus:data.consignment?.status||'sent',trackingCode:tracking,steadfastCN:tracking,consignmentId:data.consignment?.consignment_id||null,expectedDate:plusDays(Number(G.cfg.parcelDeadlineDays||3)),courierSentAt:serverTimestamp()},eventType:'courier',eventTitle:'Sent to Steadfast',note:tracking?`Tracking: ${tracking}`:''});toast('🚚 Sent to Steadfast');closeMov('ordMOvl');pgOrders();}catch(e){toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='🚚 Send this order to Steadfast';}}};
+async function reserveOrderInventoryAtomic(id){
+  const ref=BDoc('orders',id),ev=doc(OEvents(id));
+  await runTransaction(db,async tx=>{
+    const os=await tx.get(ref);if(!os.exists())throw new Error('Order not found');const o=os.data();
+    if(o.stockReserved===true)return;
+    // Compatibility: older active orders may already have reduced stock with stockDeducted=true.
+    if(o.stockDeducted===true&&['pending','confirmed','ready','parcel_sent'].includes(o.status)){
+      tx.update(ref,{stockReserved:true,stockDeducted:false,inventoryState:'reserved',updatedAt:serverTimestamp()});
+      tx.set(ev,{type:'inventory',title:'Existing stock hold normalized',fromStatus:o.status||'',toStatus:o.status||'',actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:'Legacy active deduction converted to reservation',createdAt:serverTimestamp()});return;
+    }
+    const pids=[...new Set((o.items||[]).map(i=>i.pid).filter(Boolean))],snaps={};for(const pid of pids){const ps=await tx.get(BDoc('products',pid));if(!ps.exists())throw new Error('Product missing during reservation');snaps[pid]=ps;}
+    for(const pid of pids){const base=snaps[pid].data();let work={...base,variants:Array.isArray(base.variants)?base.variants.map(v=>({...v})):[]};for(const it of (o.items||[]).filter(x=>x.pid===pid))work=orderApplyStockDelta(work,it,-Number(it.qty||1),true);const patch={stock:Number(work.stock||0),updatedAt:serverTimestamp()};if(Array.isArray(base.variants))patch.variants=work.variants;tx.update(BDoc('products',pid),patch);}
+    tx.update(ref,{stockReserved:true,stockDeducted:false,inventoryState:'reserved',backorder:false,stockShortage:[],reservedAt:serverTimestamp(),updatedAt:serverTimestamp()});
+    tx.set(ev,{type:'inventory',title:'Stock reserved for courier',fromStatus:o.status||'',toStatus:o.status||'',actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:'',createdAt:serverTimestamp()});
+  });
+}
+window.sendSingleOrderToSteadfast=async id=>{const btn=$('singleCourierBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Sending...';}try{let d=await getDoc(BDoc('orders',id));if(!d.exists())throw new Error('Order not found');let o=d.data();if(!['pending','confirmed','ready'].includes(o.status))throw new Error('Only processing orders can be sent to courier');await reserveOrderInventoryAtomic(id);d=await getDoc(BDoc('orders',id));o=d.data();const statusResp=await secureApiFetch('/v1/steadfast/config-status',{method:'GET'});const sd=await statusResp.json().catch(()=>({}));if(!statusResp.ok||!sd.configured)throw new Error(sd.error||'Steadfast is not configured');const pay=orderPaymentState(o);const r=await secureApiFetch('/v1/steadfast/create-order',{method:'POST',body:JSON.stringify({invoice:o.num,recipient_name:o.recvName||o.cName,recipient_phone:o.recvPhone||o.cPhone||o.ordererPhone,recipient_address:o.cAddr,cod_amount:pay.due,note:o.notes||''})});const data=await r.json().catch(()=>({}));if(!r.ok||!data.ok)throw new Error(data.error||'Courier request failed');const tracking=data.consignment?.tracking_code||'';await transitionOrderAtomic(id,'parcel_sent',{allowCourierJump:true,payStatus:pay.status,paidAmount:pay.paid,extra:{courier:'steadfast',courierStatus:data.consignment?.status||'sent',trackingCode:tracking,steadfastCN:tracking,consignmentId:data.consignment?.consignment_id||null,expectedDate:plusDays(Number(G.cfg.parcelDeadlineDays||3)),courierSentAt:serverTimestamp()},eventType:'courier',eventTitle:'Sent to Steadfast',note:tracking?`Tracking: ${tracking}`:''});toast('🚚 Sent to Steadfast');closeMov('ordMOvl');pgOrders();}catch(e){toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='🚚 Send this order to Steadfast';}}};
 window.archiveOrder=async(id,archive=true)=>{if(!confirm(archive?'Archive this order?':'Restore this order?'))return;try{const ref=BDoc('orders',id),ev=doc(OEvents(id));await runTransaction(db,async tx=>{const s=await tx.get(ref);if(!s.exists())throw new Error('Order not found');tx.update(ref,{archived:!!archive,archivedAt:archive?serverTimestamp():null,archivedBy:archive?(G.user?.uid||''):'',updatedAt:serverTimestamp()});tx.set(ev,{type:'archive',title:archive?'Order archived':'Order restored',actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:'',createdAt:serverTimestamp()});});toast(archive?'Archived':'Restored');pgOrders();}catch(e){toast(e.message,'err');}};
 window.delOrder=(id)=>archiveOrder(id,true); // compatibility: hard-delete removed
 window.togglePriority=async(id,current)=>{try{const ref=BDoc('orders',id),ev=doc(OEvents(id));await runTransaction(db,async tx=>{const s=await tx.get(ref);if(!s.exists())throw new Error('Order not found');tx.update(ref,{priority:!current,updatedAt:serverTimestamp()});tx.set(ev,{type:'priority',title:!current?'Marked priority':'Priority removed',actorUid:G.user?.uid||'',actorName:G.user?.displayName||G.role||'Staff',note:'',createdAt:serverTimestamp()});});if(_orderCacheAll){const o=_orderCacheAll.find(x=>x.id===id);if(o)o.priority=!current;}renderOrdersView();toast(!current?'⭐ Priority set':'Priority removed');}catch(e){toast(e.message,'err');}};
