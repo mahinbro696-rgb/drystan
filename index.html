@@ -3315,6 +3315,7 @@ window.doModLogin=async()=>{
       btn.disabled=false;btn.innerHTML='Sign In as Moderator →';return;
     }
     if(ud.role!=='moderator'){err.style.display='flex';err.textContent='❌ Invalid username or password.';btn.disabled=false;btn.innerHTML='Sign In as Moderator →';return;}
+    if(ud.suspended){err.style.display='flex';err.textContent='⛔ This moderator account is suspended. Contact your admin.';btn.disabled=false;btn.innerHTML='Sign In as Moderator →';return;}
     // Verify password first by attempting sign in
     try{
       await Promise.race([
@@ -3470,6 +3471,10 @@ onAuthStateChanged(auth,async user=>{
           setTimeout(()=>$('totp0')?.focus(),300);
           return;
         }
+        if(G.role==='moderator'){
+          startMyAccessListener(user.uid);
+          setDoc(BDoc('teamActivity',user.uid),{lastLoginAt:serverTimestamp(),updatedAt:serverTimestamp()},{merge:true}).catch(()=>{});
+        }
       }else{
         G.role='admin';G.bizId=user.uid;
         await setDoc(Doc('users',user.uid),{displayName:'Admin',username:'admin',email:user.email,role:'admin',authUid:user.uid,bizId:user.uid,createdAt:serverTimestamp()},{merge:true});
@@ -3506,6 +3511,7 @@ onAuthStateChanged(auth,async user=>{
     // Stop the moderator-login-approval listener — prevents a background Firestore
     // listener leak that would otherwise keep querying with a stale bizId forever
     if(_modListenerUnsub){try{_modListenerUnsub();}catch{} _modListenerUnsub=null;}
+    if(_myAccessUnsub){try{_myAccessUnsub();}catch{} _myAccessUnsub=null;}
     if(_orderNotifUnsub){try{_orderNotifUnsub();}catch{} _orderNotifUnsub=null;}
     ls.classList.add('hide');setTimeout(()=>ls.style.display='none',500);
     $('appWrap').classList.remove('show');$('loginWrap').classList.add('show');
@@ -3521,7 +3527,7 @@ function loadApp(){
   const sn=G.gcfg.siteName||'Drystan';
   const nm=$('mainLogoName');if(nm)nm.textContent=sn;
   // Restore the page the user was on before a refresh (from #app/{page}), falling back to the default
-  const ALL_PAGES=['dash','prods','newOrder','orders','reports','tools','team','cfg','account','help'];
+  const ALL_PAGES=['dash','prods','newOrder','orders','custs','reports','tools','team','cfg','account','help'];
   let restoredPage=null;
   if(location.hash.startsWith('#app/')){
     const candidate=location.hash.slice(5).split('/')[0];
@@ -3533,7 +3539,7 @@ function loadApp(){
   // since the hash was set), G.page won't have changed and #pageContent stays empty — recover.
   if(restoredPage&&G.role==='moderator'){
     const perms=G.modPerms||{orders:true};
-    const allowedNow=['newOrder','orders','account',...(perms.products?['prods']:[]),...(perms.customers?['custs']:[]),...(perms.reports?['reports']:[])];
+    const allowedNow=moderatorAllowedPages(perms);
     if(!allowedNow.includes(restoredPage))nav('newOrder');
   }
   // Start moderator login approval listener (admin only)
@@ -3649,6 +3655,35 @@ function renderNotifPanel(){
 }
 window.clearNotifs=()=>{_notifs=[];persistNotifs();renderNotifPanel();const d=$('notifDot');if(d)d.style.display='none';};
 
+// ══ LIVE MODERATOR ACCESS CONTROL ══
+let _myAccessUnsub=null;
+function moderatorAllowedPages(perms={}){
+  return ['newOrder','orders','account','help',...(perms.products?['prods']:[]),...(perms.customers?['custs']:[]),...(perms.reports?['reports']:[])];
+}
+function startMyAccessListener(uid){
+  if(_myAccessUnsub){try{_myAccessUnsub();}catch{} _myAccessUnsub=null;}
+  if(G.role!=='moderator'||!uid)return;
+  let first=true;
+  _myAccessUnsub=onSnapshot(Doc('users',uid),async snap=>{
+    if(!snap.exists())return;
+    const d=snap.data()||{};
+    if(d.suspended){
+      toast('⛔ আপনার moderator access suspended করা হয়েছে।','err');
+      try{await signOut(auth);}catch{}
+      return;
+    }
+    const next=d.permissions||{orders:true};
+    const changed=JSON.stringify(next)!==JSON.stringify(G.modPerms||{});
+    G.modPerms=next;
+    if(!first&&changed){
+      buildSidebar();
+      if(!moderatorAllowedPages(next).includes(G.page)){toast('🔐 আপনার access permission পরিবর্তন হয়েছে।','info');nav('orders');}
+      else toast('🔐 Permissions updated by admin','info');
+    }
+    first=false;
+  },e=>console.warn('Moderator access listener:',e));
+}
+
 // ══ MODERATOR LOGIN APPROVAL ══
 let _modListenerUnsub=null;
 function startModLoginListener(){
@@ -3657,7 +3692,13 @@ function startModLoginListener(){
     const qRef=query(Col('modLoginRequests'),where('bizId','==',G.bizId),where('status','==','pending'));
     _modListenerUnsub=onSnapshot(qRef,(snap)=>{
       snap.docChanges().forEach(change=>{
-        if(change.type==='added'){showModApprovalNotif(change.doc.id,change.doc.data());}
+        if(change.type==='added'){
+          const req={id:change.doc.id,...change.doc.data()};showModApprovalNotif(change.doc.id,change.doc.data());
+          if(G.page==='team'){
+            window._teamPendingCache=[req,...(window._teamPendingCache||[]).filter(x=>x.id!==req.id)];
+            renderTeamPending();if($('teamPendingStat'))$('teamPendingStat').textContent=(window._teamPendingCache||[]).length;
+          }
+        }
       });
     },(err)=>{console.warn('Listener error:',err);});
   }catch(e){console.warn('startModLoginListener error:',e);}
@@ -3694,6 +3735,10 @@ window.approveModLogin=async(docId,approved)=>{
   try{
     await updateDoc(Doc('modLoginRequests',docId),{status:approved?'approved':'rejected',reviewedAt:serverTimestamp(),reviewedBy:G.user?.uid});
     $('modApprovalNotif')?.remove();
+    if(G.page==='team'){
+      window._teamPendingCache=(window._teamPendingCache||[]).filter(r=>r.id!==docId);renderTeamPending();
+      if($('teamPendingStat'))$('teamPendingStat').textContent=(window._teamPendingCache||[]).length;
+    }
     toast(approved?'✅ Moderator login approved!':'❌ Login rejected.', approved?'ok':'info');
   }catch(e){toast(e.message,'err');}
 };
@@ -3703,10 +3748,7 @@ const pgTitles={dash:'Dashboard',prods:'Products',newOrder:'Create Order',orders
 window.nav=p=>{
   if(G.role==='moderator'){
     const perms=G.modPerms||{orders:true};
-    const allowed=['newOrder','orders','account'];
-    if(perms.products)allowed.push('prods');
-    if(perms.customers)allowed.push('custs');
-    if(perms.reports)allowed.push('reports');
+    const allowed=moderatorAllowedPages(perms);
     if(!allowed.includes(p)){toast('Access denied — ask admin for permission','err');return;}
   }
   G.page=p;closeSB();
@@ -3767,6 +3809,7 @@ function buildSidebar(){
     {p:'prods',ico:'box',lbl:'Products'},
     {p:'newOrder',ico:'plus',lbl:'Create Order'},
     {p:'orders',ico:'cart',lbl:'Orders'},
+    {p:'custs',ico:'users',lbl:'Customers'},
     {p:'reports',ico:'chart',lbl:'Reports & Analytics'},
     {p:'tools',ico:'tool',lbl:'Business Tools'},
     {p:'team',ico:'shield',lbl:'Team / Moderators'},
@@ -3776,6 +3819,7 @@ function buildSidebar(){
     {p:'newOrder',ico:'plus',lbl:'Create Order'},
     {p:'orders',ico:'cart',lbl:'Orders'},
     ...(G.modPerms?.products?[{p:'prods',ico:'box',lbl:'Products'}]:[]),
+    ...(G.modPerms?.customers?[{p:'custs',ico:'users',lbl:'Customers'}]:[]),
     ...(G.modPerms?.reports?[{p:'reports',ico:'chart',lbl:'Reports'}]:[]),
   ];
   const items=isAdmin?adminNav:modNav;
@@ -6351,7 +6395,7 @@ function renderCustsView(){
           <td style="color:var(--t2)">${cur((c.spent||0)/(c.orders||1))}</td>
           <td><div style="display:flex;gap:5px">
             <button class="btn bS bSm bIco" onclick="viewCust('${c.id}')">👁️</button>
-            <button class="btn bD bSm bIco" onclick="delCust('${c.id}',${jsArg(c.name)})">🗑️</button>
+            ${G.role==='admin'?`<button class="btn bD bSm bIco" onclick="delCust('${c.id}',${jsArg(c.name)})">🗑️</button>`:''}
           </div></td>
         </tr>`).join('')}</tbody>
       </table></div>`}
@@ -6715,174 +6759,298 @@ window.printPL=()=>{
   w.document.close();setTimeout(()=>w.print(),300);
 };
 
-// ══ TEAM ══
+// ══ TEAM & ACCESS CONTROL ══
+let _teamStatusFilter='all',_teamPermFilter='all',_teamSearch='';
+
+function teamTsMs(v){
+  if(!v)return 0;
+  try{if(typeof v.toDate==='function')return v.toDate().getTime();}catch{}
+  if(typeof v.seconds==='number')return v.seconds*1000;
+  const n=new Date(v).getTime();return Number.isFinite(n)?n:0;
+}
+function teamAgo(v){
+  const ms=teamTsMs(v);if(!ms)return 'Never';
+  const s=Math.max(0,Math.floor((Date.now()-ms)/1000));
+  if(s<60)return 'Just now';
+  if(s<3600)return Math.floor(s/60)+'m ago';
+  if(s<86400)return Math.floor(s/3600)+'h ago';
+  if(s<604800)return Math.floor(s/86400)+'d ago';
+  return fdate(v);
+}
+function teamAccessLevel(p={}){
+  if(p.products&&p.customers&&p.reports)return {name:'Manager',ico:'🛡️',clr:'var(--acc2)'};
+  if(p.products&&p.customers)return {name:'Operations',ico:'⚙️',clr:'var(--green)'};
+  if(p.products)return {name:'Inventory',ico:'📦',clr:'var(--yellow)'};
+  if(p.customers)return {name:'Support',ico:'👥',clr:'#38bdf8'};
+  return {name:'Order Operator',ico:'🧾',clr:'var(--t2)'};
+}
+function teamPermissionChips(p={}){
+  const chips=[['Orders',true,'🧾'],['Products',!!p.products,'📦'],['Customers',!!p.customers,'👥'],['Reports',!!p.reports,'📊']];
+  return chips.filter(x=>x[1]).map(([n,_,i])=>`<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;background:var(--bg3);border:1px solid var(--border);font-size:10px;color:var(--t2)">${i} ${n}</span>`).join('');
+}
+function teamInitials(name='M'){
+  return String(name).trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'M';
+}
+
 async function pgTeam(){
   if(G.role!=='admin'){setC('<div class="al aE">❌ Access denied</div>');return;}
   loading();
   try{
-    const snap=await getDocs(Col('users'));
-    const mods=snap.docs.map(d=>({id:d.id,...d.data()})).filter(u=>u.role==='moderator'&&(u.bizId===G.bizId||u.adminUid===G.bizId));
+    const [uSnap,rSnap,aSnap]=await Promise.all([
+      getDocs(query(Col('users'),where('bizId','==',G.bizId))),
+      getDocs(query(Col('modLoginRequests'),where('bizId','==',G.bizId))).catch(()=>({docs:[]})),
+      getDocs(BCol('teamActivity')).catch(()=>({docs:[]}))
+    ]);
+    const activity=Object.fromEntries(aSnap.docs.map(d=>[d.id,d.data()]));
+    const mods=uSnap.docs.map(d=>({id:d.id,...d.data(),lastLoginAt:activity[d.id]?.lastLoginAt||null,teamActivity:activity[d.id]||{}})).filter(u=>u.role==='moderator');
+    const pending=rSnap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>r.status==='pending'&&(!r.expiresAt||teamTsMs(r.expiresAt)>Date.now()));
     window._modsCache=mods;
+    window._teamPendingCache=pending;
+    const active=mods.filter(m=>!m.suspended).length;
+    const suspended=mods.length-active;
+    const recent=mods.filter(m=>teamTsMs(m.lastLoginAt)>Date.now()-7*86400000).length;
     setC(`
-    <div class="pH"><div><h1>Team & Moderators</h1><p>Manage your team members</p></div>
+    <div class="pH" style="align-items:flex-start">
+      <div>
+        <h1>👥 Team & Access</h1>
+        <p>Moderator accounts, permissions, login approvals and access status</p>
+      </div>
       <button class="btn bP" onclick="openAddMod()">➕ Add Moderator</button>
     </div>
-    <div class="al aI" style="margin-bottom:14px">ℹ️ Moderators can: Create Orders, Update Order Status. They CANNOT: Manage Products (full), View Reports, Team, or Settings.</div>
-    <div class="card">
-      <div class="cardTitle">👥 Moderators (${mods.length})</div>
-      ${mods.length===0?`<div class="empty" style="padding:30px"><h3>No moderators yet</h3><p>Add a moderator to help manage orders</p></div>`:`
-      <div class="tWrap"><table>
-        <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Phone</th><th>Joined</th><th>Actions</th></tr></thead>
-        <tbody>${mods.map(u=>`<tr>
-          <td style="font-weight:600">${esc(u.displayName||u.username)}</td>
-          <td><code style="color:var(--acc2)">@${esc(u.username)}</code></td>
-          <td style="font-size:13px;color:var(--t2)">${esc(u.email)}</td>
-          <td style="font-size:13px">${esc(u.phone||'-')}</td>
-          <td style="font-size:12px;color:var(--t3)">${u.createdAt?fdate(u.createdAt):'-'}</td>
-          <td><div style="display:flex;gap:5px;flex-wrap:wrap">
-            <button class="btn bP bSm" onclick="openEditMod('${u.id}')">✏️ Edit</button>
-            <button class="btn bY bSm" onclick="resetModPw('${u.id}',${jsArg(u.username)},${jsArg(u.bizId||'')})">🔑 Reset PW</button>
-            <button class="btn bD bSm" onclick="delMod('${u.id}',${jsArg(u.username)})">🗑️ Remove</button>
-          </div></td>
-        </tr>`).join('')}</tbody>
-      </table></div>`}
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px">
+      ${[
+        ['Team members',mods.length,'👥','var(--acc2)'],
+        ['Active',active,'✅','var(--green)'],
+        ['Suspended',suspended,'⛔','var(--red)'],
+        ['Pending logins',pending.length,'🔐',pending.length?'var(--yellow)':'var(--t2)'],
+        ['Active this week',recent,'⚡','#38bdf8']
+      ].map(([l,v,i,c])=>`<div class="card" style="padding:14px 16px;min-height:92px;display:flex;flex-direction:column;justify-content:center">
+        <div style="font-size:11px;color:var(--t2);font-weight:600">${i} ${l}</div>
+        <div ${l==='Pending logins'?'id="teamPendingStat"':''} style="font-size:25px;font-weight:900;color:${c};margin-top:4px">${v}</div>
+      </div>`).join('')}
     </div>
-    <div class="mOvl" id="modMOvl"><div class="modal" id="modMod"></div></div>`);
-  }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
+
+    ${pending.length?`<div class="card" style="margin-bottom:16px;border-color:rgba(245,158,11,.28)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">
+        <div><div class="cardTitle" style="margin:0">🔐 Pending Login Approvals</div><div style="font-size:11px;color:var(--t3);margin-top:3px">Approve only when you recognize the moderator requesting access.</div></div>
+        <span class="badge bPend">${pending.length} waiting</span>
+      </div>
+      <div id="teamPendingList"></div>
+    </div>`:''}
+
+    <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(16,185,129,.04))">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="font-size:22px">🛡️</div>
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:13px;margin-bottom:4px">Access policy</div>
+          <div style="font-size:11px;color:var(--t2);line-height:1.7">Every moderator login needs admin approval. Permission changes apply live. Suspended accounts are signed out and cannot request access. Moderator accounts are deactivated instead of deleting their identity record.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <div>
+          <div class="cardTitle" style="margin:0">Team Directory</div>
+          <div id="teamResultCount" style="font-size:11px;color:var(--t3);margin-top:3px"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;flex:1;justify-content:flex-end">
+          <div class="sBar" style="min-width:210px;max-width:320px;flex:1;margin:0"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="teamSearchInp" placeholder="Search name, username, phone..." value="${esc(_teamSearch)}" oninput="teamSearch(this.value)"/></div>
+          <select class="afI" style="width:auto;min-width:130px;padding:8px 10px" onchange="teamSetStatus(this.value)">
+            <option value="all" ${_teamStatusFilter==='all'?'selected':''}>All status</option><option value="active" ${_teamStatusFilter==='active'?'selected':''}>Active</option><option value="suspended" ${_teamStatusFilter==='suspended'?'selected':''}>Suspended</option>
+          </select>
+          <select class="afI" style="width:auto;min-width:145px;padding:8px 10px" onchange="teamSetPerm(this.value)">
+            <option value="all" ${_teamPermFilter==='all'?'selected':''}>All access</option><option value="orders" ${_teamPermFilter==='orders'?'selected':''}>Orders only</option><option value="products" ${_teamPermFilter==='products'?'selected':''}>Products</option><option value="customers" ${_teamPermFilter==='customers'?'selected':''}>Customers</option><option value="reports" ${_teamPermFilter==='reports'?'selected':''}>Reports</option>
+          </select>
+        </div>
+      </div>
+      <div id="teamMemberList"></div>
+    </div>
+    <div class="mOvl" id="modMOvl"><div class="modal mLg" id="modMod"></div></div>`);
+    renderTeamPending();renderTeamMembers();
+  }catch(e){setC(`<div class="al aE">❌ ${esc(e.message)}</div>`);}
 }
+
+function renderTeamPending(){
+  const el=$('teamPendingList');if(!el)return;
+  const rows=window._teamPendingCache||[];
+  el.innerHTML=rows.length?rows.map(r=>`<div style="display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--border);flex-wrap:wrap">
+    <div style="width:38px;height:38px;border-radius:11px;background:rgba(245,158,11,.12);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--yellow)">${esc(teamInitials(r.displayName||r.username))}</div>
+    <div style="flex:1;min-width:180px"><div style="font-size:13px;font-weight:700">${esc(r.displayName||r.username)} <span style="font-weight:500;color:var(--acc2)">@${esc(r.username||'')}</span></div><div style="font-size:10px;color:var(--t3)">Requested ${teamAgo(r.requestedAt)} · expires in ~5 minutes</div></div>
+    <div style="display:flex;gap:7px"><button class="btn bG bSm" onclick="teamReviewLogin('${r.id}',true)">✅ Approve</button><button class="btn bD bSm" onclick="teamReviewLogin('${r.id}',false)">Reject</button></div>
+  </div>`).join(''):'<div style="font-size:12px;color:var(--t3);padding:8px 0">No pending requests</div>';
+}
+
+function renderTeamMembers(){
+  const el=$('teamMemberList');if(!el)return;
+  let list=[...(window._modsCache||[])];
+  const q=_teamSearch.trim().toLowerCase();
+  if(q)list=list.filter(m=>[m.displayName,m.username,m.phone,m.designation].some(v=>String(v||'').toLowerCase().includes(q)));
+  if(_teamStatusFilter==='active')list=list.filter(m=>!m.suspended);
+  if(_teamStatusFilter==='suspended')list=list.filter(m=>!!m.suspended);
+  if(_teamPermFilter==='orders')list=list.filter(m=>{const p=m.permissions||{};return !p.products&&!p.customers&&!p.reports;});
+  if(['products','customers','reports'].includes(_teamPermFilter))list=list.filter(m=>!!m.permissions?.[_teamPermFilter]);
+  list.sort((a,b)=>Number(!!a.suspended)-Number(!!b.suspended)||(a.displayName||a.username||'').localeCompare(b.displayName||b.username||''));
+  if($('teamResultCount'))$('teamResultCount').textContent=`Showing ${list.length} of ${(window._modsCache||[]).length} moderators`;
+  if(!list.length){el.innerHTML='<div class="empty" style="padding:38px 20px"><div style="font-size:34px;margin-bottom:8px">👥</div><h3>No matching moderators</h3><p>Change the search/filter or add a new moderator.</p></div>';return;}
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px">${list.map(m=>{
+    const p=m.permissions||{};const level=teamAccessLevel(p);const off=!!m.suspended;
+    return `<div style="border:1px solid ${off?'rgba(239,68,68,.24)':'var(--border)'};background:var(--bg2);border-radius:14px;padding:15px;display:flex;flex-direction:column;gap:12px;opacity:${off?'.82':'1'}">
+      <div style="display:flex;gap:11px;align-items:center">
+        <div style="width:46px;height:46px;border-radius:13px;background:${off?'rgba(239,68,68,.12)':'var(--acc4)'};border:1px solid ${off?'rgba(239,68,68,.25)':'rgba(99,102,241,.2)'};display:flex;align-items:center;justify-content:center;font-weight:900;color:${off?'var(--red)':'var(--acc2)'}">${esc(teamInitials(m.displayName||m.username))}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap"><div style="font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.displayName||m.username)}</div><span style="font-size:9px;font-weight:800;padding:3px 7px;border-radius:999px;background:${off?'rgba(239,68,68,.12)':'rgba(16,185,129,.12)'};color:${off?'var(--red)':'var(--green)'}">${off?'● SUSPENDED':'● ACTIVE'}</span></div>
+          <div style="font-size:11px;color:var(--t2);margin-top:2px">@${esc(m.username||'')} ${m.designation?`· ${esc(m.designation)}`:''}</div>
+        </div>
+        <div title="${esc(level.name)}" style="font-size:18px">${level.ico}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${teamPermissionChips(p)}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 10px">
+        <div><div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.7px">Last login</div><div style="font-size:11px;font-weight:650;margin-top:2px">${teamAgo(m.lastLoginAt)}</div></div>
+        <div><div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.7px">Access level</div><div style="font-size:11px;font-weight:700;color:${level.clr};margin-top:2px">${esc(level.name)}</div></div>
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <button class="btn bP bSm" style="flex:1" onclick="openEditMod('${m.id}')">⚙️ Manage</button>
+        <button class="btn bS bSm" onclick="copyModLogin(${jsArg(m.username||'')})">📋 Copy ID</button>
+        <button class="btn ${off?'bG':'bD'} bSm" onclick="toggleModSuspended('${m.id}',${off?'false':'true'},${jsArg(m.username||'')})">${off?'✅ Activate':'⛔ Suspend'}</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+window.teamSearch=v=>{_teamSearch=v;renderTeamMembers();};
+window.teamSetStatus=v=>{_teamStatusFilter=v;renderTeamMembers();};
+window.teamSetPerm=v=>{_teamPermFilter=v;renderTeamMembers();};
+window.copyModLogin=async username=>{try{await navigator.clipboard.writeText(String(username||''));toast('✅ Moderator username copied','ok');}catch{toast('Username: '+username,'info');}};
+
+window.teamReviewLogin=async(docId,approved)=>{
+  try{
+    await updateDoc(Doc('modLoginRequests',docId),{status:approved?'approved':'rejected',reviewedAt:serverTimestamp(),reviewedBy:G.user?.uid});
+    window._teamPendingCache=(window._teamPendingCache||[]).filter(r=>r.id!==docId);renderTeamPending();
+    $('modApprovalNotif')?.remove();
+    toast(approved?'✅ Login approved':'Login rejected',approved?'ok':'info');
+    if($('teamPendingStat'))$('teamPendingStat').textContent=(window._teamPendingCache||[]).length;
+  }catch(e){toast(e.message,'err');}
+};
+
+function modPermissionEditor(prefix,p={}){
+  return `<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+    <label style="display:flex;gap:9px;align-items:flex-start;padding:11px;background:var(--card);border:1px solid var(--border);border-radius:10px;cursor:not-allowed"><input type="checkbox" checked disabled style="width:17px;height:17px;margin-top:1px;accent-color:var(--acc)"/><span><b style="font-size:12px">🧾 Orders</b><small style="display:block;color:var(--t3);font-size:9px;margin-top:2px">Create & manage orders · required</small></span></label>
+    <label style="display:flex;gap:9px;align-items:flex-start;padding:11px;background:var(--card);border:1px solid var(--border);border-radius:10px;cursor:pointer"><input id="${prefix}products" type="checkbox" ${p.products?'checked':''} style="width:17px;height:17px;margin-top:1px;accent-color:var(--acc)"/><span><b style="font-size:12px">📦 Products</b><small style="display:block;color:var(--t3);font-size:9px;margin-top:2px">Catalog, price & stock tools</small></span></label>
+    <label style="display:flex;gap:9px;align-items:flex-start;padding:11px;background:var(--card);border:1px solid var(--border);border-radius:10px;cursor:pointer"><input id="${prefix}customers" type="checkbox" ${p.customers?'checked':''} style="width:17px;height:17px;margin-top:1px;accent-color:var(--acc)"/><span><b style="font-size:12px">👥 Customers</b><small style="display:block;color:var(--t3);font-size:9px;margin-top:2px">Customer directory & order history</small></span></label>
+    <label style="display:flex;gap:9px;align-items:flex-start;padding:11px;background:var(--card);border:1px solid var(--border);border-radius:10px;cursor:pointer"><input id="${prefix}reports" type="checkbox" ${p.reports?'checked':''} style="width:17px;height:17px;margin-top:1px;accent-color:var(--acc)"/><span><b style="font-size:12px">📊 Reports</b><small style="display:block;color:var(--t3);font-size:9px;margin-top:2px">Sales & analytics visibility</small></span></label>
+  </div>`;
+}
+function readModPerms(prefix){return {orders:true,products:!!$(prefix+'products')?.checked,customers:!!$(prefix+'customers')?.checked,reports:!!$(prefix+'reports')?.checked,orderLink:false};}
+window.applyModPreset=(prefix,preset)=>{
+  const sets={orders:[0,0,0],inventory:[1,0,0],support:[0,1,0],manager:[1,1,1]};const a=sets[preset]||sets.orders;
+  const ids=['products','customers','reports'];ids.forEach((id,i)=>{const el=$(prefix+id);if(el)el.checked=!!a[i];});
+};
+window.genModPassword=()=>{
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';const arr=new Uint32Array(14);crypto.getRandomValues(arr);
+  const pw=Array.from(arr,n=>chars[n%chars.length]).join('');const el=$('md_p');if(el){el.value=pw;el.type='text';}toast('🔐 Strong password generated — copy it securely','ok');
+};
+
 window.openAddMod=()=>{
   $('modMod').innerHTML=`
-  <div class="mH"><h3>➕ Add Moderator</h3><button class="btn bS bIco" onclick="closeMov('modMOvl')">✕</button></div>
-  <div class="mB">
-    <div class="al aI" style="font-size:12px">ℹ️ Moderator এর email/phone দরকার নেই। Password ভুলে গেলে Admin রিসেট করে দিতে পারবে।</div>
-    <div class="afG"><label class="afL">Full Name *</label><input class="afI" id="md_n" placeholder="e.g. Raju"/></div>
-    <div class="afG"><label class="afL">Username * <span style="color:var(--t3)">(login এ ব্যবহার হবে)</span></label><input class="afI" id="md_u" placeholder="e.g. raju001"/></div>
-    <div class="afG"><label class="afL">Password *</label>
-      <div style="position:relative">
-        <input class="afI" type="password" id="md_p" placeholder="Min 6 characters" style="padding-right:42px"/>
-        <button type="button" onclick="togglePw('md_p')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--t3)">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
+  <div class="mH"><div><h3 style="margin:0">➕ Add Moderator</h3><div style="font-size:10px;color:var(--t3);margin-top:3px">Create a staff account with least-privilege access</div></div><button class="btn bS bIco" onclick="closeMov('modMOvl')">✕</button></div>
+  <div class="mB" style="max-height:72vh;overflow:auto">
+    <div class="card" style="padding:14px;margin-bottom:12px">
+      <div class="cardTitle">👤 Profile</div>
+      <div class="g g2" style="gap:10px"><div class="afG"><label class="afL">Full Name *</label><input class="afI" id="md_n" placeholder="e.g. Raju Ahmed"/></div><div class="afG"><label class="afL">Designation</label><input class="afI" id="md_d" placeholder="e.g. Order Operator"/></div></div>
+      <div class="g g2" style="gap:10px"><div class="afG"><label class="afL">Username *</label><input class="afI" id="md_u" autocomplete="off" placeholder="e.g. raju001"/></div><div class="afG"><label class="afL">Phone <span style="color:var(--t3)">(optional)</span></label><input class="afI" id="md_phone" inputmode="tel" placeholder="01XXXXXXXXX"/></div></div>
+      <div class="afG"><label class="afL">Password *</label><div style="display:flex;gap:7px"><div style="position:relative;flex:1"><input class="afI" type="password" id="md_p" autocomplete="new-password" placeholder="Minimum 8 characters" style="padding-right:42px"/><button type="button" onclick="togglePw('md_p')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--t3)">👁</button></div><button class="btn bS" type="button" onclick="genModPassword()">Generate</button></div><div style="font-size:9px;color:var(--t3);margin-top:5px">Share the initial password privately. Drystan never displays it again.</div></div>
     </div>
-    <div class="afG">
-      <label class="afL">🔐 Role & Permissions</label>
-      <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border)">
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" checked disabled style="width:16px;height:16px;accent-color:var(--acc)"/> 📋 Create & Manage Orders <span style="color:var(--t3);font-size:11px">(সবসময় চালু)</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="perm_products" style="width:16px;height:16px;accent-color:var(--acc)"/> 📦 Products দেখা ও Edit করা
-        </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="perm_customers" style="width:16px;height:16px;accent-color:var(--acc)"/> 👥 Customers দেখা
-        </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="perm_reports" style="width:16px;height:16px;accent-color:var(--acc)"/> 📊 Reports & Analytics দেখা
-        </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="perm_orderLink" style="width:16px;height:16px;accent-color:var(--acc)"/> 🔗 কাস্টম অর্ডার লিংক তৈরি
-        </label>
-      </div>
+    <div class="card" style="padding:14px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap"><div class="cardTitle" style="margin:0">🔐 Access</div><select class="afI" style="width:auto;padding:7px 9px" onchange="applyModPreset('perm_',this.value)"><option value="orders">Order Operator</option><option value="inventory">Inventory Operator</option><option value="support">Customer Support</option><option value="manager">Manager</option></select></div>
+      ${modPermissionEditor('perm_')}
     </div>
+    <div class="al aI" style="font-size:11px">🛡️ Every moderator login must be approved by an admin. You can suspend access instantly from Team & Access.</div>
     <div id="mdErr" class="al aE" style="display:none"></div>
   </div>
-  <div class="mF">
-    <button class="btn bS" onclick="closeMov('modMOvl')">Cancel</button>
-    <button class="btn bP" id="mdBtn" onclick="saveMod()">➕ Create Moderator</button>
-  </div>`;
+  <div class="mF"><button class="btn bS" onclick="closeMov('modMOvl')">Cancel</button><button class="btn bP" id="mdBtn" onclick="saveMod()">➕ Create Moderator</button></div>`;
   $('modMOvl').classList.add('open');
 };
+
 window.saveMod=async()=>{
-  const name=$('md_n').value.trim(),username=$('md_u').value.trim().toLowerCase(),pass=$('md_p').value;
+  const name=$('md_n').value.trim(),username=$('md_u').value.trim().toLowerCase(),pass=$('md_p').value,phone=$('md_phone').value.trim(),designation=$('md_d').value.trim();
   const err=$('mdErr'),btn=$('mdBtn');err.style.display='none';
-  if(!name||!username||!pass){err.style.display='flex';err.textContent='❌ Name, username, password required.';return;}
-  if(username.length<3||!/^[a-z0-9_]+$/.test(username)){err.style.display='flex';err.textContent='❌ Username: min 3 chars, only a-z 0-9 underscore.';return;}
-  if(pass.length<6){err.style.display='flex';err.textContent='❌ Password min 6 characters.';return;}
-  const ex=await getDocs(query(Col('users'),where('username','==',username)));
-  if(!ex.empty){err.style.display='flex';err.textContent='❌ Username already taken.';return;}
+  if(!name||!username||!pass){err.style.display='flex';err.textContent='❌ Name, username and password are required.';return;}
+  if(username.length<3||!/^[a-z0-9_]+$/.test(username)){err.style.display='flex';err.textContent='❌ Username: minimum 3 characters; use a-z, 0-9 and underscore only.';return;}
+  if(pass.length<8){err.style.display='flex';err.textContent='❌ Use at least 8 characters for the password.';return;}
+  if(phone&&!/^01[3-9][0-9]{8}$/.test(phone)){err.style.display='flex';err.textContent='❌ Enter a valid Bangladesh mobile number or leave it blank.';return;}
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Creating...';
-  const autoEmail=`mod.${username}.${G.bizId.slice(0,8)}@drystan.app`;
-  const perms={orders:true,products:!!$('perm_products')?.checked,customers:!!$('perm_customers')?.checked,reports:!!$('perm_reports')?.checked,orderLink:!!$('perm_orderLink')?.checked};
   try{
-    // Use secondary Firebase app to avoid signing out current admin
-    const {initializeApp:initApp2,getApp} = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
-    const {getAuth:getAuth2,createUserWithEmailAndPassword:createUser2,signOut:signOut2} = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-    let secondaryApp;
-    try{secondaryApp=getApp('secondary');}catch{secondaryApp=initApp2(FC,'secondary');}
-    const auth2=getAuth2(secondaryApp);
-    const cred=await createUser2(auth2,autoEmail,pass);
-    await signOut2(auth2);
-    await setDoc(Doc('users',cred.user.uid),{
-      displayName:name,username,email:autoEmail,
-      role:'moderator',authUid:cred.user.uid,
-      bizId:G.bizId,adminUid:G.bizId,
-      permissions:perms,createdAt:serverTimestamp()
-    });
-    toast(`✅ Moderator "@${username}" created! Admin stays logged in.`,'ok');
-    closeMov('modMOvl');pgTeam();
-  }catch(e){
-    err.style.display='flex';err.textContent='❌ '+e.message;
-    btn.disabled=false;btn.innerHTML='➕ Create Moderator';
-  }
+    const ex=await getDocs(query(Col('users'),where('username','==',username)));
+    if(!ex.empty)throw new Error('Username already taken.');
+    const autoEmail=`mod.${username}.${G.bizId.slice(0,8)}@drystan.app`;
+    const perms=readModPerms('perm_');
+    const {initializeApp:initApp2,getApp}=await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
+    const {getAuth:getAuth2,createUserWithEmailAndPassword:createUser2,signOut:signOut2}=await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
+    let secondaryApp;try{secondaryApp=getApp('secondary');}catch{secondaryApp=initApp2(FC,'secondary');}
+    const auth2=getAuth2(secondaryApp);const cred=await createUser2(auth2,autoEmail,pass);await signOut2(auth2);
+    await setDoc(Doc('users',cred.user.uid),{displayName:name,username,email:autoEmail,phone,designation,role:'moderator',authUid:cred.user.uid,bizId:G.bizId,adminUid:G.bizId,permissions:perms,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+    toast(`✅ @${username} created — share the login privately.`,'ok');closeMov('modMOvl');pgTeam();
+  }catch(e){err.style.display='flex';err.textContent='❌ '+String(e.message||e).replace('Firebase: ','');btn.disabled=false;btn.innerHTML='➕ Create Moderator';}
 };
-window.openEditMod=(docId)=>{
-  const u=(window._modsCache||[]).find(m=>m.id===docId);
-  if(!u){toast('পাওয়া যায়নি','err');return;}
-  const p=u.permissions||{};
+
+window.openEditMod=docId=>{
+  const u=(window._modsCache||[]).find(m=>m.id===docId);if(!u){toast('Moderator not found','err');return;}
+  const p=u.permissions||{};const level=teamAccessLevel(p);
   $('modMod').innerHTML=`
-  <div class="mH"><h3>✏️ ${esc(u.displayName||u.username)} — Permissions</h3><button class="btn bS bIco" onclick="closeMov('modMOvl')">✕</button></div>
-  <div class="mB">
-    <div class="al aI" style="font-size:12px">ℹ️ এই মডারেটরের <b>@${esc(u.username)}</b> এর অনুমতি যখনই ইচ্ছা বদলাতে পারবেন। পরিবর্তন সাথে সাথে কার্যকর হবে।</div>
-    <div class="afG">
-      <label class="afL">🔐 Role & Permissions</label>
-      <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--card);border-radius:10px;border:1px solid var(--border)">
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" checked disabled style="width:16px;height:16px;accent-color:var(--acc)"/> 📋 Create & Manage Orders <span style="color:var(--t3);font-size:11px">(সবসময় চালু)</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="eperm_products" ${p.products?'checked':''} style="width:16px;height:16px;accent-color:var(--acc)"/> 📦 Products দেখা ও Edit করা
-        </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="eperm_customers" ${p.customers?'checked':''} style="width:16px;height:16px;accent-color:var(--acc)"/> 👥 Customers দেখা
-        </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="eperm_reports" ${p.reports?'checked':''} style="width:16px;height:16px;accent-color:var(--acc)"/> 📊 Reports & Analytics দেখা
-        </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="eperm_orderLink" ${p.orderLink?'checked':''} style="width:16px;height:16px;accent-color:var(--acc)"/> 🔗 কাস্টম অর্ডার লিংক তৈরি
-        </label>
-      </div>
+  <div class="mH"><div><h3 style="margin:0">⚙️ Manage Moderator</h3><div style="font-size:10px;color:var(--t3);margin-top:3px">@${esc(u.username)} · ${u.suspended?'Suspended':'Active'} · ${esc(level.name)}</div></div><button class="btn bS bIco" onclick="closeMov('modMOvl')">✕</button></div>
+  <div class="mB" style="max-height:72vh;overflow:auto">
+    <div class="card" style="padding:14px;margin-bottom:12px">
+      <div class="cardTitle">👤 Profile</div>
+      <div class="g g2" style="gap:10px"><div class="afG"><label class="afL">Full Name</label><input class="afI" id="em_n" value="${esc(u.displayName||'')}"/></div><div class="afG"><label class="afL">Designation</label><input class="afI" id="em_d" value="${esc(u.designation||'')}" placeholder="e.g. Order Operator"/></div></div>
+      <div class="g g2" style="gap:10px"><div class="afG"><label class="afL">Username</label><input class="afI" value="@${esc(u.username||'')}" disabled/></div><div class="afG"><label class="afL">Phone</label><input class="afI" id="em_phone" inputmode="tel" value="${esc(u.phone||'')}" placeholder="01XXXXXXXXX"/></div></div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px"><div style="background:var(--bg3);padding:9px;border-radius:9px"><div style="font-size:9px;color:var(--t3)">JOINED</div><div style="font-size:11px;font-weight:700;margin-top:2px">${u.createdAt?fdate(u.createdAt):'-'}</div></div><div style="background:var(--bg3);padding:9px;border-radius:9px"><div style="font-size:9px;color:var(--t3)">LAST LOGIN</div><div style="font-size:11px;font-weight:700;margin-top:2px">${teamAgo(u.lastLoginAt)}</div></div></div>
     </div>
-    <div id="emErr" class="al aE" style="display:none"></div>
+    <div class="card" style="padding:14px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;flex-wrap:wrap"><div class="cardTitle" style="margin:0">🔐 Permissions</div><select class="afI" style="width:auto;padding:7px 9px" onchange="applyModPreset('eperm_',this.value)"><option value="custom">Preset...</option><option value="orders">Order Operator</option><option value="inventory">Inventory Operator</option><option value="support">Customer Support</option><option value="manager">Manager</option></select></div>
+      ${modPermissionEditor('eperm_',p)}
+      <div style="font-size:9px;color:var(--t3);margin-top:8px">Changes are applied live to the moderator's current session.</div>
+    </div>
+    <div class="card" style="padding:14px;border-color:${u.suspended?'rgba(16,185,129,.25)':'rgba(239,68,68,.2)'}">
+      <div class="cardTitle">Account Access</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><div style="font-size:12px;font-weight:700;color:${u.suspended?'var(--red)':'var(--green)'}">${u.suspended?'⛔ Access suspended':'✅ Account active'}</div><div style="font-size:10px;color:var(--t3);margin-top:3px">${u.suspended?'Reactivate when this team member should regain access.':'Suspend to immediately block future access and sign out an active session.'}</div></div><button class="btn ${u.suspended?'bG':'bD'} bSm" onclick="toggleModSuspended('${u.id}',${u.suspended?'false':'true'},${jsArg(u.username||'')},true)">${u.suspended?'✅ Reactivate':'⛔ Suspend Access'}</button></div>
+    </div>
+    <div id="emErr" class="al aE" style="display:none;margin-top:10px"></div>
   </div>
-  <div class="mF">
-    <button class="btn bS" onclick="closeMov('modMOvl')">Cancel</button>
-    <button class="btn bP" id="emBtn" onclick="saveModPerms('${docId}')">💾 Save Permissions</button>
-  </div>`;
+  <div class="mF"><button class="btn bS" onclick="closeMov('modMOvl')">Cancel</button><button class="btn bP" id="emBtn" onclick="saveModProfile('${docId}')">💾 Save Changes</button></div>`;
   $('modMOvl').classList.add('open');
 };
-window.saveModPerms=async(docId)=>{
-  const btn=$('emBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';}
-  const perms={orders:true,products:!!$('eperm_products')?.checked,customers:!!$('eperm_customers')?.checked,reports:!!$('eperm_reports')?.checked,orderLink:!!$('eperm_orderLink')?.checked};
-  try{
-    await updateDoc(Doc('users',docId),{permissions:perms});
-    toast('✅ Permissions updated!');
-    closeMov('modMOvl');pgTeam();
-  }catch(e){
-    const err=$('emErr');if(err){err.style.display='flex';err.textContent='❌ '+e.message;}
-    if(btn){btn.disabled=false;btn.innerHTML='💾 Save Permissions';}
-  }
+
+window.saveModProfile=async docId=>{
+  const btn=$('emBtn'),err=$('emErr');if(err)err.style.display='none';
+  const name=$('em_n').value.trim(),phone=$('em_phone').value.trim(),designation=$('em_d').value.trim();
+  if(!name){if(err){err.style.display='flex';err.textContent='❌ Full name is required.';}return;}
+  if(phone&&!/^01[3-9][0-9]{8}$/.test(phone)){if(err){err.style.display='flex';err.textContent='❌ Enter a valid Bangladesh mobile number or leave it blank.';}return;}
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Saving...';}
+  try{await updateDoc(Doc('users',docId),{displayName:name,phone,designation,permissions:readModPerms('eperm_'),updatedAt:serverTimestamp()});toast('✅ Moderator updated','ok');closeMov('modMOvl');pgTeam();}
+  catch(e){if(err){err.style.display='flex';err.textContent='❌ '+e.message;}if(btn){btn.disabled=false;btn.innerHTML='💾 Save Changes';}}
 };
-async function delMod(docId,username){if(!confirm(`Remove moderator "@${username}"?`))return;try{await deleteDoc(Doc('users',docId));toast('Removed');pgTeam();}catch(e){toast(e.message,'err');}}
-window.delMod=delMod;
+window.saveModPerms=window.saveModProfile;
 
-async function resetModPw(docId,username,bizId){
-  alert(`@${username} এর password Drystan থেকে plaintext হিসেবে reset করা হবে না।
+window.toggleModSuspended=async(docId,nextSuspended,username,fromModal=false)=>{
+  const action=nextSuspended?'suspend':'reactivate';
+  if(!confirm(`${nextSuspended?'Suspend':'Reactivate'} @${username}?${nextSuspended?'\n\nThey will be blocked from signing in. If currently signed in, the live access listener will sign them out.':''}`))return;
+  try{
+    await updateDoc(Doc('users',docId),{suspended:!!nextSuspended,updatedAt:serverTimestamp()});
+    await setDoc(BDoc('teamActivity',docId),{status:nextSuspended?'suspended':'active',statusChangedAt:serverTimestamp(),statusChangedBy:G.user?.uid,updatedAt:serverTimestamp()},{merge:true}).catch(()=>{});
+    toast(nextSuspended?'⛔ Access suspended':'✅ Access reactivated',nextSuspended?'info':'ok');if(fromModal)closeMov('modMOvl');pgTeam();
+  }catch(e){toast('❌ '+e.message,'err');}
+};
 
-Firebase Console → Authentication থেকে user password reset করুন।`);
-}
-window.resetModPw=resetModPw;
+// Passwords are managed by Firebase Authentication and are never stored in Firestore.
+window.resetModPw=async(docId,username)=>{
+  const u=(window._modsCache||[]).find(m=>m.id===docId);
+  alert(`Password reset for @${username}\n\nFor security, Drystan does not store moderator passwords. This moderator uses an internal authentication identity (${u?.email||'hidden'}). If they permanently lose the password, create a replacement moderator account and suspend this one.`);
+};
+
+// Legacy hard-delete intentionally disabled: deleting only the Firestore profile would leave the Firebase Auth identity behind.
+window.delMod=()=>toast('For security, use Suspend Access instead of deleting moderator identity records.','info');
+
 
 // ══ SETTINGS ══
 async function pgCfg(){
