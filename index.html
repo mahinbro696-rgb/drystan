@@ -6547,14 +6547,9 @@ async function pgCfg(){
         </div>
 
         <div class="card" id="cfgSec_ai" style="border-color:rgba(168,85,247,.28)">
-          <div class="cardTitle">✨ AI & Smart Paste <span style="font-size:10px;color:var(--t3);font-weight:500">Google Gemini · secure backend</span></div>
-          <div id="aiCfgStatus" style="padding:10px 12px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);font-size:12px;color:var(--t2);margin-bottom:12px">Checking secure AI status...</div>
-          <div style="font-size:11px;color:var(--t2);line-height:1.7;margin-bottom:12px">Gemini key Cloudflare Worker-এর encrypted KV storage-এ থাকবে। Saved key এই page, Firestore বা Page Source-এ ফেরত দেখানো হবে না। AI fail করলে Create Order-এর local Smart Paste parser fallback হিসেবে কাজ করবে।</div>
-          <div class="afG"><label class="afL">Google Gemini API Key</label><input class="afI" id="ai_cfg_key" type="password" autocomplete="new-password" placeholder="Saved key দেখা যাবে না — নতুন/replace key লিখুন"/></div>
-          <div class="afG"><label class="afL">Model</label><select class="afI" id="ai_cfg_model"><option value="gemini-3.6-flash">Gemini 3.6 Flash — Recommended</option><option value="gemini-3.5-flash">Gemini 3.5 Flash</option><option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite</option></select></div>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:12px"><div><div style="font-size:12px;font-weight:700">Enable AI features</div><div style="font-size:10px;color:var(--t3);margin-top:2px">Smart Paste, AI Advisor, Description, Risk Check</div></div><label class="toggle"><input type="checkbox" id="ai_cfg_enabled" checked/><span class="toggleSlider"></span></label></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn bP" onclick="saveSecureAIConfig(this)">🔐 Save Securely</button><button class="btn bS" onclick="testSecureAI(this)">🧪 Test Connection</button></div>
-          <button class="btn bD bFull bSm" style="margin-top:8px" onclick="removeSecureAIConfig(this)">🗑️ Remove AI Key</button>
+          <div id="aiPanel">
+            <div style="display:flex;align-items:center;gap:10px;color:var(--t2);font-size:12px"><div class="spin spinSm"></div> AI status loading…</div>
+          </div>
         </div>
 
         <div class="card" id="cfgSec_receipt" style="border-color:rgba(168,85,247,.25)">
@@ -6579,21 +6574,131 @@ window.cfgGoTo=(key)=>{
   CFG_SECTION_IDS.forEach(id=>{const el=$(id);if(el)el.style.display='none';});
   target.style.display='block';
   target.scrollIntoView({behavior:'smooth',block:'start'});
+  if(key==='ai')loadSecureAISettingsPanel();
 };
 window.cfgBackToHub=()=>{
   const hub=$('cfgHub');if(hub)hub.style.display='grid';
   const back=$('cfgBackBtn');if(back)back.style.display='none';
   CFG_SECTION_IDS.forEach(id=>{const el=$(id);if(el)el.style.display='none';});
 };
+function renderAIConfigPanel(state={}){
+  const el=$('aiPanel');if(!el)return;
+  const connected=!!(state.connected||state.configured);
+  G.aiConfigured=connected;
+  G.aiActive=connected&&state.enabled!==false;
+  G.aiModel=state.model||G.aiModel||'gemini-3.6-flash';
+  G.aiStatusLoaded=true;
+
+  if(connected){
+    const connectedAt=state.connectedAt||state.updatedAt;
+    const when=connectedAt?new Date(connectedAt).toLocaleString():'';
+    el.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <div>
+          <div class="cardTitle" style="margin:0 0 3px">✨ AI & Smart Paste</div>
+          <div style="font-size:11px;color:var(--t3)">Google Gemini · secure backend</div>
+        </div>
+        <span style="font-size:11px;font-weight:800;padding:7px 11px;border-radius:999px;background:rgba(16,185,129,.12);color:var(--green)">● Connected</span>
+      </div>
+      <div style="padding:14px;border:1px solid rgba(16,185,129,.22);background:rgba(16,185,129,.06);border-radius:12px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:38px;height:38px;border-radius:11px;background:rgba(168,85,247,.14);display:flex;align-items:center;justify-content:center;font-size:20px">✨</div>
+          <div style="min-width:0;flex:1">
+            <div style="font-size:13px;font-weight:800;color:var(--t1)">Google Gemini</div>
+            <div style="font-size:11px;color:var(--t2);margin-top:2px">Model: ${esc(state.model||G.aiModel)}</div>
+            ${when?`<div style="font-size:10px;color:var(--t3);margin-top:2px">Connected: ${esc(when)}</div>`:''}
+          </div>
+        </div>
+      </div>
+      <div class="al aO" style="font-size:11.5px;line-height:1.7;margin-bottom:12px">
+        ✅ Gemini এখন active। Smart Paste, AI Advisor, Description ও Risk Check secure Worker backend দিয়ে চলবে। API key browser, Firestore বা Page Source-এ দেখা যাবে না।
+      </div>
+      <div id="aiConfigMsg" style="font-size:11px;color:var(--t3);margin-bottom:10px;line-height:1.6"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" class="gridStack2">
+        <button class="btn bP bFull" id="aiTestBtn" onclick="testSecureAI(this)">🧪 Test Connection</button>
+        <button class="btn bD bFull" id="aiDisconnectBtn" onclick="removeSecureAIConfig(this)">🔌 Disconnect</button>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+      <div>
+        <div class="cardTitle" style="margin:0 0 3px">✨ AI & Smart Paste</div>
+        <div style="font-size:11px;color:var(--t3)">Google Gemini · secure backend</div>
+      </div>
+      <span style="font-size:11px;font-weight:800;padding:7px 11px;border-radius:999px;background:rgba(107,114,128,.12);color:var(--t3)">● Not connected</span>
+    </div>
+    <div class="al aI" style="font-size:11.5px;line-height:1.75;margin-bottom:14px">
+      Google AI Studio থেকে পাওয়া <b>Gemini API Key</b> দিন এবং model বাছুন। <b>Connect & Verify</b> চাপলে Worker প্রথমে Gemini-তে live test করবে; test successful হলেই key encrypted KV-তে save হবে।
+    </div>
+    <div class="afG"><label class="afL">Google Gemini API Key *</label><input class="afI" id="ai_cfg_key" type="password" autocomplete="new-password" placeholder="AIza..."/></div>
+    <div class="afG"><label class="afL">Model</label><select class="afI" id="ai_cfg_model"><option value="gemini-3.6-flash">Gemini 3.6 Flash — Recommended</option><option value="gemini-3.5-flash">Gemini 3.5 Flash</option><option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite</option></select></div>
+    <div style="font-size:10.5px;color:var(--t3);line-height:1.65;margin:-2px 0 12px">Connected হওয়ার পরে API key input আর দেখাবে না। Disconnect করলে নতুন key/model দিয়ে আবার connect করতে পারবেন। AI unavailable হলেও Create Order-এর local Smart Paste fallback চালু থাকবে।</div>
+    <div id="aiConfigMsg" style="font-size:11px;color:var(--t3);margin-bottom:10px;line-height:1.6"></div>
+    <button class="btn bP bFull" id="aiConnectBtn" onclick="saveSecureAIConfig(this)">🔗 Connect & Verify</button>`;
+  const model=$('ai_cfg_model');if(model&&G.aiModel)model.value=G.aiModel;
+}
+
 async function loadSecureAISettingsPanel(){
-  const box=$('aiCfgStatus');if(box)box.innerHTML='<span class="spin spinSm" style="display:inline-block;vertical-align:middle;margin-right:7px"></span> Checking secure backend...';
-  const st=await refreshAIStatus();const model=$('ai_cfg_model');if(model&&G.aiModel)model.value=G.aiModel;const en=$('ai_cfg_enabled');if(en)en.checked=st.enabled!==false;
-  if(box){if(st.ok&&st.configured)box.innerHTML=`<span style="color:var(--green);font-weight:800">● AI configured</span> · ${esc(st.model||G.aiModel)} · ${st.enabled===false?'<span style="color:var(--yellow)">Disabled</span>':'<span style="color:var(--green)">Active</span>'}<div style="font-size:10px;color:var(--t3);margin-top:4px">API key encrypted অবস্থায় Worker KV-তে আছে; key value এখানে ফেরত আসে না।</div>`;else box.innerHTML='<span style="color:var(--yellow);font-weight:800">● AI not configured</span><div style="font-size:10px;color:var(--t3);margin-top:4px">Gemini key লিখে Save Securely চাপুন।</div>';}
+  const el=$('aiPanel');if(!el)return;
+  el.innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--t2);font-size:12px"><div class="spin spinSm"></div> AI status loading…</div>';
+  try{
+    const st=await refreshAIStatus();
+    if(!st.ok&&st.error)throw new Error(st.error);
+    renderAIConfigPanel(st);
+  }catch(e){
+    renderAIConfigPanel({connected:false,configured:false});
+    const msg=$('aiConfigMsg');if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+(e.message||'AI status load failed');}
+  }
 }
 window.loadSecureAISettingsPanel=loadSecureAISettingsPanel;
-window.saveSecureAIConfig=async btn=>{const key=String($('ai_cfg_key')?.value||'').trim(),model=$('ai_cfg_model')?.value||'gemini-3.6-flash',enabled=$('ai_cfg_enabled')?.checked!==false;if(!key&&!G.aiConfigured){toast('Gemini API key দিন','err');return;}if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Saving...';}try{const r=await secureApiFetch('/v1/ai/config',{method:'POST',body:JSON.stringify({apiKey:key,model,enabled})}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||'AI config save failed');$('ai_cfg_key').value='';await refreshAIStatus();await loadSecureAISettingsPanel();toast('🔐 Gemini key encrypted অবস্থায় save হয়েছে','ok');}catch(e){toast(e.message,'err');}finally{if(btn){btn.disabled=false;btn.innerHTML='🔐 Save Securely';}}};
-window.testSecureAI=async btn=>{if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Testing...';}try{const r=await secureApiFetch('/v1/ai/test',{method:'POST'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||'Gemini test failed');await refreshAIStatus();await loadSecureAISettingsPanel();toast('✅ Gemini connection successful','ok');}catch(e){toast(e.message,'err');}finally{if(btn){btn.disabled=false;btn.innerHTML='🧪 Test Connection';}}};
-window.removeSecureAIConfig=async btn=>{if(!confirm('Saved Gemini API key remove করবেন? Smart Paste local fallback-এ চলবে।'))return;if(btn)btn.disabled=true;try{const r=await secureApiFetch('/v1/ai/config',{method:'DELETE'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||'Remove failed');G.aiConfigured=false;G.aiActive=false;G.aiStatusLoaded=true;if($('ai_cfg_key'))$('ai_cfg_key').value='';await loadSecureAISettingsPanel();toast('AI key removed','info');}catch(e){toast(e.message,'err');}finally{if(btn)btn.disabled=false;}};
+
+window.saveSecureAIConfig=async btn=>{
+  const key=String($('ai_cfg_key')?.value||'').trim();
+  const model=$('ai_cfg_model')?.value||'gemini-3.6-flash';
+  const msg=$('aiConfigMsg');
+  if(!key){if(msg){msg.style.color='var(--red)';msg.textContent='❌ Gemini API key দিন।';}return;}
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Verifying…';}
+  if(msg){msg.style.color='var(--t2)';msg.textContent='Gemini connection live verify করা হচ্ছে…';}
+  try{
+    const r=await secureApiFetch('/v1/ai/config',{method:'POST',body:JSON.stringify({apiKey:key,model,enabled:true,verify:true})});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.ok)throw new Error(d.error||'Gemini connection failed');
+    G.aiConfigured=true;G.aiActive=true;G.aiModel=d.model||model;G.aiStatusLoaded=true;
+    toast('✅ Gemini connected successfully!','ok');
+    renderAIConfigPanel(d);
+  }catch(e){
+    if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}
+    toast(e.message,'err');
+    if(btn){btn.disabled=false;btn.innerHTML='🔗 Connect & Verify';}
+  }
+};
+
+window.testSecureAI=async btn=>{
+  const msg=$('aiConfigMsg');
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Testing…';}
+  try{
+    const r=await secureApiFetch('/v1/ai/test',{method:'POST'}),d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.ok)throw new Error(d.error||'Gemini test failed');
+    if(msg){msg.style.color='var(--green)';msg.textContent='✅ Gemini connection live test successful.';}
+    toast('✅ Gemini connection successful','ok');
+  }catch(e){if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}toast(e.message,'err');}
+  finally{if(btn){btn.disabled=false;btn.innerHTML='🧪 Test Connection';}}
+};
+
+window.removeSecureAIConfig=async btn=>{
+  if(!confirm('Gemini disconnect করবেন? Smart Paste local fallback-এ চলবে।'))return;
+  const msg=$('aiConfigMsg');
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Disconnecting…';}
+  try{
+    const r=await secureApiFetch('/v1/ai/config',{method:'DELETE'}),d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.ok)throw new Error(d.error||'Disconnect failed');
+    G.aiConfigured=false;G.aiActive=false;G.aiStatusLoaded=true;
+    toast('Gemini disconnected','info');
+    renderAIConfigPanel({connected:false,configured:false,model:G.aiModel});
+  }catch(e){if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='🔌 Disconnect';}}
+};
 
 let _selectedPreset='classic';
 function renderReceiptPresets(){
