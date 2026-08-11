@@ -862,6 +862,74 @@ img{max-width:100%}
 @media(max-width:860px){.prodKpis{grid-template-columns:repeat(2,minmax(0,1fr))}.prodTableShell{display:none!important}.prodCards{display:grid!important}.prodViewToggle{display:none}.prodToolbarTop{grid-template-columns:1fr 1fr}.prodToolbarTop .sBar,.prodToolbarTop .prodSortSel{grid-column:1/-1}.prodLiveMetrics{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:520px){.prodHeadActions{width:100%}.prodHeadActions .btn{flex:1}.prodKpis{grid-template-columns:1fr 1fr;gap:7px}.prodKpi{padding:10px}.prodKpiValue{font-size:16px}.prodToolbarTop{grid-template-columns:1fr}.prodToolbarTop .sBar,.prodToolbarTop .prodSortSel{grid-column:auto}.prodCards{grid-template-columns:1fr}.prodCardActions{grid-template-columns:repeat(2,1fr)}.prodLiveMetrics{grid-template-columns:1fr 1fr}}
 
+/* ══ PROFESSIONAL PRODUCT EDITOR ══ */
+.prodEditorModal{max-width:1040px!important;width:min(1040px,96vw)!important;max-height:94vh!important;overflow:hidden!important;display:flex;flex-direction:column;padding:0!important}
+.peHead{flex:0 0 auto;padding:17px 20px 13px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(168,85,247,.055),transparent)}
+.peHeadTop{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.peTitleWrap{min-width:0;display:flex;align-items:flex-start;gap:12px}
+.peTitleIcon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,rgba(168,85,247,.22),rgba(99,102,241,.13));border:1px solid rgba(168,85,247,.22);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.peTitle{font-size:17px;font-weight:800;line-height:1.15;color:var(--t1)}
+.peSub{font-size:10.5px;color:var(--t3);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:620px}
+.peHeadActions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.peStatus{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 10px;font-size:10.5px;font-weight:700;border:1px solid var(--border);background:var(--card);color:var(--t2);cursor:pointer}
+.peStatus.active{color:var(--green);border-color:rgba(16,185,129,.22);background:rgba(16,185,129,.08)}
+.peStatus.archived{color:var(--t3);background:var(--bg3)}
+.peStatusDot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 14%,transparent)}
+.peTabs{display:flex;gap:3px;padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg2);overflow-x:auto;scrollbar-width:none;flex:0 0 auto}
+.peTabs::-webkit-scrollbar{display:none}
+.peTab{position:relative;border:none;background:transparent;color:var(--t3);padding:11px 12px;font:600 11px/1.2 inherit;white-space:nowrap;cursor:pointer;border-radius:9px 9px 0 0;transition:.15s}
+.peTab:hover{color:var(--t1);background:rgba(168,85,247,.05)}
+.peTab.active{color:var(--acc2);background:rgba(168,85,247,.08)}
+.peTab.active:after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;border-radius:4px 4px 0 0;background:var(--acc2)}
+.peBody{flex:1 1 auto;overflow:auto;padding:17px 20px 22px;min-height:0}
+.pePane{display:none;animation:fadeUp .18s ease}
+.pePane.active{display:block}
+.peGrid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:14px;align-items:start}
+.peCard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px}
+.peCard+.peCard{margin-top:12px}
+.peSectionHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:13px}
+.peSectionTitle{font-size:12px;font-weight:800;color:var(--t1);display:flex;align-items:center;gap:7px}
+.peSectionSub{font-size:9.5px;color:var(--t3);margin-top:3px;line-height:1.5}
+.peTwo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.peThree{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.peHint{font-size:9px;color:var(--t3);margin-top:5px;line-height:1.45}
+.peMediaPreview{height:250px;border-radius:13px;border:1px solid var(--border);background:linear-gradient(145deg,var(--bg2),var(--bg3));display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;cursor:pointer}
+.peMediaPreview img{width:100%;height:100%;object-fit:contain;background:#fff}
+.peMediaEmpty{text-align:center;color:var(--t3);padding:20px}
+.peMediaEmpty .ico{font-size:34px;margin-bottom:6px}
+.peMediaEmpty b{display:block;color:var(--t2);font-size:11px;margin-bottom:3px}
+.peMediaTools{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}
+.peDropzone{border:1px dashed var(--border2);border-radius:10px;padding:10px 12px;text-align:center;cursor:pointer;background:var(--bg2);transition:.15s;font-size:10px;color:var(--t2)}
+.peDropzone:hover{border-color:var(--acc);background:rgba(168,85,247,.05)}
+.peGallery{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px;min-height:0}
+.peImageThumb{position:relative;width:66px;height:66px;border-radius:9px;overflow:hidden;border:2px solid var(--acc);background:#fff}
+.peImageThumb img{width:100%;height:100%;object-fit:cover}
+.peImageBadge{position:absolute;left:0;top:0;background:var(--acc);color:#fff;font-size:7px;font-weight:700;padding:2px 5px;border-radius:0 0 6px 0}
+.peImagePending{position:absolute;left:0;right:0;bottom:0;background:rgba(245,158,11,.92);color:#fff;font-size:6.5px;text-align:center;padding:2px}
+.peImageRemove{position:absolute;right:3px;top:3px;width:18px;height:18px;border:0;border-radius:50%;background:rgba(239,68,68,.92);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px}
+.peMetrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:11px}
+.peMetric{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:9px 10px}
+.peMetric small{display:block;font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em}
+.peMetric b{display:block;font-size:12px;margin-top:3px;color:var(--t1)}
+.peInventoryGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.peInvItem{padding:11px;border-radius:11px;background:var(--bg2);border:1px solid var(--border)}
+.peInvItem span{display:block;font-size:8.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em}
+.peInvItem b{display:block;font-size:14px;margin-top:4px;color:var(--t1)}
+.peStatusCard{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px;border-radius:12px;background:var(--bg2);border:1px solid var(--border)}
+.peStatusCopy b{display:block;font-size:11.5px;color:var(--t1)}
+.peStatusCopy small{display:block;font-size:9.5px;color:var(--t3);line-height:1.5;margin-top:3px;max-width:590px}
+.peInfoRow{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border)}
+.peInfoRow:last-child{border-bottom:0;padding-bottom:0}
+.peInfoIco{width:30px;height:30px;border-radius:9px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.peInfoRow b{font-size:10.5px;color:var(--t1)}
+.peInfoRow p{font-size:9.5px;color:var(--t3);margin:3px 0 0;line-height:1.5}
+.peFooter{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 20px;border-top:1px solid var(--border);background:var(--bg2);flex:0 0 auto}
+.peSaveState{font-size:9.5px;color:var(--t3);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.peFooterActions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.peFooter .btn{min-width:112px}
+@media(max-width:760px){.prodEditorModal{width:100%!important;max-width:100%!important;max-height:96vh!important;border-radius:16px 16px 0 0!important}.peHead{padding:14px 14px 11px}.peTabs{padding:0 10px}.peBody{padding:12px 12px 18px}.peGrid{grid-template-columns:1fr}.peTwo,.peThree{grid-template-columns:1fr}.peMediaPreview{height:220px}.peMetrics,.peInventoryGrid{grid-template-columns:1fr 1fr}.peTitleIcon{display:none}.peSub{max-width:58vw}.peHeadActions .peStatus{padding:6px 8px}.peFooter{padding:10px 12px}.peSaveState{display:none}.peFooterActions{width:100%}.peFooter .btn{flex:1;min-width:0}}
+
+
 </style>
 </head>
 <body>
@@ -4304,105 +4372,204 @@ async function openProdMod(id=null){
   let p=null;
   if(id){p=(_prodCache||[]).find(x=>x.id===id)||null;if(!p){const d=await getDoc(BDoc('products',id));if(d.exists())p={id,...d.data()};}}
   _prodVariants=p?.variants?JSON.parse(JSON.stringify(p.variants)):[];
-  // Images: support new images[] array, fall back to legacy single imageUrl
   _prodImages=p?.images&&Array.isArray(p.images)&&p.images.length?[...p.images]:(p?.imageUrl?[p.imageUrl]:[]);
   const hasVariants=_prodVariants.length>0;
+  const cats=productCategories();
+  const currentCat=p?.cat||'General';
+  const catOptions=[...new Set([currentCat,...cats])];
+  const statusActive=p?.active!==false;
+  const titleName=p?.name||'New product';
 
-  $('prodMod').innerHTML=`
-  <div class="mH"><h3>${p?'✏️ Edit':'➕ Add'} Product</h3><button class="btn bS bIco" onclick="closeMov('prodMOvl')">✕</button></div>
-  <div class="mB" style="max-height:75vh;overflow-y:auto">
-    <!-- Basic Info -->
-    <div class="afRow" style="margin-bottom:0">
-      <div class="afG"><label class="afL">Product Name (EN) *</label><input class="afI" id="p_n" value="${esc(p?.name||'')}" placeholder="Product name"/></div>
-      <div class="afG"><label class="afL">নাম (BN)</label><input class="afI" id="p_nb" value="${esc(p?.nameBn||'')}" placeholder="বাংলা নাম"/></div>
-      <div class="afG"><label class="afL">SKU / Product Code</label><input class="afI" id="p_sku" maxlength="60" value="${esc(p?.sku||'')}" placeholder="e.g. CHADOR-BLK-01"/></div>
-      <div class="afG"><label class="afL">Brand <span style="font-size:10px;color:var(--t3)">(optional)</span></label><input class="afI" id="p_brand" maxlength="80" value="${esc(p?.brand||'')}" placeholder="Brand name"/></div>
-      <div class="afG" style="grid-column:1/-1"><label class="afL">🖼️ Main Thumbnail <span style="color:var(--t3);font-size:10px">(শুধু ১টি মূল ছবি — variant-ভিত্তিক ছবি নিচে variant-এ যুক্ত হবে)</span></label>
-        <div id="p_imgDropzone" ondrop="prodImgDrop(event)" ondragover="event.preventDefault();this.style.borderColor='var(--acc)';this.style.background='rgba(99,102,241,.06)'" ondragleave="this.style.borderColor='var(--border)';this.style.background='var(--card)'"
-          style="border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;background:var(--card);transition:all .2s"
-          onclick="$('p_imgFile').click()">
-          <input type="file" id="p_imgFile" accept="image/*" style="display:none" onchange="prodImgFilesSelected(this.files)"/>
-          <div style="font-size:24px">📷</div>
-          <div style="font-size:13px;font-weight:600;margin-top:4px">ছবি টানুন এখানে বা ক্লিক করে বেছে নিন</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:2px">JPG, PNG · সর্বোচ্চ ১০MB · নতুন ছবি বাছলে পুরোনোটি বদলে যাবে</div>
-        </div>
-        <div id="p_imgUploadProgress" style="display:none;font-size:12px;color:var(--acc2);margin-top:6px;font-weight:600"></div>
-        <div id="p_imgUploadError" style="display:none;font-size:11px;color:var(--red);margin-top:6px;background:rgba(239,68,68,.08);padding:6px 10px;border-radius:6px"></div>
-        <details style="margin-top:8px">
-          <summary style="font-size:11px;color:var(--t3);cursor:pointer">অথবা ছবির লিংক যুক্ত করুন (ঐচ্ছিক)</summary>
-          <div style="display:flex;gap:6px;margin-top:6px">
-            <input class="afI" id="p_img" placeholder="https://... ছবির লিংক দিন" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addProdImage()}"/>
-            <button type="button" class="btn bS bSm" onclick="addProdImage()">➕ যোগ</button>
+  const modal=$('prodMod');
+  modal.classList.add('prodEditorModal');
+  modal.innerHTML=`
+    <div class="peHead">
+      <div class="peHeadTop">
+        <div class="peTitleWrap">
+          <div class="peTitleIcon">${p?'✏️':'➕'}</div>
+          <div style="min-width:0">
+            <div class="peTitle">${p?'Edit Product':'Add Product'} <span id="peTitleName" style="color:var(--acc2)">${p?'· '+esc(titleName):''}</span></div>
+            <div class="peSub" id="peTitleMeta">${p?`${esc(p.sku||'No SKU')} · ${esc(currentCat)} · Product ID ${esc(id||'')}`:'Create a clean, sell-ready product record'}</div>
           </div>
-        </details>
-        <div id="p_imgGallery" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+        </div>
+        <div class="peHeadActions">
+          <button type="button" class="peStatus ${statusActive?'active':'archived'}" id="peStatusPill" onclick="prodEditorTab('visibility')"><span class="peStatusDot"></span><span id="peStatusPillText">${statusActive?'Active':'Archived'}</span></button>
+          <button class="btn bS bIco" type="button" onclick="closeMov('prodMOvl')">✕</button>
+        </div>
       </div>
-      <div class="afG"><label class="afL">Category</label><input class="afI" id="p_cat" list="prodCatList" value="${esc(p?.cat||'General')}" placeholder="General"/><datalist id="prodCatList">${productCategories().map(c=>`<option value="${esc(c)}"></option>`).join('')}</datalist></div>
-      <div class="afG"><label class="afL">Low stock alert at</label><input class="afI" type="number" id="p_al" min="0" value="${p?.alertAt??5}"/></div>
-      <div class="afG" style="grid-column:1/-1"><label style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;cursor:pointer"><span><b style="font-size:12px">Product status</b><small style="display:block;color:var(--t3);margin-top:2px">Inactive products stay archived and are hidden from the public shop.</small></span><span style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--t2)"><span id="p_active_lbl">${p?.active===false?'Archived':'Active'}</span><label class="toggle"><input type="checkbox" id="p_active" ${p?.active===false?'':'checked'} onchange="$('p_active_lbl').textContent=this.checked?'Active':'Archived'"/><span class="toggleSlider"></span></label></span></label></div>
-      <div class="afG" style="grid-column:1/-1"><label class="afL" style="display:flex;justify-content:space-between;align-items:center">Description ${aiEnabled()?`<button type="button" onclick="aiWriteDesc()" style="background:linear-gradient(135deg,#A855F7,#7C3AED);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:inherit">🤖 AI দিয়ে লিখুন</button>`:''}</label><textarea class="afI" id="p_desc" rows="2">${esc(p?.desc||'')}</textarea></div>
     </div>
 
-    <div class="divider"></div>
+    <div class="peTabs" role="tablist">
+      <button type="button" class="peTab active" data-pe-tab="general" onclick="prodEditorTab('general')">01 · General</button>
+      <button type="button" class="peTab" data-pe-tab="pricing" onclick="prodEditorTab('pricing')">02 · Pricing & Stock</button>
+      <button type="button" class="peTab" data-pe-tab="variants" onclick="prodEditorTab('variants')">03 · Variants <span id="peVariantCount">${_prodVariants.length?`(${_prodVariants.length})`:''}</span></button>
+      <button type="button" class="peTab" data-pe-tab="visibility" onclick="prodEditorTab('visibility')">04 · Visibility</button>
+    </div>
 
-    <!-- Variants toggle -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div>
-        <div style="font-weight:700;font-size:13px">🎨 Variants (Color/Size/Design)</div>
-        <div style="font-size:11px;color:var(--t2)">Enable to add multiple colors, sizes, or designs</div>
+    <div class="peBody">
+      <section class="pePane active" data-pe-pane="general">
+        <div class="peGrid">
+          <div>
+            <div class="peCard">
+              <div class="peSectionHead"><div><div class="peSectionTitle">📦 Product information</div><div class="peSectionSub">Customer-facing name plus your internal product identifiers.</div></div></div>
+              <div class="peTwo">
+                <div class="afG"><label class="afL">Product Name (EN) *</label><input class="afI" id="p_n" value="${esc(p?.name||'')}" placeholder="e.g. Premium Chador" oninput="prodEditorHeaderSync();prodEditorMarkDirty()"/></div>
+                <div class="afG"><label class="afL">নাম (BN)</label><input class="afI" id="p_nb" value="${esc(p?.nameBn||'')}" placeholder="বাংলা নাম" oninput="prodEditorMarkDirty()"/></div>
+              </div>
+              <div class="peTwo">
+                <div class="afG"><label class="afL">SKU / Product Code</label><input class="afI" id="p_sku" maxlength="60" value="${esc(p?.sku||'')}" placeholder="e.g. CHADOR-BLK-01" oninput="prodEditorHeaderSync();prodEditorMarkDirty()"/><div class="peHint">Unique internal code. Useful for search, stock and variants.</div></div>
+                <div class="afG"><label class="afL">Brand <span style="font-size:9px;color:var(--t3)">(optional)</span></label><input class="afI" id="p_brand" maxlength="80" value="${esc(p?.brand||'')}" placeholder="Brand name" oninput="prodEditorMarkDirty()"/></div>
+              </div>
+              <div class="afG"><label class="afL">Category</label><input class="afI" id="p_cat" list="prodCatList" value="${esc(currentCat)}" placeholder="General" oninput="prodEditorHeaderSync();prodEditorMarkDirty()"/><datalist id="prodCatList">${catOptions.map(c=>`<option value="${esc(c)}"></option>`).join('')}</datalist><div class="peHint">Use consistent category names so filtering stays clean.</div></div>
+              <div class="afG" style="margin-bottom:0"><label class="afL" style="display:flex;justify-content:space-between;align-items:center;gap:8px">Description ${aiEnabled()?`<button type="button" onclick="aiWriteDesc()" style="background:linear-gradient(135deg,#A855F7,#7C3AED);color:#fff;border:none;border-radius:7px;padding:5px 10px;font-size:9.5px;cursor:pointer;font-family:inherit">🤖 AI লিখুন</button>`:''}</label><textarea class="afI" id="p_desc" rows="5" placeholder="Short product description customers can understand quickly" oninput="prodEditorMarkDirty()">${esc(p?.desc||'')}</textarea></div>
+            </div>
+          </div>
+
+          <div class="peCard">
+            <div class="peSectionHead"><div><div class="peSectionTitle">🖼️ Product media</div><div class="peSectionSub">Keep one clean main thumbnail. Variant-specific photos stay inside each variant.</div></div></div>
+            <div class="peMediaPreview" id="p_mainImagePreview" onclick="$('p_imgFile').click()"></div>
+            <div class="peMediaTools">
+              <div id="p_imgDropzone" class="peDropzone" ondrop="prodImgDrop(event)" ondragover="event.preventDefault();this.style.borderColor='var(--acc)';this.style.background='rgba(99,102,241,.06)'" ondragleave="this.style.borderColor='var(--border2)';this.style.background='var(--bg2)'" onclick="$('p_imgFile').click()">
+                <input type="file" id="p_imgFile" accept="image/*" style="display:none" onchange="prodImgFilesSelected(this.files)"/>
+                📷 <b>${_prodImages.length?'Replace image':'Upload image'}</b> · drag/drop or click
+              </div>
+              ${_prodImages.length?`<button type="button" class="btn bD bSm" onclick="removeProdImage(0)">Remove</button>`:''}
+            </div>
+            <div id="p_imgUploadProgress" style="display:none;font-size:10px;color:var(--acc2);margin-top:6px;font-weight:600"></div>
+            <div id="p_imgUploadError" style="display:none;font-size:10px;color:var(--red);margin-top:6px;background:rgba(239,68,68,.08);padding:7px 9px;border-radius:7px"></div>
+            <details style="margin-top:9px"><summary style="font-size:9.5px;color:var(--t3);cursor:pointer">Use image URL instead</summary><div style="display:flex;gap:6px;margin-top:7px"><input class="afI" id="p_img" placeholder="https://..." style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addProdImage()}"/><button type="button" class="btn bS bSm" onclick="addProdImage()">Add</button></div></details>
+            <div id="p_imgGallery" class="peGallery"></div>
+            <div class="peHint">JPG/PNG · max 10MB. Image uploads only when you save the product.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="pePane" data-pe-pane="pricing">
+        <div class="peCard">
+          <div class="peSectionHead"><div><div class="peSectionTitle">💰 Pricing & inventory</div><div class="peSectionSub">Set pricing, stock and low-stock threshold. Profit metrics update live.</div></div><button type="button" class="btn bS bSm" onclick="prodEditorTab('variants')">Manage variants →</button></div>
+          <div id="p_singleMode" style="display:${hasVariants?'none':'block'}">
+            <div class="peTwo">
+              <div class="afG"><label class="afL">Buy Price (৳)</label><input class="afI" type="number" id="p_b" min="0" value="${p?.buyPrice||''}" oninput="prodFormMetrics();prodEditorMarkDirty()"/></div>
+              <div class="afG"><label class="afL">Regular Sell Price (৳) *</label><input class="afI" type="number" id="p_s" min="0" value="${p?.sellPrice||''}" oninput="prodFormMetrics();prodEditorMarkDirty()"/></div>
+              <div class="afG"><label class="afL">Offer Price (৳) <span style="font-size:9px;color:var(--t3)">optional</span></label><input class="afI" type="number" id="p_offer" min="0" value="${p?.offerPrice||''}" oninput="prodFormMetrics();prodEditorMarkDirty()"/><div id="pOfferErr" style="display:none;color:var(--red);font-size:9px;margin-top:5px">⚠️ Offer price must be lower than regular sell price.</div></div>
+              <div class="afG"><label class="afL">Current Stock *</label><input class="afI" type="number" id="p_st" min="0" value="${p?.stock??''}" placeholder="0" oninput="prodFormMetrics();prodEditorMarkDirty()"/></div>
+            </div>
+            <div id="prodFormMetrics" class="prodLiveMetrics"></div>
+          </div>
+          <div id="peVariantPricingNotice" style="display:${hasVariants?'block':'none'}" class="al aI">ℹ️ Variant mode is active. Price and stock are managed inside each variant.</div>
+          <div class="divider"></div>
+          <div class="peTwo">
+            <div class="afG" style="margin-bottom:0"><label class="afL">Low stock alert at</label><input class="afI" type="number" id="p_al" min="0" value="${p?.alertAt??5}" oninput="prodEditorRefreshInventory();prodEditorMarkDirty()"/><div class="peHint">The product is marked low-stock at or below this quantity.</div></div>
+            <div class="afG" style="margin-bottom:0"><label class="afL">Inventory mode</label><div class="afI" style="display:flex;align-items:center;min-height:42px;color:var(--t2)"><span id="peInventoryMode">${hasVariants?'Variant-level stock':'Single product stock'}</span></div></div>
+          </div>
+        </div>
+        <div class="peCard">
+          <div class="peSectionHead"><div><div class="peSectionTitle">📊 Inventory snapshot</div><div class="peSectionSub">Calculated from the values currently entered in this editor.</div></div></div>
+          <div class="peInventoryGrid">
+            <div class="peInvItem"><span>Total stock</span><b id="peInvStock">0</b></div>
+            <div class="peInvItem"><span>Inventory cost</span><b id="peInvCost">৳0</b></div>
+            <div class="peInvItem"><span>Retail value</span><b id="peInvRetail">৳0</b></div>
+            <div class="peInvItem"><span>Potential profit</span><b id="peInvProfit" style="color:var(--green)">৳0</b></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="pePane" data-pe-pane="variants">
+        <div class="peCard">
+          <div class="peStatusCard">
+            <div class="peStatusCopy"><b>🎨 Product variants</b><small>Turn this on for colors, sizes or designs. Every variant can have its own SKU, price, stock and photos.</small></div>
+            <label class="toggle"><input type="checkbox" id="p_useVariants" ${hasVariants?'checked':''} onchange="toggleProdVariants(this.checked);prodEditorMarkDirty()"/><span class="toggleSlider"></span></label>
+          </div>
+          <div id="p_variantMode" style="display:${hasVariants?'block':'none'};margin-top:12px">
+            <div id="variantsList"></div>
+            <button class="btn bS bSm" type="button" onclick="addVariant()" style="margin-top:7px">➕ Add Variant</button>
+            <div id="vImgErr" style="display:none;font-size:10px;color:var(--red);margin-top:8px;background:rgba(239,68,68,.08);padding:8px 10px;border-radius:7px"></div>
+          </div>
+          <div id="peVariantEmpty" style="display:${hasVariants?'none':'block'};padding:26px 12px;text-align:center;color:var(--t3)"><div style="font-size:28px;margin-bottom:6px">◫</div><b style="display:block;color:var(--t2);font-size:11px">No variants enabled</b><span style="font-size:9.5px">Keep this off for a product with one price and one stock count.</span></div>
+        </div>
+      </section>
+
+      <section class="pePane" data-pe-pane="visibility">
+        <div class="peCard">
+          <div class="peSectionHead"><div><div class="peSectionTitle">👁️ Product visibility</div><div class="peSectionSub">Control whether this product can be used and shown in selling flows.</div></div></div>
+          <div class="peStatusCard">
+            <div class="peStatusCopy"><b id="peStatusText">${statusActive?'Active product':'Archived product'}</b><small id="peStatusHelp">${statusActive?'Visible to normal selling flows and available for new orders.':'Hidden from normal selling flows. Existing order history remains unchanged.'}</small></div>
+            <label class="toggle"><input type="checkbox" id="p_active" ${statusActive?'checked':''} onchange="prodEditorHeaderSync();prodEditorMarkDirty()"/><span class="toggleSlider"></span></label>
+          </div>
+          <div style="margin-top:12px">
+            <div class="peInfoRow"><div class="peInfoIco">🌐</div><div><b>Public shop behavior</b><p>Archived products stay hidden from the public shop and new product selection while historical orders remain intact.</p></div></div>
+            <div class="peInfoRow"><div class="peInfoIco">🧾</div><div><b>Order history safety</b><p>Changing product visibility does not rewrite product information already saved inside previous orders.</p></div></div>
+            <div class="peInfoRow"><div class="peInfoIco">🗄️</div><div><b>Archive instead of delete</b><p>For products you may sell again later, archive is safer than permanent deletion.</p></div></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="peFooter">
+      <div class="peSaveState" id="peSaveState">${p?'Ready to update · changes are saved only when you click Update Product':'Ready to create · images upload only after save'}</div>
+      <div class="peFooterActions">
+        <button class="btn bS" type="button" onclick="closeMov('prodMOvl')">Cancel</button>
+        <button class="btn bP" id="pSvBtn" type="button" onclick="saveProd('${id||''}')">💾 ${p?'Update Product':'Add Product'}</button>
       </div>
-      <label class="toggle"><input type="checkbox" id="p_useVariants" ${hasVariants?'checked':''} onchange="toggleProdVariants(this.checked)"/><span class="toggleSlider"></span></label>
-    </div>
-
-    <!-- Single price mode (no variants) -->
-    <div id="p_singleMode" style="display:${hasVariants?'none':'block'}">
-      <div class="afRow">
-        <div class="afG" style="margin:0"><label class="afL">Buy Price (৳)</label><input class="afI" type="number" id="p_b" min="0" value="${p?.buyPrice||''}" oninput="prodFormMetrics()"/></div>
-        <div class="afG" style="margin:0"><label class="afL">Regular Sell Price (৳) *</label><input class="afI" type="number" id="p_s" min="0" value="${p?.sellPrice||''}" oninput="prodFormMetrics()"/></div>
-        <div class="afG" style="margin:0"><label class="afL">Offer Price (৳) <span style="font-size:9px;color:var(--t3)">optional</span></label><input class="afI" type="number" id="p_offer" min="0" value="${p?.offerPrice||''}" oninput="prodFormMetrics()"/></div>
-        <div class="afG" style="margin:0"><label class="afL">Stock *</label><input class="afI" type="number" id="p_st" min="0" value="${p?.stock??''}" placeholder="0" oninput="prodFormMetrics()"/></div>
-      </div><div id="prodFormMetrics" class="prodLiveMetrics"></div><div id="pOfferErr" style="display:none;color:var(--red);font-size:10px;margin-top:6px">⚠️ Offer price must be lower than regular sell price.</div>
-    </div>
-
-    <!-- Variants mode -->
-    <div id="p_variantMode" style="display:${hasVariants?'block':'none'}">
-      <div id="variantsList"></div>
-      <button class="btn bS bSm" onclick="addVariant()" style="margin-top:8px">➕ Add Variant</button>
-      <div id="vImgErr" style="display:none;font-size:11px;color:var(--red);margin-top:8px;background:rgba(239,68,68,.08);padding:8px 10px;border-radius:6px"></div>
-    </div>
-
-    ${p&&!hasVariants?`<div style="padding:10px;background:var(--card);border-radius:8px;font-size:12px;margin-top:10px;color:var(--t2)">
-      Profit/unit: <strong style="color:var(--green)">${cur((p.sellPrice||0)-(p.buyPrice||0))}</strong>
-    </div>`:''}
-  </div>
-  <div class="mF">
-    <button class="btn bS" onclick="closeMov('prodMOvl')">Cancel</button>
-    <button class="btn bP" id="pSvBtn" onclick="saveProd('${id||''}')">💾 ${p?'Update':'Add'} Product</button>
-  </div>`;
+    </div>`;
 
   $('prodMOvl').classList.add('open');
   renderVariantsList();
   renderProdGallery();
   prodFormMetrics();
+  prodEditorHeaderSync();
+  prodEditorRefreshInventory();
 }
 window.openProdMod=openProdMod;
 
+window.prodEditorTab=(name)=>{
+  document.querySelectorAll('#prodMod .peTab').forEach(b=>b.classList.toggle('active',b.dataset.peTab===name));
+  document.querySelectorAll('#prodMod .pePane').forEach(p=>p.classList.toggle('active',p.dataset.pePane===name));
+};
+window.prodEditorMarkDirty=()=>{const s=$('peSaveState');if(s){s.textContent='● Unsaved changes';s.style.color='var(--yellow)';}};
+window.prodEditorHeaderSync=()=>{
+  const name=$('p_n')?.value.trim()||'';
+  const sku=$('p_sku')?.value.trim()||'No SKU';
+  const cat=$('p_cat')?.value.trim()||'General';
+  const title=$('peTitleName');if(title)title.textContent=name?'· '+name:'';
+  const meta=$('peTitleMeta');if(meta)meta.textContent=`${sku} · ${cat}`;
+  const active=$('p_active')?.checked!==false;
+  const pill=$('peStatusPill');if(pill){pill.classList.toggle('active',active);pill.classList.toggle('archived',!active);}
+  if($('peStatusPillText'))$('peStatusPillText').textContent=active?'Active':'Archived';
+  if($('peStatusText'))$('peStatusText').textContent=active?'Active product':'Archived product';
+  if($('peStatusHelp'))$('peStatusHelp').textContent=active?'Visible to normal selling flows and available for new orders.':'Hidden from normal selling flows. Existing order history remains unchanged.';
+};
+function prodEditorRefreshInventory(){
+  const useVariants=$('p_useVariants')?.checked&&_prodVariants.length>0;
+  let stock=0,cost=0,retail=0;
+  if(useVariants){
+    for(const v of _prodVariants){const st=Math.max(0,Number(v.stock||0)),buy=Math.max(0,Number(v.buyPrice||0)),sell=Math.max(0,Number(v.sellPrice||0)),offer=Math.max(0,Number(v.offerPrice||0)),eff=offer>0&&offer<sell?offer:sell;stock+=st;cost+=buy*st;retail+=eff*st;}
+  }else{
+    stock=Math.max(0,Number($('p_st')?.value||0));const buy=Math.max(0,Number($('p_b')?.value||0)),sell=Math.max(0,Number($('p_s')?.value||0)),offer=Math.max(0,Number($('p_offer')?.value||0)),eff=offer>0&&offer<sell?offer:sell;cost=buy*stock;retail=eff*stock;
+  }
+  if($('peInvStock'))$('peInvStock').textContent=stock;
+  if($('peInvCost'))$('peInvCost').textContent=cur(cost);
+  if($('peInvRetail'))$('peInvRetail').textContent=cur(retail);
+  if($('peInvProfit')){$('peInvProfit').textContent=cur(retail-cost);$('peInvProfit').style.color=(retail-cost)>=0?'var(--green)':'var(--red)';}
+  if($('peInventoryMode'))$('peInventoryMode').textContent=useVariants?'Variant-level stock':'Single product stock';
+  if($('peVariantCount'))$('peVariantCount').textContent=_prodVariants.length?`(${_prodVariants.length})`:'';
+}
+
+
 // ── MULTI-IMAGE GALLERY ──
 function renderProdGallery(){
-  const g=$('p_imgGallery');if(!g)return;
-  if(_prodImages.length===0){g.innerHTML='<div style="font-size:11px;color:var(--t3);padding:4px">এখনো কোনো ছবি যোগ করা হয়নি</div>';return;}
-  g.innerHTML=_prodImages.map((item,i)=>{
-    const isPending=item&&typeof item==='object'&&item._pending;
-    const src=isPending?item.preview:item;
-    return `
-    <div style="position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:2px solid ${i===0?'var(--acc)':'var(--border)'}">
-      <img src="${esc(src)}" style="width:100%;height:100%;object-fit:cover;background:#fff" onerror="this.parentElement.style.opacity='.4';this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2272%22 height=%2272%22%3E%3Crect fill=%22%23ccc%22 width=%2272%22 height=%2272%22/%3E%3C/svg%3E'"/>
-      ${i===0?'<div style="position:absolute;top:0;left:0;background:var(--acc);color:#fff;font-size:8px;padding:1px 5px;border-radius:0 0 6px 0">মূল</div>':''}
-      ${isPending?'<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(245,158,11,.9);color:#fff;font-size:7px;text-align:center;padding:1px 0">সেভে আপলোড হবে</div>':''}
-      <button type="button" onclick="removeProdImage(${i})" style="position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(239,68,68,.9);color:#fff;border:none;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center">×</button>
-      ${i!==0?`<button type="button" onclick="makeMainImage(${i})" title="মূল ছবি করুন" style="position:absolute;bottom:${isPending?'13':'2'}px;left:2px;width:18px;height:18px;border-radius:50%;background:rgba(99,102,241,.9);color:#fff;border:none;cursor:pointer;font-size:10px;line-height:1;display:flex;align-items:center;justify-content:center">★</button>`:''}
-    </div>`;
-  }).join('');
+  const g=$('p_imgGallery');
+  const main=$('p_mainImagePreview');
+  const item=_prodImages[0];
+  if(!item){
+    if(main)main.innerHTML='<div class="peMediaEmpty"><div class="ico">📷</div><b>Add a clean product photo</b><span>Click here or use drag & drop below</span></div>';
+    if(g)g.innerHTML='';
+    return;
+  }
+  const isPending=item&&typeof item==='object'&&item._pending;
+  const src=isPending?item.preview:item;
+  if(main)main.innerHTML=`<img src="${esc(src)}" alt="Product image" onerror="this.style.display='none';this.parentElement.innerHTML='<div class=&quot;peMediaEmpty&quot;><div class=&quot;ico&quot;>⚠️</div><b>Image could not be loaded</b><span>Replace the image or check the URL</span></div>'"/>${isPending?'<div class="peImagePending" style="font-size:8px;padding:4px">Uploads when product is saved</div>':''}`;
+  if(g)g.innerHTML=`<div class="peImageThumb"><img src="${esc(src)}" alt="Main thumbnail"/><span class="peImageBadge">MAIN</span>${isPending?'<span class="peImagePending">NEW</span>':''}<button type="button" class="peImageRemove" onclick="removeProdImage(0)">×</button></div>`;
 }
 // ── IMAGE UPLOAD (ImgBB — no link typing needed) ──
 async function uploadImageFile(file){
@@ -4466,12 +4633,16 @@ window.removeProdImage=(i)=>{
 window.makeMainImage=(i)=>{const[img]=_prodImages.splice(i,1);_prodImages.unshift(img);renderProdGallery();toast('✅ মূল ছবি পরিবর্তন হয়েছে');};
 
 window.toggleProdVariants=(on)=>{
-  $('p_singleMode').style.display=on?'none':'block';
-  $('p_variantMode').style.display=on?'block':'none';
+  if($('p_singleMode'))$('p_singleMode').style.display=on?'none':'block';
+  if($('p_variantMode'))$('p_variantMode').style.display=on?'block':'none';
+  if($('peVariantPricingNotice'))$('peVariantPricingNotice').style.display=on?'block':'none';
+  if($('peVariantEmpty'))$('peVariantEmpty').style.display=on?'none':'block';
   if(on&&_prodVariants.length===0)addVariant();
+  prodEditorRefreshInventory();
 };
 window.prodFormMetrics=()=>{
   const box=$('prodFormMetrics');if(!box)return;const buy=Math.max(0,Number($('p_b')?.value||0)),sell=Math.max(0,Number($('p_s')?.value||0)),offer=Math.max(0,Number($('p_offer')?.value||0)),stock=Math.max(0,Number($('p_st')?.value||0)),effective=offer>0&&offer<sell?offer:sell,profit=effective-buy,margin=effective>0?profit/effective*100:0;const oe=$('pOfferErr');if(oe)oe.style.display=offer>0&&offer>=sell?'block':'none';box.innerHTML=`<div class="prodLiveMetric"><small>Effective Sell</small><b>${cur(effective)}</b></div><div class="prodLiveMetric"><small>Profit / Unit</small><b style="color:${profit>=0?'var(--green)':'var(--red)'}">${cur(profit)}</b></div><div class="prodLiveMetric"><small>Margin</small><b>${margin.toFixed(1)}%</b></div><div class="prodLiveMetric"><small>Retail Value</small><b>${cur(effective*stock)}</b></div>`;
+  prodEditorRefreshInventory();
 };
 
 window.addVariant=()=>{
@@ -4498,6 +4669,7 @@ function renderVariantsList(){
   const el=$('variantsList');if(!el)return;
   if(_prodVariants.length===0){
     el.innerHTML=`<div style="text-align:center;padding:16px;color:var(--t2);font-size:13px">No variants yet. Click "Add Variant" to add color/size options.</div>`;
+    prodEditorRefreshInventory();
     return;
   }
   el.innerHTML=_prodVariants.map((v,i)=>{
@@ -4519,6 +4691,8 @@ function renderVariantsList(){
       <button class="btn bD bSm bIco" onclick="event.stopPropagation();removeVariant(${i})">🗑️</button>
     </div>`;
   }).join('');
+  prodEditorRefreshInventory();
+  if($('peVariantCount'))$('peVariantCount').textContent=_prodVariants.length?`(${_prodVariants.length})`:'';
 }
 
 // ── VARIANT EDITOR POPUP (name, description, price, stock + its OWN multi-image gallery) ──
@@ -4642,24 +4816,24 @@ window.saveVariantEditor=()=>{
 };
 
 async function saveProd(id){
-  const btn=$('pSvBtn');btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';
+  const btn=$('pSvBtn');const saveLabel=id?'💾 Update Product':'💾 Add Product';btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';
   try{
     const name=$('p_n')?.value.trim()||'';
-    if(!name){toast('Product name required','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
+    if(!name){toast('Product name required','err');btn.disabled=false;btn.innerHTML=saveLabel;return;}
     const useVariants=$('p_useVariants')?.checked&&_prodVariants.length>0;
     const sku=$('p_sku')?.value.trim().slice(0,60)||'';
-    if(sku&&(_prodCache||[]).some(x=>x.id!==id&&(String(x.sku||'').toLowerCase()===sku.toLowerCase()||(x.variants||[]).some(v=>String(v.sku||'').toLowerCase()===sku.toLowerCase())))){toast('এই Product SKU ইতিমধ্যে ব্যবহার করা হয়েছে','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
+    if(sku&&(_prodCache||[]).some(x=>x.id!==id&&(String(x.sku||'').toLowerCase()===sku.toLowerCase()||(x.variants||[]).some(v=>String(v.sku||'').toLowerCase()===sku.toLowerCase())))){toast('এই Product SKU ইতিমধ্যে ব্যবহার করা হয়েছে','err');btn.disabled=false;btn.innerHTML=saveLabel;return;}
     if(useVariants){
       const seenSku=new Set();
       for(const v of _prodVariants){
-        if(!v.name||!v.sellPrice){toast('All variants need name and sell price','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
-        if(v.offerPrice>0&&Number(v.offerPrice)>=Number(v.sellPrice)){toast(`${v.name}: offer price must be lower than sell price`,'err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
-        const vs=String(v.sku||'').trim().toLowerCase();if(vs&&(vs===sku.toLowerCase()||seenSku.has(vs)||(_prodCache||[]).some(x=>x.id!==id&&(String(x.sku||'').toLowerCase()===vs||(x.variants||[]).some(z=>String(z.sku||'').toLowerCase()===vs))))){toast(`Duplicate variant SKU: ${v.sku}`,'err');btn.disabled=false;btn.innerHTML='💾 Save';return;}if(vs)seenSku.add(vs);
+        if(!v.name||!v.sellPrice){toast('All variants need name and sell price','err');btn.disabled=false;btn.innerHTML=saveLabel;return;}
+        if(v.offerPrice>0&&Number(v.offerPrice)>=Number(v.sellPrice)){toast(`${v.name}: offer price must be lower than sell price`,'err');btn.disabled=false;btn.innerHTML=saveLabel;return;}
+        const vs=String(v.sku||'').trim().toLowerCase();if(vs&&(vs===sku.toLowerCase()||seenSku.has(vs)||(_prodCache||[]).some(x=>x.id!==id&&(String(x.sku||'').toLowerCase()===vs||(x.variants||[]).some(z=>String(z.sku||'').toLowerCase()===vs))))){toast(`Duplicate variant SKU: ${v.sku}`,'err');btn.disabled=false;btn.innerHTML=saveLabel;return;}if(vs)seenSku.add(vs);
       }
     }else{
       const sell=Number($('p_s')?.value||0),offer=Number($('p_offer')?.value||0);
-      if(!sell){toast('Sell price required','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
-      if(offer>0&&offer>=sell){toast('Offer price must be lower than regular sell price','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
+      if(!sell){toast('Sell price required','err');btn.disabled=false;btn.innerHTML=saveLabel;return;}
+      if(offer>0&&offer>=sell){toast('Offer price must be lower than regular sell price','err');btn.disabled=false;btn.innerHTML=saveLabel;return;}
     }
 
     // ── Upload any pending (not-yet-uploaded) images NOW — only at the moment of actually saving.
@@ -4728,11 +4902,11 @@ async function saveProd(id){
 
     if(id)await updateDoc(BDoc('products',id),{...data,updatedAt:serverTimestamp()});
     else{
-      if(!(await enforcePlanLimit('product'))){btn.disabled=false;btn.innerHTML='💾 Save';return;}
+      if(!(await enforcePlanLimit('product'))){btn.disabled=false;btn.innerHTML=saveLabel;return;}
       await addDoc(BCol('products'),{...data,createdAt:serverTimestamp()});
     }
     toast(id?'✅ Updated!':'✅ Added!','ok');closeMov('prodMOvl');pgProds();
-  }catch(e){toast(e.message,'err');btn.disabled=false;btn.innerHTML='💾 Save';}
+  }catch(e){toast(e.message,'err');btn.disabled=false;btn.innerHTML=saveLabel;}
 }
 window.saveProd=saveProd;
 window.aiWriteDesc=async()=>{
@@ -7489,5 +7663,3 @@ setTimeout(()=>{
 </script>
 </body>
 </html>
-
-  
