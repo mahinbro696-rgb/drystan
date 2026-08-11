@@ -5041,13 +5041,13 @@ window.downloadRcptImg=async()=>{
 
 // ══ BUSINESS TOOLS PAGE ══
 async function pgTools(){
-  let tgConnected=false,tgTokenConfigured=false,tgChatId='',tgUsername='',tgFirstName='';
+  let tgConnected=false,tgTokenConfigured=false,tgChatIdConfigured=false,tgUsername='',tgFirstName='';
   try{
     const r=await secureApiFetch('/v1/telegram/status',{method:'GET'});
     const d=await r.json().catch(()=>({}));
     tgConnected=!!(r.ok&&d.connected);
     tgTokenConfigured=!!(r.ok&&d.tokenConfigured);
-    tgChatId=d.chatId||'';
+    tgChatIdConfigured=!!(r.ok&&d.chatIdConfigured);
     tgUsername=d.username||'';
     tgFirstName=d.firstName||'';
   }catch{}
@@ -5152,7 +5152,7 @@ async function pgTools(){
   <div class="g g2" style="gap:16px;margin-bottom:16px">
 
     <!-- TELEGRAM ORDER ALERTS -->
-    <div class="card" id="toolSec_telegram" style="border-color:rgba(34,158,217,.30)">
+    <div class="card" id="toolSec_telegram" style="display:none;border-color:rgba(34,158,217,.30)">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px">
         <div class="cardTitle" style="margin:0">✈️ Telegram Order Alerts</div>
         <span style="font-size:11px;font-weight:800;padding:6px 10px;border-radius:999px;background:${tgConnected?'rgba(16,185,129,.12)':'rgba(107,114,128,.12)'};color:${tgConnected?'var(--green)':'var(--t3)'}">${tgConnected?'● Connected':'● Not connected'}</span>
@@ -5295,7 +5295,7 @@ async function pgTools(){
   loadOrderLinks();
   toolsBackToHub(); // start on the hub menu — sections open only when a tile is clicked
 }
-const TOOL_SECTION_IDS=['toolSec_shop','toolSec_orderlink','toolSec_steadfast','toolSec_redx','toolSec_pathao','toolSec_calc','toolSec_stockval','toolSec_fraud','toolSec_expense','toolSec_coupon','toolSec_export'];
+const TOOL_SECTION_IDS=['toolSec_shop','toolSec_orderlink','toolSec_telegram','toolSec_steadfast','toolSec_redx','toolSec_pathao','toolSec_calc','toolSec_stockval','toolSec_fraud','toolSec_expense','toolSec_coupon','toolSec_export'];
 window.toolsGoTo=(key)=>{
   const target=$('toolSec_'+key);
   if(!target)return;
