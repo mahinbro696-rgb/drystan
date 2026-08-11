@@ -10,125 +10,28 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
 <meta name="referrer" content="strict-origin-when-cross-origin"/>
 <meta http-equiv="X-Frame-Options" content="DENY"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.googleapis.com https://apis.google.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasestorage.app https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://api.emailjs.com https://*.steadfast.com.bd https://fraudbd.com https://*.fraudbd.com https://api.imgbb.com https://drystan-api.mulhakiol632.workers.dev; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://www.recaptcha.net https://recaptcha.net; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.googleapis.com https://apis.google.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasestorage.app https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://api.emailjs.com https://api.imgbb.com https://drystan-api.mulhakiol632.workers.dev; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://www.recaptcha.net https://recaptcha.net; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"/>
 <title>Drystan – Business Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
-<!-- ═══ PROTECTION LAYER ═══ -->
+<!-- ═══ LIGHTWEIGHT SECURITY GUARD ═══ -->
 <script>
 (function(){
   'use strict';
-
-  // 0. ANTI-CLICKJACKING / ANTI-PHISHING: break out if the site is loaded inside an iframe
-  // (phishing sites often embed the real login in an invisible frame to steal credentials)
+  // Real browser-side protection: prevent framing and require HTTPS.
+  // DevTools/debugger polling was intentionally removed because it added recurring
+  // main-thread work without protecting public client-side source code.
   try{
     if(window.top !== window.self){
+      document.documentElement.style.display='none';
       window.top.location = window.self.location;
     }
-  }catch(e){
-    // Cross-origin framing blocked access — hide the page so credentials can't be captured
+  }catch{
     document.documentElement.style.display='none';
   }
-
-  // 0b. Warn if not served over HTTPS (except localhost) — protects against credential interception
   if(location.protocol==='http:' && !['localhost','127.0.0.1'].includes(location.hostname)){
-    location.protocol='https:';
+    location.replace('https://'+location.host+location.pathname+location.search+location.hash);
   }
-
-  // 1. Disable right-click context menu
-  document.addEventListener('contextmenu', function(e){
-    e.preventDefault();
-    return false;
-  }, true);
-
-  // 2. Disable keyboard shortcuts (F12, Ctrl+U, Ctrl+S, Ctrl+Shift+I/J/C, F5 with ctrl)
-  document.addEventListener('keydown', function(e){
-    const k = e.key || e.keyCode;
-    // F12
-    if(k === 'F12' || e.keyCode === 123){ e.preventDefault(); return false; }
-    // Ctrl combos
-    if(e.ctrlKey || e.metaKey){
-      const blocked = ['u','U','s','S','a','A','p','P'];
-      if(blocked.includes(k)){ e.preventDefault(); return false; }
-      // Ctrl+Shift+I/J/C/K (DevTools)
-      if(e.shiftKey && ['i','I','j','J','c','C','k','K'].includes(k)){
-        e.preventDefault(); return false;
-      }
-    }
-  }, true);
-
-  // 3. Console hijack protection — override console methods
-  const _noop = function(){};
-  const _warn = console.warn.bind(console);
-  try {
-    const msg = '%c🔒 Drystan Protected\n%cSource code is proprietary. Unauthorized access is prohibited.';
-    const s1 = 'color:#F97316;font-size:24px;font-weight:900';
-    const s2 = 'color:#94A3B8;font-size:13px';
-    // Show warning once, then clear
-    console.log(msg, s1, s2);
-    // Suppress further console output
-    const _orig = {log:console.log, dir:console.dir, table:console.table};
-    console.log = function(){};
-    console.dir = function(){};
-    console.table = function(){};
-    // Keep warn/error for internal use
-    console.warn = _warn;
-  } catch(e){}
-
-  // 4. DevTools detection — size-based method
-  let _devOpen = false;
-  const _checkDev = function(){
-    const threshold = 160;
-    const widthDiff = window.outerWidth - window.innerWidth;
-    const heightDiff = window.outerHeight - window.innerHeight;
-    if(widthDiff > threshold || heightDiff > threshold){
-      if(!_devOpen){
-        _devOpen = true;
-        // Blur sensitive content when devtools open
-        const app = document.getElementById('appWrap');
-        const login = document.getElementById('loginWrap');
-        if(app && app.classList.contains('show')){
-          app.style.filter = 'blur(8px)';
-          app.style.pointerEvents = 'none';
-          // Show warning overlay
-          let ov = document.getElementById('_devWarning');
-          if(!ov){
-            ov = document.createElement('div');
-            ov.id = '_devWarning';
-            ov.style.cssText = 'position:fixed;inset:0;background:rgba(7,10,18,.97);display:flex;align-items:center;justify-content:center;z-index:99999;flex-direction:column;gap:16px;font-family:Inter,sans-serif';
-            ov.innerHTML = '<div style="font-size:48px">🔒</div><div style="color:#F97316;font-size:20px;font-weight:800">Developer Tools Detected</div><div style="color:#94A3B8;font-size:14px;text-align:center;max-width:320px">Please close Developer Tools to continue using Drystan.</div>';
-            document.body.appendChild(ov);
-          }
-          ov.style.display = 'flex';
-        }
-      }
-    } else {
-      if(_devOpen){
-        _devOpen = false;
-        const app = document.getElementById('appWrap');
-        if(app){ app.style.filter = ''; app.style.pointerEvents = ''; }
-        const ov = document.getElementById('_devWarning');
-        if(ov) ov.style.display = 'none';
-      }
-    }
-  };
-  setInterval(_checkDev, 1000);
-
-  // 5. Disable text selection on key areas (optional, can be removed)
-  document.addEventListener('selectstart', function(e){
-    // Allow selection in inputs/textareas
-    if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    // Block selection elsewhere (helps with copy-paste of code)
-  }, false);
-
-  // 6. debugger trap (slows down manual debugging)
-  // Runs in background — causes debugger to pause constantly if open
-  setInterval(function(){ 
-    try{ 
-      (function(){}).constructor('debugger')(); 
-    }catch(e){}
-  }, 3000);
-
 })();
 </script>
 <style>
@@ -1381,16 +1284,6 @@ async function testSecureBackend(){
 }
 window.testSecureBackend=testSecureBackend;
 
-async function testSteadfastConnection(){
-  try{
-    const resp=await secureApiFetch('/v1/steadfast/test',{method:'GET'});
-    const data=await resp.json().catch(()=>({}));
-    return {ok:resp.ok,...data};
-  }catch(e){
-    return {ok:false,connected:false,error:e.message||String(e)};
-  }
-}
-window.testSteadfastConnection=testSteadfastConnection;
 
 // PRO UPGRADE LAYER — optional App Check and SaaS plan controls.
 // Put your reCAPTCHA v3 site key here, then enforce App Check in Firebase Console.
@@ -1467,7 +1360,7 @@ const jsArg=s=>esc(JSON.stringify(String(s??'')));
 const T=(en,bn)=>G.lang==='bn'?bn:en;
 // Bangladesh districts + thanas/upazilas (bilingual) — 64 districts, 501 thanas
 const BD_DISTRICTS={"Dhaka":{"bn":"ঢাকা","t":[["Dhanmondi","ধানমন্ডি"],["Gulshan","গুলশান"],["Mirpur","মিরপুর"],["Mohammadpur","মোহাম্মদপুর"],["Tejgaon","তেজগাঁও"],["Uttara","উত্তরা"],["Ramna","রমনা"],["Badda","বাড্ডা"],["Khilgaon","খিলগাঁও"],["Sutrapur","সূত্রাপুর"],["Demra","ডেমরা"],["Savar","সাভার"],["Dhamrai","ধামরাই"],["Keraniganj","কেরানীগঞ্জ"],["Nawabganj","নবাবগঞ্জ"],["Dohar","দোহার"]]},"Gazipur":{"bn":"গাজীপুর","t":[["Gazipur Sadar","গাজীপুর সদর"],["Kaliakair","কালিয়াকৈর"],["Kapasia","কাপাসিয়া"],["Sreepur","শ্রীপুর"],["Kaliganj","কালীগঞ্জ"]]},"Narayanganj":{"bn":"নারায়ণগঞ্জ","t":[["Narayanganj Sadar","নারায়ণগঞ্জ সদর"],["Araihazar","আড়াইহাজার"],["Bandar","বন্দর"],["Rupganj","রূপগঞ্জ"],["Sonargaon","সোনারগাঁও"]]},"Tangail":{"bn":"টাঙ্গাইল","t":[["Tangail Sadar","টাঙ্গাইল সদর"],["Basail","বাসাইল"],["Bhuapur","ভুয়াপুর"],["Delduar","দেলদুয়ার"],["Dhanbari","ধনবাড়ী"],["Ghatail","ঘাটাইল"],["Gopalpur","গোপালপুর"],["Kalihati","কালিহাতী"],["Madhupur","মধুপুর"],["Mirzapur","মির্জাপুর"],["Nagarpur","নাগরপুর"],["Sakhipur","সখিপুর"]]},"Narsingdi":{"bn":"নরসিংদী","t":[["Narsingdi Sadar","নরসিংদী সদর"],["Belabo","বেলাবো"],["Monohardi","মনোহরদী"],["Palash","পলাশ"],["Raipura","রায়পুরা"],["Shibpur","শিবপুর"]]},"Munshiganj":{"bn":"মুন্সিগঞ্জ","t":[["Munshiganj Sadar","মুন্সিগঞ্জ সদর"],["Gazaria","গজারিয়া"],["Lohajang","লৌহজং"],["Sirajdikhan","সিরাজদিখান"],["Sreenagar","শ্রীনগর"],["Tongibari","টংগিবাড়ী"]]},"Manikganj":{"bn":"মানিকগঞ্জ","t":[["Manikganj Sadar","মানিকগঞ্জ সদর"],["Daulatpur","দৌলতপুর"],["Ghior","ঘিওর"],["Harirampur","হরিরামপুর"],["Saturia","সাটুরিয়া"],["Shibalaya","শিবালয়"],["Singair","সিংগাইর"]]},"Faridpur":{"bn":"ফরিদপুর","t":[["Faridpur Sadar","ফরিদপুর সদর"],["Alfadanga","আলফাডাঙ্গা"],["Bhanga","ভাঙ্গা"],["Boalmari","বোয়ালমারী"],["Charbhadrasan","চরভদ্রাসন"],["Madhukhali","মধুখালী"],["Nagarkanda","নগরকান্দা"],["Sadarpur","সদরপুর"],["Saltha","সালথা"]]},"Gopalganj":{"bn":"গোপালগঞ্জ","t":[["Gopalganj Sadar","গোপালগঞ্জ সদর"],["Kashiani","কাশিয়ানী"],["Kotalipara","কোটালীপাড়া"],["Muksudpur","মুকসুদপুর"],["Tungipara","টুঙ্গিপাড়া"]]},"Madaripur":{"bn":"মাদারীপুর","t":[["Madaripur Sadar","মাদারীপুর সদর"],["Kalkini","কালকিনি"],["Rajoir","রাজৈর"],["Shibchar","শিবচর"]]},"Rajbari":{"bn":"রাজবাড়ী","t":[["Rajbari Sadar","রাজবাড়ী সদর"],["Baliakandi","বালিয়াকান্দি"],["Goalandaghat","গোয়ালন্দঘাট"],["Kalukhali","কালুখালী"],["Pangsha","পাংশা"]]},"Shariatpur":{"bn":"শরীয়তপুর","t":[["Shariatpur Sadar","শরীয়তপুর সদর"],["Bhedarganj","ভেদরগঞ্জ"],["Damudya","ডামুড্যা"],["Gosairhat","গোসাইরহাট"],["Naria","নড়িয়া"],["Zajira","জাজিরা"]]},"Kishoreganj":{"bn":"কিশোরগঞ্জ","t":[["Kishoreganj Sadar","কিশোরগঞ্জ সদর"],["Austagram","অষ্টগ্রাম"],["Bajitpur","বাজিতপুর"],["Bhairab","ভৈরব"],["Hossainpur","হোসেনপুর"],["Itna","ইটনা"],["Karimganj","করিমগঞ্জ"],["Katiadi","কটিয়াদী"],["Kuliarchar","কুলিয়ারচর"],["Mithamain","মিঠামইন"],["Nikli","নিকলী"],["Pakundia","পাকুন্দিয়া"],["Tarail","তাড়াইল"]]},"Chattogram":{"bn":"চট্টগ্রাম","t":[["Patenga","পতেঙ্গা"],["Pahartali","পাহাড়তলী"],["Kotwali","কোতোয়ালী"],["Panchlaish","পাঁচলাইশ"],["Bayazid","বায়েজিদ"],["Anwara","আনোয়ারা"],["Banshkhali","বাঁশখালী"],["Boalkhali","বোয়ালখালী"],["Chandanaish","চন্দনাইশ"],["Fatikchhari","ফটিকছড়ি"],["Hathazari","হাটহাজারী"],["Lohagara","লোহাগাড়া"],["Mirsharai","মীরসরাই"],["Patiya","পটিয়া"],["Rangunia","রাঙ্গুনিয়া"],["Raozan","রাউজান"],["Sandwip","সন্দ্বীপ"],["Satkania","সাতকানিয়া"],["Sitakunda","সীতাকুণ্ড"]]},"Cox's Bazar":{"bn":"কক্সবাজার","t":[["Cox's Bazar Sadar","কক্সবাজার সদর"],["Chakaria","চকরিয়া"],["Kutubdia","কুতুবদিয়া"],["Maheshkhali","মহেশখালী"],["Pekua","পেকুয়া"],["Ramu","রামু"],["Teknaf","টেকনাফ"],["Ukhia","উখিয়া"]]},"Cumilla":{"bn":"কুমিল্লা","t":[["Cumilla Sadar","কুমিল্লা সদর"],["Barura","বরুড়া"],["Brahmanpara","ব্রাহ্মণপাড়া"],["Burichang","বুড়িচং"],["Chandina","চান্দিনা"],["Chauddagram","চৌদ্দগ্রাম"],["Daudkandi","দাউদকান্দি"],["Debidwar","দেবিদ্বার"],["Homna","হোমনা"],["Laksam","লাকসাম"],["Meghna","মেঘনা"],["Monohorgonj","মনোহরগঞ্জ"],["Muradnagar","মুরাদনগর"],["Nangalkot","নাঙ্গলকোট"],["Titas","তিতাস"]]},"Brahmanbaria":{"bn":"ব্রাহ্মণবাড়িয়া","t":[["Brahmanbaria Sadar","ব্রাহ্মণবাড়িয়া সদর"],["Akhaura","আখাউড়া"],["Ashuganj","আশুগঞ্জ"],["Bancharampur","বাঞ্ছারামপুর"],["Bijoynagar","বিজয়নগর"],["Kasba","কসবা"],["Nabinagar","নবীনগর"],["Nasirnagar","নাসিরনগর"],["Sarail","সরাইল"]]},"Chandpur":{"bn":"চাঁদপুর","t":[["Chandpur Sadar","চাঁদপুর সদর"],["Faridganj","ফরিদগঞ্জ"],["Haimchar","হাইমচর"],["Hajiganj","হাজীগঞ্জ"],["Kachua","কচুয়া"],["Matlab Dakshin","মতলব দক্ষিণ"],["Matlab Uttar","মতলব উত্তর"],["Shahrasti","শাহরাস্তি"]]},"Feni":{"bn":"ফেনী","t":[["Feni Sadar","ফেনী সদর"],["Chhagalnaiya","ছাগলনাইয়া"],["Daganbhuiyan","দাগনভূঞা"],["Fulgazi","ফুলগাজী"],["Parshuram","পরশুরাম"],["Sonagazi","সোনাগাজী"]]},"Lakshmipur":{"bn":"লক্ষ্মীপুর","t":[["Lakshmipur Sadar","লক্ষ্মীপুর সদর"],["Kamalnagar","কমলনগর"],["Raipur","রায়পুর"],["Ramganj","রামগঞ্জ"],["Ramgati","রামগতি"]]},"Noakhali":{"bn":"নোয়াখালী","t":[["Noakhali Sadar","নোয়াখালী সদর"],["Begumganj","বেগমগঞ্জ"],["Chatkhil","চাটখিল"],["Companiganj","কোম্পানীগঞ্জ"],["Hatiya","হাতিয়া"],["Kabirhat","কবিরহাট"],["Senbagh","সেনবাগ"],["Sonaimuri","সোনাইমুড়ী"],["Subarnachar","সুবর্ণচর"]]},"Khagrachhari":{"bn":"খাগড়াছড়ি","t":[["Khagrachhari Sadar","খাগড়াছড়ি সদর"],["Dighinala","দীঘিনালা"],["Lakshmichhari","লক্ষ্মীছড়ি"],["Mahalchhari","মহালছড়ি"],["Manikchhari","মানিকছড়ি"],["Matiranga","মাটিরাঙ্গা"],["Panchhari","পানছড়ি"],["Ramgarh","রামগড়"]]},"Rangamati":{"bn":"রাঙ্গামাটি","t":[["Rangamati Sadar","রাঙ্গামাটি সদর"],["Bagaichhari","বাঘাইছড়ি"],["Barkal","বরকল"],["Belaichhari","বিলাইছড়ি"],["Juraichhari","জুরাছড়ি"],["Kaptai","কাপ্তাই"],["Kawkhali","কাউখালী"],["Langadu","লংগদু"],["Naniarchar","নানিয়ারচর"],["Rajasthali","রাজস্থলী"]]},"Bandarban":{"bn":"বান্দরবান","t":[["Bandarban Sadar","বান্দরবান সদর"],["Alikadam","আলীকদম"],["Lama","লামা"],["Naikhongchhari","নাইক্ষ্যংছড়ি"],["Rowangchhari","রোয়াংছড়ি"],["Ruma","রুমা"],["Thanchi","থানচি"]]},"Sylhet":{"bn":"সিলেট","t":[["Sylhet Sadar","সিলেট সদর"],["Beanibazar","বিয়ানীবাজার"],["Bishwanath","বিশ্বনাথ"],["Companiganj","কোম্পানীগঞ্জ"],["Dakshin Surma","দক্ষিণ সুরমা"],["Fenchuganj","ফেঞ্চুগঞ্জ"],["Golapganj","গোলাপগঞ্জ"],["Gowainghat","গোয়াইনঘাট"],["Jaintiapur","জৈন্তাপুর"],["Kanaighat","কানাইঘাট"],["Osmani Nagar","ওসমানীনগর"],["Zakiganj","জকিগঞ্জ"]]},"Moulvibazar":{"bn":"মৌলভীবাজার","t":[["Moulvibazar Sadar","মৌলভীবাজার সদর"],["Barlekha","বড়লেখা"],["Juri","জুড়ী"],["Kamalganj","কমলগঞ্জ"],["Kulaura","কুলাউড়া"],["Rajnagar","রাজনগর"],["Sreemangal","শ্রীমঙ্গল"]]},"Habiganj":{"bn":"হবিগঞ্জ","t":[["Habiganj Sadar","হবিগঞ্জ সদর"],["Ajmiriganj","আজমিরীগঞ্জ"],["Bahubal","বাহুবল"],["Baniyachong","বানিয়াচং"],["Chunarughat","চুনারুঘাট"],["Lakhai","লাখাই"],["Madhabpur","মাধবপুর"],["Nabiganj","নবীগঞ্জ"]]},"Sunamganj":{"bn":"সুনামগঞ্জ","t":[["Sunamganj Sadar","সুনামগঞ্জ সদর"],["Bishwambharpur","বিশ্বম্ভরপুর"],["Chhatak","ছাতক"],["Derai","দিরাই"],["Dharampasha","ধরমপাশা"],["Dowarabazar","দোয়ারাবাজার"],["Jagannathpur","জগন্নাথপুর"],["Jamalganj","জামালগঞ্জ"],["Sulla","শাল্লা"],["Tahirpur","তাহিরপুর"]]},"Rajshahi":{"bn":"রাজশাহী","t":[["Rajshahi Sadar","রাজশাহী সদর"],["Bagha","বাঘা"],["Bagmara","বাগমারা"],["Charghat","চারঘাট"],["Durgapur","দুর্গাপুর"],["Godagari","গোদাগাড়ী"],["Mohanpur","মোহনপুর"],["Paba","পবা"],["Puthia","পুঠিয়া"],["Tanore","তানোর"]]},"Natore":{"bn":"নাটোর","t":[["Natore Sadar","নাটোর সদর"],["Bagatipara","বাগাতিপাড়া"],["Baraigram","বড়াইগ্রাম"],["Gurudaspur","গুরুদাসপুর"],["Lalpur","লালপুর"],["Singra","সিংড়া"]]},"Naogaon":{"bn":"নওগাঁ","t":[["Naogaon Sadar","নওগাঁ সদর"],["Atrai","আত্রাই"],["Badalgachhi","বদলগাছী"],["Dhamoirhat","ধামইরহাট"],["Manda","মান্দা"],["Mahadebpur","মহাদেবপুর"],["Niamatpur","নিয়ামতপুর"],["Patnitala","পত্নীতলা"],["Porsha","পোরশা"],["Raninagar","রাণীনগর"],["Sapahar","সাপাহার"]]},"Chapainawabganj":{"bn":"চাঁপাইনবাবগঞ্জ","t":[["Chapainawabganj Sadar","চাঁপাইনবাবগঞ্জ সদর"],["Bholahat","ভোলাহাট"],["Gomastapur","গোমস্তাপুর"],["Nachole","নাচোল"],["Shibganj","শিবগঞ্জ"]]},"Pabna":{"bn":"পাবনা","t":[["Pabna Sadar","পাবনা সদর"],["Atgharia","আটঘরিয়া"],["Bera","বেড়া"],["Bhangura","ভাঙ্গুড়া"],["Chatmohar","চাটমোহর"],["Faridpur","ফরিদপুর"],["Ishwardi","ঈশ্বরদী"],["Santhia","সাঁথিয়া"],["Sujanagar","সুজানগর"]]},"Sirajganj":{"bn":"সিরাজগঞ্জ","t":[["Sirajganj Sadar","সিরাজগঞ্জ সদর"],["Belkuchi","বেলকুচি"],["Chauhali","চৌহালী"],["Kamarkhanda","কামারখন্দ"],["Kazipur","কাজীপুর"],["Raiganj","রায়গঞ্জ"],["Shahjadpur","শাহজাদপুর"],["Tarash","তাড়াশ"],["Ullahpara","উল্লাপাড়া"]]},"Bogura":{"bn":"বগুড়া","t":[["Bogura Sadar","বগুড়া সদর"],["Adamdighi","আদমদীঘি"],["Dhunat","ধুনট"],["Dupchanchia","দুপচাঁচিয়া"],["Gabtali","গাবতলী"],["Kahaloo","কাহালু"],["Nandigram","নন্দীগ্রাম"],["Sariakandi","সারিয়াকান্দি"],["Shajahanpur","শাজাহানপুর"],["Sherpur","শেরপুর"],["Shibganj","শিবগঞ্জ"],["Sonatola","সোনাতলা"]]},"Joypurhat":{"bn":"জয়পুরহাট","t":[["Joypurhat Sadar","জয়পুরহাট সদর"],["Akkelpur","আক্কেলপুর"],["Kalai","কালাই"],["Khetlal","ক্ষেতলাল"],["Panchbibi","পাঁচবিবি"]]},"Khulna":{"bn":"খুলনা","t":[["Khulna Sadar","খুলনা সদর"],["Batiaghata","বটিয়াঘাটা"],["Dacope","দাকোপ"],["Dumuria","ডুমুরিয়া"],["Dighalia","দিঘলিয়া"],["Koyra","কয়রা"],["Paikgachha","পাইকগাছা"],["Phultala","ফুলতলা"],["Rupsa","রূপসা"],["Terokhada","তেরখাদা"]]},"Bagerhat":{"bn":"বাগেরহাট","t":[["Bagerhat Sadar","বাগেরহাট সদর"],["Chitalmari","চিতলমারী"],["Fakirhat","ফকিরহাট"],["Kachua","কচুয়া"],["Mollahat","মোল্লাহাট"],["Mongla","মোংলা"],["Morrelganj","মোড়েলগঞ্জ"],["Rampal","রামপাল"],["Sarankhola","শরণখোলা"]]},"Satkhira":{"bn":"সাতক্ষীরা","t":[["Satkhira Sadar","সাতক্ষীরা সদর"],["Assasuni","আশাশুনি"],["Debhata","দেবহাটা"],["Kalaroa","কলারোয়া"],["Kaliganj","কালীগঞ্জ"],["Shyamnagar","শ্যামনগর"],["Tala","তালা"]]},"Jessore":{"bn":"যশোর","t":[["Jessore Sadar","যশোর সদর"],["Abhaynagar","অভয়নগর"],["Bagherpara","বাঘারপাড়া"],["Chaugachha","চৌগাছা"],["Jhikargachha","ঝিকরগাছা"],["Keshabpur","কেশবপুর"],["Manirampur","মণিরামপুর"],["Sharsha","শার্শা"]]},"Magura":{"bn":"মাগুরা","t":[["Magura Sadar","মাগুরা সদর"],["Mohammadpur","মোহাম্মদপুর"],["Shalikha","শালিখা"],["Sreepur","শ্রীপুর"]]},"Jhenaidah":{"bn":"ঝিনাইদহ","t":[["Jhenaidah Sadar","ঝিনাইদহ সদর"],["Harinakunda","হরিণাকুণ্ডু"],["Kaliganj","কালীগঞ্জ"],["Kotchandpur","কোটচাঁদপুর"],["Maheshpur","মহেশপুর"],["Shailkupa","শৈলকুপা"]]},"Narail":{"bn":"নড়াইল","t":[["Narail Sadar","নড়াইল সদর"],["Kalia","কালিয়া"],["Lohagara","লোহাগড়া"]]},"Kushtia":{"bn":"কুষ্টিয়া","t":[["Kushtia Sadar","কুষ্টিয়া সদর"],["Bheramara","ভেড়ামারা"],["Daulatpur","দৌলতপুর"],["Khoksa","খোকসা"],["Kumarkhali","কুমারখালী"],["Mirpur","মিরপুর"]]},"Meherpur":{"bn":"মেহেরপুর","t":[["Meherpur Sadar","মেহেরপুর সদর"],["Gangni","গাংনী"],["Mujibnagar","মুজিবনগর"]]},"Chuadanga":{"bn":"চুয়াডাঙ্গা","t":[["Chuadanga Sadar","চুয়াডাঙ্গা সদর"],["Alamdanga","আলমডাঙ্গা"],["Damurhuda","দামুড়হুদা"],["Jibannagar","জীবননগর"]]},"Barishal":{"bn":"বরিশাল","t":[["Barishal Sadar","বরিশাল সদর"],["Agailjhara","আগৈলঝাড়া"],["Babuganj","বাবুগঞ্জ"],["Bakerganj","বাকেরগঞ্জ"],["Banaripara","বানারীপাড়া"],["Gaurnadi","গৌরনদী"],["Hizla","হিজলা"],["Mehendiganj","মেহেন্দিগঞ্জ"],["Muladi","মুলাদী"],["Wazirpur","উজিরপুর"]]},"Patuakhali":{"bn":"পটুয়াখালী","t":[["Patuakhali Sadar","পটুয়াখালী সদর"],["Bauphal","বাউফল"],["Dashmina","দশমিনা"],["Dumki","দুমকি"],["Galachipa","গলাচিপা"],["Kalapara","কলাপাড়া"],["Mirzaganj","মির্জাগঞ্জ"],["Rangabali","রাঙ্গাবালী"]]},"Bhola":{"bn":"ভোলা","t":[["Bhola Sadar","ভোলা সদর"],["Burhanuddin","বোরহানউদ্দিন"],["Char Fasson","চরফ্যাশন"],["Daulatkhan","দৌলতখান"],["Lalmohan","লালমোহন"],["Manpura","মনপুরা"],["Tazumuddin","তজুমদ্দিন"]]},"Pirojpur":{"bn":"পিরোজপুর","t":[["Pirojpur Sadar","পিরোজপুর সদর"],["Bhandaria","ভান্ডারিয়া"],["Kawkhali","কাউখালী"],["Mathbaria","মঠবাড়িয়া"],["Nazirpur","নাজিরপুর"],["Nesarabad","নেছারাবাদ"],["Zianagar","জিয়ানগর"]]},"Jhalokati":{"bn":"ঝালকাঠি","t":[["Jhalokati Sadar","ঝালকাঠি সদর"],["Kathalia","কাঠালিয়া"],["Nalchity","নলছিটি"],["Rajapur","রাজাপুর"]]},"Barguna":{"bn":"বরগুনা","t":[["Barguna Sadar","বরগুনা সদর"],["Amtali","আমতলী"],["Bamna","বামনা"],["Betagi","বেতাগী"],["Patharghata","পাথরঘাটা"],["Taltali","তালতলী"]]},"Mymensingh":{"bn":"ময়মনসিংহ","t":[["Mymensingh Sadar","ময়মনসিংহ সদর"],["Bhaluka","ভালুকা"],["Dhobaura","ধোবাউড়া"],["Fulbaria","ফুলবাড়িয়া"],["Gafargaon","গফরগাঁও"],["Gauripur","গৌরীপুর"],["Haluaghat","হালুয়াঘাট"],["Ishwarganj","ঈশ্বরগঞ্জ"],["Muktagachha","মুক্তাগাছা"],["Nandail","নান্দাইল"],["Phulpur","ফুলপুর"],["Trishal","ত্রিশাল"]]},"Jamalpur":{"bn":"জামালপুর","t":[["Jamalpur Sadar","জামালপুর সদর"],["Bakshiganj","বকশীগঞ্জ"],["Dewanganj","দেওয়ানগঞ্জ"],["Islampur","ইসলামপুর"],["Madarganj","মাদারগঞ্জ"],["Melandaha","মেলান্দহ"],["Sarishabari","সরিষাবাড়ী"]]},"Netrokona":{"bn":"নেত্রকোণা","t":[["Netrokona Sadar","নেত্রকোণা সদর"],["Atpara","আটপাড়া"],["Barhatta","বারহাট্টা"],["Durgapur","দুর্গাপুর"],["Kalmakanda","কলমাকান্দা"],["Kendua","কেন্দুয়া"],["Khaliajuri","খালিয়াজুরী"],["Madan","মদন"],["Mohanganj","মোহনগঞ্জ"],["Purbadhala","পূর্বধলা"]]},"Sherpur":{"bn":"শেরপুর","t":[["Sherpur Sadar","শেরপুর সদর"],["Jhenaigati","ঝিনাইগাতী"],["Nakla","নকলা"],["Nalitabari","নালিতাবাড়ী"],["Sreebardi","শ্রীবরদী"]]},"Rangpur":{"bn":"রংপুর","t":[["Rangpur Sadar","রংপুর সদর"],["Badarganj","বদরগঞ্জ"],["Gangachara","গংগাচড়া"],["Kaunia","কাউনিয়া"],["Mithapukur","মিঠাপুকুর"],["Pirgachha","পীরগাছা"],["Pirganj","পীরগঞ্জ"],["Taraganj","তারাগঞ্জ"]]},"Dinajpur":{"bn":"দিনাজপুর","t":[["Dinajpur Sadar","দিনাজপুর সদর"],["Birampur","বিরামপুর"],["Birganj","বীরগঞ্জ"],["Biral","বিরল"],["Bochaganj","বোচাগঞ্জ"],["Chirirbandar","চিরিরবন্দর"],["Fulbari","ফুলবাড়ী"],["Ghoraghat","ঘোড়াঘাট"],["Hakimpur","হাকিমপুর"],["Kaharole","কাহারোল"],["Khansama","খানসামা"],["Nawabganj","নবাবগঞ্জ"],["Parbatipur","পার্বতীপুর"]]},"Kurigram":{"bn":"কুড়িগ্রাম","t":[["Kurigram Sadar","কুড়িগ্রাম সদর"],["Bhurungamari","ভুরুঙ্গামারী"],["Char Rajibpur","চর রাজিবপুর"],["Chilmari","চিলমারী"],["Phulbari","ফুলবাড়ী"],["Nageshwari","নাগেশ্বরী"],["Rajarhat","রাজারহাট"],["Raomari","রৌমারী"],["Ulipur","উলিপুর"]]},"Gaibandha":{"bn":"গাইবান্ধা","t":[["Gaibandha Sadar","গাইবান্ধা সদর"],["Fulchhari","ফুলছড়ি"],["Gobindaganj","গোবিন্দগঞ্জ"],["Palashbari","পলাশবাড়ী"],["Sadullapur","সাদুল্লাপুর"],["Saghata","সাঘাটা"],["Sundarganj","সুন্দরগঞ্জ"]]},"Nilphamari":{"bn":"নীলফামারী","t":[["Nilphamari Sadar","নীলফামারী সদর"],["Dimla","ডিমলা"],["Domar","ডোমার"],["Jaldhaka","জলঢাকা"],["Kishoreganj","কিশোরগঞ্জ"],["Saidpur","সৈয়দপুর"]]},"Lalmonirhat":{"bn":"লালমনিরহাট","t":[["Lalmonirhat Sadar","লালমনিরহাট সদর"],["Aditmari","আদিতমারী"],["Hatibandha","হাতীবান্ধা"],["Kaliganj","কালীগঞ্জ"],["Patgram","পাটগ্রাম"]]},"Panchagarh":{"bn":"পঞ্চগড়","t":[["Panchagarh Sadar","পঞ্চগড় সদর"],["Atwari","আটোয়ারী"],["Boda","বোদা"],["Debiganj","দেবীগঞ্জ"],["Tetulia","তেঁতুলিয়া"]]},"Thakurgaon":{"bn":"ঠাকুরগাঁও","t":[["Thakurgaon Sadar","ঠাকুরগাঁও সদর"],["Baliadangi","বালিয়াডাঙ্গী"],["Haripur","হরিপুর"],["Pirganj","পীরগঞ্জ"],["Ranisankail","রাণীশংকৈল"]]}};
-// ── District/Thana picker (Steadfast-style cascading dropdown, bilingual) ──
+// ── District/Thana cascading picker (bilingual) ──
 // Controlled by an owner-level setting so a shop can show English, Bengali, or both.
 function distLangEnabled(){return true;} // always available; label language follows distLangMode()
 function distLangMode(){return G.gcfg?.districtLangMode||'both';} // 'both' | 'bn' | 'en'
@@ -3447,14 +3340,6 @@ onAuthStateChanged(auth,async user=>{
         : '❌ Secure backend authentication failed\n'+(_backendTest.error||'Unknown error'));
       try{history.replaceState(null,'',location.pathname);}catch{}
     }
-    // One-time Steadfast credential test route. No parcel/order is created.
-    if(location.hash==='#steadfast-test'){
-      const _steadfastTest=await testSteadfastConnection();
-      alert(_steadfastTest.ok&&_steadfastTest.connected
-        ? '✅ Steadfast connection successful\nNo order was created.'
-        : '❌ Steadfast connection failed\n'+(_steadfastTest.error||'Unknown error'));
-      try{history.replaceState(null,'',location.pathname);}catch{}
-    }
     _appReady=true;
     // Don't load app if owner panel is open
     if(location.hash==='#'+OWNER_SECRET){
@@ -3490,7 +3375,7 @@ function loadApp(){
   const sn=G.gcfg.siteName||'Drystan';
   const nm=$('mainLogoName');if(nm)nm.textContent=sn;
   // Restore the page the user was on before a refresh (from #app/{page}), falling back to the default
-  const ALL_PAGES=['dash','prods','newOrder','orders','reports','campaigns','tools','team','cfg','account','help'];
+  const ALL_PAGES=['dash','prods','newOrder','orders','reports','tools','team','cfg','account','help'];
   let restoredPage=null;
   if(location.hash.startsWith('#app/')){
     const candidate=location.hash.slice(5).split('/')[0];
@@ -3502,7 +3387,7 @@ function loadApp(){
   // since the hash was set), G.page won't have changed and #pageContent stays empty — recover.
   if(restoredPage&&G.role==='moderator'){
     const perms=G.modPerms||{orders:true};
-    const allowedNow=['newOrder','orders','account',...(perms.products?['prods']:[]),...(perms.customers?['custs']:[]),...(perms.reports?['reports']:[]),...(perms.campaigns?['campaigns']:[])];
+    const allowedNow=['newOrder','orders','account',...(perms.products?['prods']:[]),...(perms.customers?['custs']:[]),...(perms.reports?['reports']:[])];
     if(!allowedNow.includes(restoredPage))nav('newOrder');
   }
   // Start moderator login approval listener (admin only)
@@ -3676,7 +3561,6 @@ window.nav=p=>{
     if(perms.products)allowed.push('prods');
     if(perms.customers)allowed.push('custs');
     if(perms.reports)allowed.push('reports');
-    if(perms.campaigns)allowed.push('campaigns');
     if(!allowed.includes(p)){toast('Access denied — ask admin for permission','err');return;}
   }
   G.page=p;closeSB();
@@ -3730,7 +3614,6 @@ function buildSidebar(){
     settings:'<circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/>',
     user:'<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>',
     help:'<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
-    target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
   };
 
   const adminNav=[
@@ -3739,7 +3622,6 @@ function buildSidebar(){
     {p:'newOrder',ico:'plus',lbl:'Create Order'},
     {p:'orders',ico:'cart',lbl:'Orders'},
     {p:'reports',ico:'chart',lbl:'Reports & Analytics'},
-    {p:'campaigns',ico:'target',lbl:'Campaigns'},
     {p:'tools',ico:'tool',lbl:'Business Tools'},
     {p:'team',ico:'shield',lbl:'Team / Moderators'},
     {p:'cfg',ico:'settings',lbl:'Settings'},
@@ -3749,7 +3631,6 @@ function buildSidebar(){
     {p:'orders',ico:'cart',lbl:'Orders'},
     ...(G.modPerms?.products?[{p:'prods',ico:'box',lbl:'Products'}]:[]),
     ...(G.modPerms?.reports?[{p:'reports',ico:'chart',lbl:'Reports'}]:[]),
-    ...(G.modPerms?.campaigns?[{p:'campaigns',ico:'target',lbl:'Campaigns'}]:[]),
   ];
   const items=isAdmin?adminNav:modNav;
 
@@ -3769,7 +3650,7 @@ function buildSidebar(){
 
 function renderPage(){
   buildSidebar();
-  const fns={dash:pgDash,prods:pgProds,newOrder:pgNewOrder,orders:pgOrders,custs:pgCusts,reports:pgReports,campaigns:pgCampaigns,team:pgTeam,cfg:pgCfg,account:pgAccount,tools:pgTools,help:pgHelp};
+  const fns={dash:pgDash,prods:pgProds,newOrder:pgNewOrder,orders:pgOrders,custs:pgCusts,reports:pgReports,team:pgTeam,cfg:pgCfg,account:pgAccount,tools:pgTools,help:pgHelp};
   (fns[G.page]||pgDash)();
 }
 
@@ -5040,18 +4921,7 @@ window.downloadRcptImg=async()=>{
 };
 
 // ══ BUSINESS TOOLS PAGE ══
-async function pgTools(){
-  let tgConnected=false,tgTokenConfigured=false,tgChatIdConfigured=false,tgUsername='',tgFirstName='';
-  try{
-    const r=await secureApiFetch('/v1/telegram/status',{method:'GET'});
-    const d=await r.json().catch(()=>({}));
-    tgConnected=!!(r.ok&&d.connected);
-    tgTokenConfigured=!!(r.ok&&d.tokenConfigured);
-    tgChatIdConfigured=!!(r.ok&&d.chatIdConfigured);
-    tgUsername=d.username||'';
-    tgFirstName=d.firstName||'';
-  }catch{}
-  G.telegramConnected=tgConnected;
+function pgTools(){
   setC(`
   <div class="pH"><div><h1>🛠️ Business Tools</h1><p>Useful tools for your business</p></div></div>
 
@@ -5061,11 +4931,8 @@ async function pgTools(){
       {id:'shop',ico:'🌐',label:'Public Online Shop',clr:'99,102,241'},
       {id:'orderlink',ico:'🔗',label:'কাস্টম অর্ডার লিংক',clr:'168,85,247'},
       {id:'telegram',ico:'✈️',label:'Telegram Order Alerts',clr:'34,158,217'},
-      {id:'redx',ico:'🔴',label:'RedX Courier',clr:'220,38,38'},
-      {id:'pathao',ico:'🟠',label:'Pathao Courier',clr:'229,57,53'},
       {id:'calc',ico:'🧮',label:'Business Calculator',clr:'99,102,241'},
       {id:'stockval',ico:'📊',label:'Stock Value',clr:'99,102,241'},
-      {id:'fraud',ico:'🛡️',label:'Fraud Check',clr:'239,68,68'},
       {id:'expense',ico:'💸',label:'Expense Log',clr:'245,158,11'},
       {id:'coupon',ico:'🏷️',label:'Coupon Codes',clr:'168,85,247'},
       {id:'export',ico:'📤',label:'Export Data',clr:'99,102,241'},
@@ -5151,48 +5018,13 @@ async function pgTools(){
 
   <div class="g g2" style="gap:16px;margin-bottom:16px">
 
-    <!-- TELEGRAM ORDER ALERTS -->
-    <div class="card" id="toolSec_telegram" style="display:none;border-color:rgba(34,158,217,.30)">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px">
-        <div class="cardTitle" style="margin:0">✈️ Telegram Order Alerts</div>
-        <span style="font-size:11px;font-weight:800;padding:6px 10px;border-radius:999px;background:${tgConnected?'rgba(16,185,129,.12)':'rgba(107,114,128,.12)'};color:${tgConnected?'var(--green)':'var(--t3)'}">${tgConnected?'● Connected':'● Not connected'}</span>
+    <!-- TELEGRAM ORDER ALERTS — per-admin secure configuration -->
+    <div class="card" id="toolSec_telegram" style="display:none;grid-column:1/-1;width:100%;max-width:860px;margin:0 auto;border-color:rgba(34,158,217,.30)">
+      <div id="tgPanel">
+        <div style="display:flex;align-items:center;gap:10px;color:var(--t2);font-size:12px">
+          <div class="spin spinSm"></div> Telegram status loading…
+        </div>
       </div>
-      <div class="al aI" style="font-size:12px;margin-bottom:12px;line-height:1.7">
-        নতুন <b>Pending Order</b> তৈরি হলে order number, customer, phone, address, products, total এবং <b>Steadfast COD</b> এই Telegram chat-এ যাবে। এরপর courier entry আপনি manually করবেন।
-      </div>
-      <div style="font-size:11px;color:var(--t2);padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg2);margin-bottom:12px;line-height:1.8">
-        Bot token: <b style="color:${tgTokenConfigured?'var(--green)':'var(--red)'}">${tgTokenConfigured?'✅ Configured':'❌ TELEGRAM_BOT_TOKEN missing'}</b><br/>
-        Chat ID: <b style="color:${tgChatIdConfigured?'var(--green)':'var(--red)'}">${tgChatIdConfigured?'✅ Configured':'❌ TELEGRAM_CHAT_ID missing'}</b><br/>
-        ${tgConnected?'Status: <b style="color:var(--green)">Ready for pending-order alerts</b>':'দুইটি Cloudflare Secret ঠিকভাবে configure করুন।'}
-      </div>
-      <div id="tgConfigMsg" style="font-size:11px;color:var(--t3);margin-bottom:10px;line-height:1.6"></div>
-      <button class="btn bP bFull" id="tgTestBtn" onclick="testTelegramAlert()" ${tgConnected?'':'disabled'}>🧪 Send Test Message</button>
-    </div>
-
-    <!-- REDX COURIER -->
-    <div class="card" id="toolSec_redx" style="border-color:rgba(220,38,38,.22)">
-      <div class="cardTitle">🔴 RedX Courier</div>
-      <div class="al aI" style="font-size:12px;margin-bottom:12px">
-        RedX দিয়ে ডেলিভারি করতে — order data এক ক্লিকে কপি করে RedX merchant panel-এ paste করুন, অথবা API token দিয়ে সরাসরি পাঠান।
-      </div>
-      <div class="afG"><label class="afL">RedX API Token <span style="font-size:10px;color:var(--t3)">(ঐচ্ছিক)</span></label><input class="afI" id="rdx_token" value="${esc(G.cfg.redxToken||'')}" placeholder="Bearer token (না দিলে manual copy)"/></div>
-      <button class="btn bG bFull bSm" onclick="saveCourierConfig('redx')">💾 Save RedX Config</button>
-      <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">
-        <button class="btn bS bFull" onclick="copyPendingForCourier('redx')">📋 Pending Orders কপি করুন (RedX format)</button>
-        <a href="https://redx.com.bd/sign-in/" target="_blank" rel="noopener noreferrer" class="btn bS bFull bSm" style="margin-top:8px">🌐 RedX Merchant Panel খুলুন</a>
-        <div id="redxResult" style="margin-top:10px"></div>
-      </div>
-    </div>
-
-    <!-- PATHAO COURIER -->
-    <div class="card" id="toolSec_pathao" style="border-color:rgba(229,57,53,.22)">
-      <div class="cardTitle">🟠 Pathao Courier</div>
-      <div class="al aI" style="font-size:12px;margin-bottom:12px">
-        Pathao দিয়ে ডেলিভারি করতে — order data এক ক্লিকে কপি করে Pathao merchant panel-এ paste করুন। (Pathao API-তে OAuth লাগে, তাই manual copy সবচেয়ে নির্ভরযোগ্য।)
-      </div>
-      <button class="btn bS bFull" onclick="copyPendingForCourier('pathao')">📋 Pending Orders কপি করুন (Pathao format)</button>
-      <a href="https://merchant.pathao.com/" target="_blank" rel="noopener noreferrer" class="btn bS bFull bSm" style="margin-top:8px">🌐 Pathao Merchant Panel খুলুন</a>
-      <div id="pathaoResult" style="margin-top:10px"></div>
     </div>
 
     <!-- BUSINESS CALCULATOR -->
@@ -5215,21 +5047,6 @@ async function pgTools(){
       <div id="stockResult" style="margin-top:12px"></div>
     </div>
 
-    <!-- COURIER FRAUD CHECK -->
-    <div class="card" id="toolSec_fraud" style="border-color:rgba(239,68,68,.25)">
-      <div class="cardTitle">🛡️ Courier Fraud Check</div>
-      <div class="al aI" style="font-size:12px;margin-bottom:12px">
-        গ্রাহকের ফোন নম্বর দিয়ে কুরিয়ার delivery history যাচাই করুন — কত অর্ডার সফল, কত return/cancel। COD fraud এড়াতে সাহায্য করে।
-      </div>
-      <div class="afG"><label class="afL">Customer Phone Number</label>
-        <input class="afI" id="fraudPhone" placeholder="01XXXXXXXXX" maxlength="11" oninput="this.value=this.value.replace(/[^0-9]/g,'')"/>
-      </div>
-      <button class="btn bP bFull" id="fraudBtn" onclick="checkFraud()">🔍 Check Customer</button>
-      <div id="fraudResult" style="margin-top:12px"></div>
-      <div style="font-size:11px;color:var(--t3);margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
-        ${G.cfg.fraudApiKey?'✅ API connected':'ℹ️ API key ছাড়াই popular fraud-check site-এ নিয়ে যাবে। নিজের API key দিতে চাইলে Settings → Business Tools-এ যোগ করুন।'}
-      </div>
-    </div>
   </div>
 
   <!-- EXPENSE / CASH LOG -->
@@ -5289,13 +5106,10 @@ async function pgTools(){
       <button class="btn bS" onclick="exportProducts()">📦 Export Products CSV</button>
     </div>
   </div>
-  <div class="mOvl" id="sfGuideOvl" onclick="if(event.target===this)closeMov('sfGuideOvl')"><div class="modal mLg" id="sfGuideMod"></div></div>`);
-  loadExpenses();
-  loadCoupons();
-  loadOrderLinks();
+  `);
   toolsBackToHub(); // start on the hub menu — sections open only when a tile is clicked
 }
-const TOOL_SECTION_IDS=['toolSec_shop','toolSec_orderlink','toolSec_telegram','toolSec_steadfast','toolSec_redx','toolSec_pathao','toolSec_calc','toolSec_stockval','toolSec_fraud','toolSec_expense','toolSec_coupon','toolSec_export'];
+const TOOL_SECTION_IDS=['toolSec_shop','toolSec_orderlink','toolSec_telegram','toolSec_calc','toolSec_stockval','toolSec_expense','toolSec_coupon','toolSec_export'];
 window.toolsGoTo=(key)=>{
   const target=$('toolSec_'+key);
   if(!target)return;
@@ -5303,7 +5117,10 @@ window.toolsGoTo=(key)=>{
   const back=$('toolsBackBtn');if(back)back.style.display='inline-flex';
   TOOL_SECTION_IDS.forEach(id=>{const el=$(id);if(el)el.style.display='none';});
   target.style.display='block';
-  if(key==='ai')loadSecureAISettingsPanel();
+  if(key==='telegram')loadTelegramSettingsPanel();
+  if(key==='orderlink')loadOrderLinks();
+  if(key==='expense')loadExpenses();
+  if(key==='coupon')loadCoupons();
   target.scrollIntoView({behavior:'smooth',block:'start'});
 };
 window.toolsBackToHub=()=>{
@@ -5692,161 +5509,6 @@ window.delExpense=async(id)=>{
   catch(e){toast(e.message,'err');}
 };
 
-// ── STEADFAST SETUP GUIDE (visual, step-by-step) ──
-window.showSteadfastGuide=()=>{
-  const steps=[
-    {n:1,icon:'🌐',title:'Steadfast Merchant Account খুলুন',
-     body:'প্রথমে <b>steadfast.com.bd</b> এ যান এবং "Become a Merchant" এ ক্লিক করে একটি merchant account খুলুন। আগে থেকে account থাকলে সরাসরি login করুন।',
-     visual:`<div style="display:flex;align-items:center;gap:10px;background:#0a0e1a;border-radius:8px;padding:12px;border:1px solid var(--border)">
-        <div style="background:#10B981;color:#fff;padding:6px 12px;border-radius:6px;font-weight:700;font-size:13px">steadfast.com.bd</div>
-        <span style="color:var(--t2);font-size:12px">→</span>
-        <div style="background:var(--card);border:1px solid var(--border);padding:6px 14px;border-radius:6px;font-size:12px">Become a Merchant</div>
-      </div>`},
-    {n:2,icon:'🔑',title:'Dashboard এ Login করুন',
-     body:'Account approve হওয়ার পর <b>portal.steadfast.com.bd</b> এ আপনার email ও password দিয়ে login করুন।',
-     visual:`<div style="background:#0a0e1a;border-radius:8px;padding:14px;border:1px solid var(--border)">
-        <div style="font-size:11px;color:var(--t3);margin-bottom:6px">portal.steadfast.com.bd</div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:12px;color:var(--t2);margin-bottom:6px">📧 your-email@example.com</div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:12px;color:var(--t2);margin-bottom:8px">🔒 ••••••••</div>
-        <div style="background:#10B981;color:#fff;text-align:center;padding:8px;border-radius:6px;font-size:13px;font-weight:600">Login</div>
-      </div>`},
-    {n:3,icon:'📍',title:'বাম দিকের মেনু থেকে "API" তে ক্লিক করুন',
-     body:'Login করার পর, dashboard এর <b>বাম পাশের মেনুতে (sidebar)</b> "API" নামের একটি অপশন দেখতে পাবেন। সেটিতে ক্লিক করুন।',
-     visual:`<div style="display:flex;gap:10px;background:#0a0e1a;border-radius:8px;padding:12px;border:1px solid var(--border)">
-        <div style="width:130px;flex-shrink:0">
-          <div style="font-size:11px;color:var(--t2);padding:6px 8px;border-radius:5px;margin-bottom:3px">📊 Dashboard</div>
-          <div style="font-size:11px;color:var(--t2);padding:6px 8px;border-radius:5px;margin-bottom:3px">📦 Orders</div>
-          <div style="font-size:11px;color:var(--t2);padding:6px 8px;border-radius:5px;margin-bottom:3px">💰 Payments</div>
-          <div style="font-size:11px;color:#fff;background:#10B981;padding:6px 8px;border-radius:5px;font-weight:700;display:flex;align-items:center;gap:4px">🔗 API ← এখানে</div>
-        </div>
-        <div style="flex:1;border-left:1px solid var(--border);padding-left:10px;display:flex;align-items:center;color:var(--t3);font-size:11px">API page খুলবে →</div>
-      </div>`},
-    {n:4,icon:'📋',title:'API Key ও Secret Key কপি করুন',
-     body:'API page এ আপনি দুটি key দেখতে পাবেন — <b>API Key</b> এবং <b>Secret Key</b>। দুটোই কপি করুন (copy বাটনে ক্লিক করে)।',
-     visual:`<div style="background:#0a0e1a;border-radius:8px;padding:14px;border:1px solid var(--border)">
-        <div style="font-size:11px;color:var(--t3);margin-bottom:4px">API Key</div>
-        <div style="display:flex;gap:6px;margin-bottom:10px">
-          <div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:7px 10px;font-size:11px;font-family:monospace;color:var(--green);overflow:hidden;text-overflow:ellipsis">a1b2c3d4e5f6...xyz</div>
-          <div style="background:var(--acc);color:#fff;padding:7px 10px;border-radius:5px;font-size:11px">📋 Copy</div>
-        </div>
-        <div style="font-size:11px;color:var(--t3);margin-bottom:4px">Secret Key</div>
-        <div style="display:flex;gap:6px">
-          <div style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:7px 10px;font-size:11px;font-family:monospace;color:var(--acc2);overflow:hidden;text-overflow:ellipsis">s9e8c7r5e4t...key</div>
-          <div style="background:var(--acc);color:#fff;padding:7px 10px;border-radius:5px;font-size:11px">📋 Copy</div>
-        </div>
-      </div>`},
-    {n:5,icon:'✅',title:'এখানে paste করে Save করুন',
-     body:'কপি করা <b>API Key</b> এবং <b>Secret Key</b> এই Drystan এর Steadfast box এ paste করুন এবং <b>"Save Steadfast Config"</b> বাটনে ক্লিক করুন। ব্যস! এখন থেকে এক ক্লিকে pending order গুলো Steadfast এ পাঠাতে পারবেন। 🎉',
-     visual:`<div style="background:#0a0e1a;border-radius:8px;padding:14px;border:1px solid rgba(16,185,129,.3)">
-        <div style="font-size:11px;color:var(--t3);margin-bottom:4px">Steadfast API Key</div>
-        <div style="background:var(--card);border:1px solid var(--green);border-radius:5px;padding:7px 10px;font-size:11px;font-family:monospace;color:var(--green);margin-bottom:8px">a1b2c3d4e5f6...xyz ✓</div>
-        <div style="font-size:11px;color:var(--t3);margin-bottom:4px">Steadfast Secret Key</div>
-        <div style="background:var(--card);border:1px solid var(--green);border-radius:5px;padding:7px 10px;font-size:11px;font-family:monospace;color:var(--acc2);margin-bottom:10px">s9e8c7r5e4t...key ✓</div>
-        <div style="background:#10B981;color:#fff;text-align:center;padding:9px;border-radius:6px;font-size:13px;font-weight:700">💾 Save Steadfast Config</div>
-      </div>`},
-  ];
-  $('sfGuideMod').innerHTML=`
-  <div class="mH"><h3>🚚 Steadfast Setup গাইড</h3><button class="btn bS bIco" onclick="closeMov('sfGuideOvl')">✕</button></div>
-  <div class="mB" style="max-height:70vh;overflow-y:auto">
-    <div class="al aI" style="font-size:12px;margin-bottom:16px">
-      📦 Steadfast যুক্ত করলে আপনার pending order গুলো <b>এক ক্লিকে</b> courier এ পাঠানো যাবে — হাতে হাতে এন্ট্রি করতে হবে না। নিচের ৫টি ধাপ অনুসরণ করুন:
-    </div>
-    ${steps.map(s=>`
-      <div style="display:flex;gap:14px;margin-bottom:20px">
-        <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;background:var(--grad2);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px">${s.n}</div>
-        <div style="flex:1">
-          <div style="font-weight:700;font-size:14px;margin-bottom:6px">${s.icon} ${s.title}</div>
-          <div style="font-size:13px;color:var(--t2);line-height:1.8;margin-bottom:10px">${s.body}</div>
-          ${s.visual}
-        </div>
-      </div>
-      ${s.n<5?'<div style="border-left:2px dashed var(--border);height:8px;margin-left:18px;margin-bottom:8px"></div>':''}
-    `).join('')}
-    <div class="al aO" style="font-size:12px;margin-top:8px">
-      💡 <b>টিপস:</b> API key খুঁজে না পেলে Steadfast support এ যোগাযোগ করুন অথবা তাদের call center: <b>09617-111-888</b>
-    </div>
-  </div>
-  <div class="mF">
-    <a href="https://portal.steadfast.com.bd" target="_blank" rel="noopener noreferrer" class="btn bP">🌐 Steadfast Portal খুলুন</a>
-    <button class="btn bS" onclick="closeMov('sfGuideOvl')">বুঝেছি ✓</button>
-  </div>`;
-  $('sfGuideOvl').classList.add('open');
-};
-
-// ── COURIER FRAUD CHECK ──
-window.checkFraud=async()=>{
-  const phone=$('fraudPhone')?.value.trim();
-  const res=$('fraudResult');const btn=$('fraudBtn');
-  if(!phone||!/^01[3-9]\d{8}$/.test(phone)){
-    if(res)res.innerHTML='<div class="al aE" style="font-size:12px">❌ সঠিক ১১-সংখ্যার নম্বর দিন।</div>';return;
-  }
-  const apiKey=G.cfg.fraudApiKey||'';
-  // If no API key, open popular free fraud-check site in new tab
-  if(!apiKey){
-    if(res)res.innerHTML=`<div class="al aI" style="font-size:12px">
-      🔗 Fraud-check site খোলা হচ্ছে নতুন ট্যাবে...<br/>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-        <a href="https://fraudchecker.link/?phone=${phone}" target="_blank" rel="noopener noreferrer" class="btn bS bSm" style="font-size:11px">FraudChecker</a>
-        <a href="https://fraudpeek.com/check?phone=${phone}" target="_blank" rel="noopener noreferrer" class="btn bS bSm" style="font-size:11px">FraudPeek</a>
-        <a href="https://fraudcheckerbd.com/?q=${phone}" target="_blank" rel="noopener noreferrer" class="btn bS bSm" style="font-size:11px">FraudCheckerBD</a>
-      </div>
-      <div style="font-size:11px;color:var(--t3);margin-top:6px">নম্বর copy হয়ে গেছে — সাইটে paste করুন প্রয়োজনে।</div>
-    </div>`;
-    try{navigator.clipboard?.writeText(phone);}catch{}
-    window.open('https://fraudchecker.link/?phone='+phone,'_blank','noopener,noreferrer');
-    return;
-  }
-  // With API key, call fraud-check API (fraudbd.com style)
-  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';}
-  if(res)res.innerHTML='<div style="text-align:center;padding:12px"><div class="spin spinSm" style="margin:0 auto"></div></div>';
-  try{
-    const resp=await fetch('https://fraudbd.com/api/v1/courier-check',{
-      method:'POST',
-      headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},
-      body:JSON.stringify({phone})
-    });
-    const data=await resp.json();
-    const sum=data?.data?.totalSummary;
-    if(sum){
-      const rate=Number(sum.successRate||0);
-      const risk=rate>=90?{t:'Low Risk ✅',c:'var(--green)'}:rate>=70?{t:'Medium Risk ⚠️',c:'var(--yellow)'}:{t:'High Risk 🚨',c:'var(--red)'};
-      if(res)res.innerHTML=`
-      <div style="padding:14px;background:var(--card);border-radius:10px;border:1px solid var(--border)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <span style="font-weight:700;font-size:14px">${phone}</span>
-          <span style="font-weight:800;color:${risk.c}">${risk.t}</span>
-        </div>
-        <div class="gridStack2" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;font-size:12px">
-          <div style="padding:8px;background:rgba(16,185,129,.08);border-radius:8px"><div style="font-size:18px;font-weight:800;color:var(--green)">${sum.success||0}</div>Success</div>
-          <div style="padding:8px;background:rgba(239,68,68,.08);border-radius:8px"><div style="font-size:18px;font-weight:800;color:var(--red)">${sum.cancel||0}</div>Cancel</div>
-          <div style="padding:8px;background:rgba(99,102,241,.08);border-radius:8px"><div style="font-size:18px;font-weight:800;color:var(--acc2)">${rate.toFixed(0)}%</div>Rate</div>
-        </div>
-      </div>`;
-    }else{
-      if(res)res.innerHTML='<div class="al aW" style="font-size:12px">⚠️ কোনো delivery record পাওয়া যায়নি (নতুন গ্রাহক হতে পারে)।</div>';
-    }
-  }catch(e){
-    if(res)res.innerHTML=`<div class="al aE" style="font-size:12px">❌ API error: ${e.message}<br/>Settings-এ API key যাচাই করুন।</div>`;
-  }finally{
-    if(btn){btn.disabled=false;btn.innerHTML='🔍 Check Customer';}
-  }
-};
-
-window.calcProfit=()=>{
-  const buy=Number($('calc_buy')?.value)||0;
-  const sell=Number($('calc_sell')?.value)||0;
-  const qty=Number($('calc_qty')?.value)||1;
-  const el=$('calcResult');if(!el)return;
-  if(!buy&&!sell){el.style.display='none';return;}
-  el.style.display='block';
-  const pUnit=sell-buy;const pTotal=pUnit*qty;const margin=buy>0?((pUnit/buy)*100):0;
-  $('cr_unit').textContent=cur(pUnit)+(pUnit<0?' (Loss)':' (Profit)');
-  $('cr_total').textContent=cur(pTotal);
-  $('cr_margin').textContent=margin.toFixed(1)+'%';
-  $('cr_unit').style.color=pUnit>=0?'var(--green)':'var(--red)';
-  $('cr_total').style.color=pTotal>=0?'var(--green)':'var(--red)';
-};
-
 window.calcStockValue=async()=>{
   const btn=$('stockCalcBtn');const res=$('stockResult');
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';
@@ -5874,125 +5536,117 @@ window.calcStockValue=async()=>{
 };
 
 
-window.detectTelegramChat=async()=>{
-  const btn=$('tgDetectBtn'),msg=$('tgConfigMsg');
-  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Detecting...';}
-  if(msg){msg.style.color='var(--t2)';msg.textContent='Telegram-এ পাঠানো DRYSTAN CONNECT message খোঁজা হচ্ছে...';}
+function renderTelegramPanel(state={}){
+  const el=$('tgPanel');if(!el)return;
+  const connected=!!state.connected;
+  G.telegramConnected=connected;
+  if(connected){
+    const bot=state.botUsername?('@'+state.botUsername):(state.botFirstName||'Telegram Bot');
+    const connectedAt=state.connectedAt?new Date(state.connectedAt).toLocaleString():'';
+    el.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <div>
+          <div class="cardTitle" style="margin:0 0 3px">✈️ Telegram Order Alerts</div>
+          <div style="font-size:11px;color:var(--t3)">এই admin account-এর নিজস্ব Telegram connection</div>
+        </div>
+        <span style="font-size:11px;font-weight:800;padding:7px 11px;border-radius:999px;background:rgba(16,185,129,.12);color:var(--green)">● Connected</span>
+      </div>
+      <div style="padding:14px;border:1px solid rgba(16,185,129,.22);background:rgba(16,185,129,.06);border-radius:12px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:38px;height:38px;border-radius:11px;background:rgba(34,158,217,.14);display:flex;align-items:center;justify-content:center;font-size:20px">✈️</div>
+          <div style="min-width:0;flex:1">
+            <div style="font-size:13px;font-weight:800;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(bot)}</div>
+            <div style="font-size:11px;color:var(--t2);margin-top:2px">Chat ID: ${esc(state.chatIdMasked||'Connected')}</div>
+            ${connectedAt?`<div style="font-size:10px;color:var(--t3);margin-top:2px">Connected: ${esc(connectedAt)}</div>`:''}
+          </div>
+        </div>
+      </div>
+      <div class="al aO" style="font-size:11.5px;line-height:1.7;margin-bottom:12px">
+        ✅ নতুন <b>Pending Order</b> হলে এই Telegram chat-এ order number, customer, phone, address, products, total ও courier COD যাবে। Steadfast entry আপনি manually করবেন।
+      </div>
+      <div id="tgConfigMsg" style="font-size:11px;color:var(--t3);margin-bottom:10px;line-height:1.6"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" class="gridStack2">
+        <button class="btn bP bFull" id="tgTestBtn" onclick="testTelegramAlert()">🧪 Send Test Message</button>
+        <button class="btn bD bFull" id="tgDisconnectBtn" onclick="disconnectTelegramAlert()">🔌 Disconnect</button>
+      </div>`;
+    return;
+  }
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+      <div>
+        <div class="cardTitle" style="margin:0 0 3px">✈️ Telegram Order Alerts</div>
+        <div style="font-size:11px;color:var(--t3)">প্রতিটি admin নিজের Telegram আলাদাভাবে connect করতে পারবেন</div>
+      </div>
+      <span style="font-size:11px;font-weight:800;padding:7px 11px;border-radius:999px;background:rgba(107,114,128,.12);color:var(--t3)">● Not connected</span>
+    </div>
+    <div class="al aI" style="font-size:11.5px;line-height:1.75;margin-bottom:14px">
+      BotFather থেকে পাওয়া <b>Bot Token</b> এবং আপনার <b>Chat ID</b> দিন। Connect & Verify চাপলে Worker Telegram-এ test message পাঠিয়ে connection যাচাই করবে। Token browser, Firestore বা page source-এ save হবে না—Cloudflare KV-তে encrypted থাকবে।
+    </div>
+    <div class="afG"><label class="afL">Telegram Bot Token / API Key *</label><input class="afI" type="password" id="tgBotToken" autocomplete="new-password" placeholder="123456789:AA..."/></div>
+    <div class="afG"><label class="afL">Telegram Chat ID *</label><input class="afI" id="tgChatId" inputmode="numeric" autocomplete="off" placeholder="123456789"/></div>
+    <div id="tgConfigMsg" style="font-size:11px;color:var(--t3);margin-bottom:10px;line-height:1.6"></div>
+    <button class="btn bP bFull" id="tgConnectBtn" onclick="connectTelegramAlert()">🔗 Connect & Verify</button>`;
+}
+
+window.loadTelegramSettingsPanel=async()=>{
+  const el=$('tgPanel');if(!el)return;
+  el.innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--t2);font-size:12px"><div class="spin spinSm"></div> Telegram status loading…</div>';
   try{
-    const resp=await secureApiFetch('/v1/telegram/detect-chat',{method:'POST'});
+    const resp=await secureApiFetch('/v1/telegram/status',{method:'GET'});
     const data=await resp.json().catch(()=>({}));
-    if(!resp.ok||!data.ok)throw new Error(data.error||'Telegram chat detect failed');
-    G.telegramConnected=true;
-    if(msg){msg.style.color='var(--green)';msg.textContent='✅ Connected. Test message Telegram-এ পাঠানো হয়েছে.';}
-    toast('✅ Telegram connected!','ok');
-    setTimeout(()=>pgTools(),500);
+    if(!resp.ok||!data.ok)throw new Error(data.error||'Telegram status load failed');
+    renderTelegramPanel(data);
+  }catch(e){
+    renderTelegramPanel({connected:false});
+    const msg=$('tgConfigMsg');if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}
+  }
+};
+
+window.connectTelegramAlert=async()=>{
+  const token=$('tgBotToken')?.value.trim()||'';
+  const chatId=$('tgChatId')?.value.trim()||'';
+  const btn=$('tgConnectBtn'),msg=$('tgConfigMsg');
+  if(!token||!chatId){if(msg){msg.style.color='var(--red)';msg.textContent='❌ Bot Token এবং Chat ID দুটোই দিন।';}return;}
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Verifying…';}
+  if(msg){msg.style.color='var(--t2)';msg.textContent='Telegram connection verify করা হচ্ছে…';}
+  try{
+    const resp=await secureApiFetch('/v1/telegram/connect',{method:'POST',body:JSON.stringify({botToken:token,chatId})});
+    const data=await resp.json().catch(()=>({}));
+    if(!resp.ok||!data.ok)throw new Error(data.error||'Telegram connection failed');
+    toast('✅ Telegram connected successfully!','ok');
+    renderTelegramPanel(data);
   }catch(e){
     if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}
     toast(e.message,'err');
-  }finally{
-    if(btn){btn.disabled=false;btn.innerHTML='🔎 Detect My Chat';}
+    if(btn){btn.disabled=false;btn.innerHTML='🔗 Connect & Verify';}
   }
 };
 
 window.testTelegramAlert=async()=>{
   const btn=$('tgTestBtn'),msg=$('tgConfigMsg');
-  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Sending...';}
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Sending…';}
   try{
     const resp=await secureApiFetch('/v1/telegram/test',{method:'POST'});
     const data=await resp.json().catch(()=>({}));
     if(!resp.ok||!data.ok)throw new Error(data.error||'Telegram test failed');
-    if(msg){msg.style.color='var(--green)';msg.textContent='✅ Test message sent successfully.';}
+    if(msg){msg.style.color='var(--green)';msg.textContent='✅ Test message Telegram-এ পাঠানো হয়েছে।';}
     toast('✅ Telegram test message sent!','ok');
-  }catch(e){
-    if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}
-    toast(e.message,'err');
-  }finally{
-    if(btn){btn.disabled=false;btn.innerHTML='🧪 Send Test';}
-  }
+  }catch(e){if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}toast(e.message,'err');}
+  finally{if(btn){btn.disabled=false;btn.innerHTML='🧪 Send Test Message';}}
 };
 
 window.disconnectTelegramAlert=async()=>{
-  if(!confirm('Telegram order alerts disconnect করবেন?'))return;
+  if(!confirm('এই admin account-এর Telegram connection disconnect করবেন?'))return;
+  const btn=$('tgDisconnectBtn'),msg=$('tgConfigMsg');
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Disconnecting…';}
   try{
     const resp=await secureApiFetch('/v1/telegram/disconnect',{method:'DELETE'});
     const data=await resp.json().catch(()=>({}));
     if(!resp.ok||!data.ok)throw new Error(data.error||'Disconnect failed');
     G.telegramConnected=false;
     toast('Telegram disconnected','info');
-    pgTools();
-  }catch(e){toast(e.message,'err');}
-};
-
-window.saveSteadfastConfig=async()=>{
-  const key=$('sf_key')?.value.trim()||'';
-  const secret=$('sf_secret')?.value.trim()||'';
-  const btn=$('sfSaveBtn');
-  const msg=$('sfConfigMsg');
-  if(!key&&!secret&&G.steadfastConfigured){toast(G.steadfastVerified?'Steadfast already verified. নতুন credentials দিলে দুটো field পূরণ করুন।':'Verification-এর জন্য API Key এবং Secret Key আবার দিন।','info');return;}
-  if(!key||!secret){toast('Steadfast API Key এবং Secret Key দুটোই দিন','err');return;}
-  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Verifying...';}
-  if(msg){msg.style.color='var(--t2)';msg.textContent='Steadfast credentials verify করা হচ্ছে...';}
-  try{
-    const resp=await secureApiFetch('/v1/steadfast/config',{
-      method:'POST',
-      body:JSON.stringify({apiKey:key,secretKey:secret})
-    });
-    const data=await resp.json().catch(()=>({}));
-    if(!resp.ok||!data.ok)throw new Error(data.error||'Steadfast credential verification failed');
-    G.steadfastConfigured=true;G.steadfastVerified=true;
-    try{
-      await updateDoc(BCfg(),{
-        steadfastKey:deleteField(),
-        steadfastSecret:deleteField(),
-        fraudApiKey:deleteField(),
-        courierWebhookUrl:deleteField()
-      });
-      delete G.cfg.steadfastKey;delete G.cfg.steadfastSecret;delete G.cfg.fraudApiKey;delete G.cfg.courierWebhookUrl;
-    }catch{}
-    if($('sf_key'))$('sf_key').value='';
-    if($('sf_secret'))$('sf_secret').value='';
-    if(msg){msg.style.color='var(--green)';msg.textContent='✅ Connected. '+(data.providerHost?('Verified via '+data.providerHost+'. '):'')+'Credentials saved securely.';}
-    toast('✅ Steadfast connected successfully!','ok');
-    setTimeout(()=>pgTools(),600);
-  }catch(e){
-    if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}
-    toast(e.message,'err');
-  }finally{
-    if(btn){btn.disabled=false;btn.innerHTML='💾 Save & Verify';}
-  }
-};
-
-// ── REDX / PATHAO COURIER ──
-window.saveCourierConfig=async(which)=>{
-  try{
-    if(which==='redx'){
-      const token=$('rdx_token')?.value.trim()||'';
-      await setDoc(BCfg(),{redxToken:token},{merge:true});
-      G.cfg.redxToken=token;
-    }
-    toast('✅ Courier config saved!');
-  }catch(e){toast(e.message,'err');}
-};
-window.copyPendingForCourier=async(courier)=>{
-  const resId=courier+'Result';const res=$(resId);
-  if(res)res.innerHTML='<div style="text-align:center;padding:10px"><div class="spin spinSm" style="margin:0 auto"></div></div>';
-  try{
-    const snap=await getDocs(query(BCol('orders'),where('status','==','pending')));
-    const orders=snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(orders.length===0){if(res)res.innerHTML='<div class="al aW" style="font-size:12px">কোনো pending অর্ডার নেই</div>';return;}
-    // Build a clean, paste-friendly text block (works for both RedX & Pathao manual entry)
-    const lines=orders.map((o,i)=>{
-      const cod=o.payMethod==='paid'?0:o.total;
-      return `${i+1}. ${o.recvName||o.cName} | ${o.recvPhone||o.cPhone||o.ordererPhone} | COD: ৳${cod} | ${o.cAddr} | অর্ডার: ${o.num}`;
-    });
-    const header=courier==='redx'?'🔴 RedX — Pending Orders':'🟠 Pathao — Pending Orders';
-    const text=`${header}\n${'='.repeat(30)}\n\n${lines.join('\n\n')}\n\n${'='.repeat(30)}\nমোট ${orders.length}টি অর্ডার · ${G.cfg.bizName||''}`;
-    let copied=false;
-    try{await navigator.clipboard.writeText(text);copied=true;}catch{}
-    if(res)res.innerHTML=`
-      <div class="al aO" style="font-size:12px">${copied?'✅':'⚠️'} ${orders.length}টি অর্ডার ${copied?'কপি হয়েছে! এখন courier panel-এ paste করুন।':'নিচে দেখুন (হাতে কপি করুন):'}</div>
-      <textarea readonly onclick="this.select()" style="width:100%;height:120px;font-size:11px;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--t1);font-family:monospace;margin-top:6px">${esc(text)}</textarea>`;
-  }catch(e){if(res)res.innerHTML=`<div class="al aE" style="font-size:12px">❌ ${e.message}</div>`;}
+    renderTelegramPanel({connected:false});
+  }catch(e){if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='🔌 Disconnect';}}
 };
 
 // ── PUBLIC SHOP link & settings ──
@@ -6301,207 +5955,6 @@ async function delCust(id,name){
   catch(e){toast(e.message,'err');}
 }
 window.delCust=delCust;
-
-// ══ CAMPAIGNS (season/product sales tracking) ══
-async function pgCampaigns(){
-  loading();
-  try{
-    const[campSnap,prodSnap,ordSnap]=await Promise.all([
-      getDocs(BCol('campaigns')).catch(()=>({docs:[]})),
-      getDocs(query(BCol('products'),where('active','==',true))),
-      getDocs(query(BCol('orders'),orderBy('createdAt','desc')))
-    ]);
-    let camps=campSnap.docs.map(d=>({id:d.id,...d.data()}));
-    camps.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    const prods=prodSnap.docs.map(d=>({id:d.id,...d.data()}));
-    const orders=ordSnap.docs.map(d=>({id:d.id,...d.data()}));
-    window._campProds=prods;
-    window._campOrders=orders;
-    const today=new Date().toISOString().slice(0,10);
-    const active=camps.filter(c=>!c.endDate||c.endDate>=today);
-    const past=camps.filter(c=>c.endDate&&c.endDate<today);
-
-    const cardFor=(c)=>{
-      const stats=computeCampaignStats(c,orders);
-      const statusActive=!c.endDate||c.endDate>=today;
-      return `<div class="card" style="margin-bottom:14px;border-color:${statusActive?'rgba(168,85,247,.3)':'var(--border)'}">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px">
-          <div>
-            <div style="font-size:15px;font-weight:800">${esc(c.name)} ${statusActive?'<span class="badge bPend" style="font-size:9px">🟢 চলমান</span>':'<span class="badge bCanc" style="font-size:9px">✓ শেষ</span>'}</div>
-            <div style="font-size:11px;color:var(--t3);margin-top:2px">📅 ${c.startDate||'?'} → ${c.endDate||'চলমান'} · ${(c.productIds||[]).length} পণ্য</div>
-          </div>
-          <div style="display:flex;gap:5px">
-            <button class="btn bS bSm bIco" onclick="openCampaign('${c.id}')" title="বিস্তারিত">📊</button>
-            <button class="btn bD bSm bIco" onclick="delCampaign('${c.id}')" title="মুছুন">🗑️</button>
-          </div>
-        </div>
-        <div class="gridStack2" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-          <div style="text-align:center;padding:10px;background:rgba(99,102,241,.08);border-radius:8px"><div style="font-size:18px;font-weight:800;color:var(--acc2)">${stats.totalUnits}</div><div style="font-size:10px;color:var(--t2)">বিক্রি (পিস)</div></div>
-          <div style="text-align:center;padding:10px;background:rgba(16,185,129,.08);border-radius:8px"><div style="font-size:18px;font-weight:800;color:var(--green)">${cur(stats.totalRevenue)}</div><div style="font-size:10px;color:var(--t2)">আয়</div></div>
-          <div style="text-align:center;padding:10px;background:rgba(245,158,11,.08);border-radius:8px"><div style="font-size:18px;font-weight:800;color:var(--yellow)">${stats.totalOrders}</div><div style="font-size:10px;color:var(--t2)">অর্ডার</div></div>
-        </div>
-        ${stats.best?`<div style="margin-top:10px;font-size:12px;display:flex;justify-content:space-between"><span>🔥 সেরা: <b>${esc(stats.best.name)}</b></span><span style="color:var(--green)">${stats.best.units} পিস</span></div>`:''}
-      </div>`;
-    };
-
-    setC(`
-    <div class="pH"><div><h1>🎯 ${T('Campaigns','ক্যাম্পেইন')}</h1><p>${T('Track seasonal product sales','মৌসুমি পণ্যের বিক্রি ট্র্যাক করুন')}</p></div>
-      <button class="btn bP" onclick="openCreateCampaign()">➕ ${T('New Campaign','নতুন ক্যাম্পেইন')}</button>
-    </div>
-
-    ${camps.length===0?`
-    <div class="card" style="text-align:center;padding:40px 20px">
-      <div style="font-size:44px;margin-bottom:12px">🎯</div>
-      <h3 style="margin-bottom:8px">${T('No campaigns yet','এখনো কোনো ক্যাম্পেইন নেই')}</h3>
-      <p style="color:var(--t2);font-size:13px;max-width:380px;margin:0 auto 16px;line-height:1.7">${T('Create a campaign for a season (e.g. Winter Shawls Nov-Feb). It auto-counts sales of selected products and shows best vs slow sellers.','একটি মৌসুমের জন্য ক্যাম্পেইন তৈরি করুন (যেমন: শীতের চাদর নভেম্বর-ফেব্রুয়ারি)। বাছাই করা পণ্যের বিক্রি অটো গোনা হবে, সেরা ও কম বিক্রির পণ্য আলাদা দেখাবে।')}</p>
-      <button class="btn bP" onclick="openCreateCampaign()">➕ ${T('Create First Campaign','প্রথম ক্যাম্পেইন তৈরি করুন')}</button>
-    </div>`:`
-      ${active.length?`<div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;margin:4px 0 10px">🟢 ${T('Active','চলমান')} (${active.length})</div>${active.map(cardFor).join('')}`:''}
-      ${past.length?`<div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;margin:18px 0 10px">📚 ${T('History','ইতিহাস')} (${past.length})</div>${past.map(cardFor).join('')}`:''}
-    `}
-    <div class="mOvl" id="campCreateOvl"><div class="modal mLg" id="campCreateMod"></div></div>
-    <div class="mOvl" id="campDetailOvl" onclick="if(event.target===this)closeMov('campDetailOvl')"><div class="modal mLg" id="campDetailMod"></div></div>`);
-  }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
-}
-// Compute sales stats for a campaign by matching orders in date range + product set
-function computeCampaignStats(c,orders){
-  const pids=new Set(c.productIds||[]);
-  const pnames={};(window._campProds||[]).forEach(p=>{if(pids.has(p.id))pnames[p.id]=p.name;});
-  const start=c.startDate||'0000-00-00';
-  const end=c.endDate||'9999-12-31';
-  const perProduct={};
-  let totalUnits=0,totalRevenue=0;const orderSet=new Set();
-  orders.forEach(o=>{
-    if(o.status==='cancelled')return;
-    const od=o.orderDate||'';
-    if(od<start||od>end)return;
-    (o.items||[]).forEach(it=>{
-      // Match by product id if available, else by name against selected products
-      const matchId=it.pid&&pids.has(it.pid);
-      const matchName=!it.pid&&Object.values(pnames).some(n=>it.name&&it.name.startsWith(n));
-      if(!matchId&&!matchName)return;
-      const key=it.pid||it.name;
-      const label=it.name||pnames[it.pid]||'পণ্য';
-      if(!perProduct[key])perProduct[key]={name:label,units:0,revenue:0};
-      const qty=Number(it.qty||0);
-      perProduct[key].units+=qty;
-      perProduct[key].revenue+=Number(it.lineTotal||(it.price*qty)||0);
-      totalUnits+=qty;totalRevenue+=Number(it.lineTotal||(it.price*qty)||0);
-      orderSet.add(o.id);
-    });
-  });
-  const ranked=Object.values(perProduct).sort((a,b)=>b.units-a.units);
-  return{totalUnits,totalRevenue,totalOrders:orderSet.size,perProduct:ranked,best:ranked[0]||null,worst:ranked.length>1?ranked[ranked.length-1]:null};
-}
-window.openCreateCampaign=()=>{
-  const prods=window._campProds||[];
-  window._campSelProds=[];
-  $('campCreateMod').innerHTML=`
-  <div class="mH"><h3>🎯 নতুন ক্যাম্পেইন</h3><button class="btn bS bIco" onclick="closeMov('campCreateOvl')">✕</button></div>
-  <div class="mB" style="max-height:74vh;overflow-y:auto">
-    <div class="afG"><label class="afL">ক্যাম্পেইনের নাম *</label><input class="afI" id="camp_name" placeholder="যেমন: শীতের চাদর ২০২৬" maxlength="50"/></div>
-    <div class="gridStack2" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="afG" style="margin:0"><label class="afL">শুরুর তারিখ *</label><input class="afI" type="date" id="camp_start"/></div>
-      <div class="afG" style="margin:0"><label class="afL">শেষ তারিখ <span style="font-size:10px;color:var(--t3)">(খালি=চলমান)</span></label><input class="afI" type="date" id="camp_end"/></div>
-    </div>
-    <div style="font-size:12px;font-weight:700;margin:12px 0 8px">এই ক্যাম্পেইনের পণ্য বাছুন (চাদরের সব design/color):</div>
-    ${prods.length===0?'<div class="al aW" style="font-size:12px">কোনো সক্রিয় পণ্য নেই। আগে পণ্য যোগ করুন।</div>':`
-    <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-      <button class="btn bS bSm" style="font-size:11px" onclick="campSelectAll(true)">সব বাছুন</button>
-      <button class="btn bS bSm" style="font-size:11px" onclick="campSelectAll(false)">সব বাদ</button>
-    </div>
-    <div id="campProdList" style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto">
-      ${prods.map((p,i)=>{
-        const img=(p.images&&p.images[0])||p.imageUrl||'';
-        return `<label style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer">
-          <input type="checkbox" class="campChk" data-pid="${p.id}" onchange="campToggle('${p.id}')" style="width:16px;height:16px;accent-color:var(--acc)"/>
-          ${img?`<img loading="lazy" src="${esc(img)}" style="width:34px;height:34px;border-radius:6px;object-fit:cover"/>`:'<div style="width:34px;height:34px;border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:14px">📦</div>'}
-          <div style="flex:1"><div style="font-size:13px;font-weight:600">${esc(p.name)}</div><div style="font-size:11px;color:var(--t3)">${esc(p.cat||'')}</div></div>
-        </label>`;
-      }).join('')}
-    </div>`}
-    <div id="campErr" class="al aE" style="display:none;margin-top:10px"></div>
-  </div>
-  <div class="mF">
-    <button class="btn bS" onclick="closeMov('campCreateOvl')">বাতিল</button>
-    <button class="btn bP" id="campSaveBtn" onclick="saveCampaign()">🎯 ক্যাম্পেইন তৈরি করুন (<span id="campSelCount">0</span>)</button>
-  </div>`;
-  $('campCreateOvl').classList.add('open');
-};
-window.campToggle=(pid)=>{
-  const arr=window._campSelProds;
-  const i=arr.indexOf(pid);
-  if(i>=0)arr.splice(i,1);else arr.push(pid);
-  const c=$('campSelCount');if(c)c.textContent=arr.length;
-};
-window.campSelectAll=(on)=>{
-  const prods=window._campProds||[];
-  window._campSelProds=on?prods.map(p=>p.id):[];
-  document.querySelectorAll('.campChk').forEach(chk=>{chk.checked=on;});
-  const c=$('campSelCount');if(c)c.textContent=window._campSelProds.length;
-};
-window.saveCampaign=async()=>{
-  const name=$('camp_name')?.value.trim();
-  const start=$('camp_start')?.value;
-  const end=$('camp_end')?.value||'';
-  const pids=window._campSelProds||[];
-  const err=$('campErr');const btn=$('campSaveBtn');
-  if(!name){if(err){err.style.display='flex';err.textContent='নাম লিখুন';}return;}
-  if(!start){if(err){err.style.display='flex';err.textContent='শুরুর তারিখ দিন';}return;}
-  if(end&&end<start){if(err){err.style.display='flex';err.textContent='শেষ তারিখ শুরুর পরে হতে হবে';}return;}
-  if(pids.length===0){if(err){err.style.display='flex';err.textContent='অন্তত একটি পণ্য বাছুন';}return;}
-  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';}
-  try{
-    await addDoc(BCol('campaigns'),{name,startDate:start,endDate:end,productIds:pids,createdAt:serverTimestamp()});
-    closeMov('campCreateOvl');toast('✅ ক্যাম্পেইন তৈরি হয়েছে!');pgCampaigns();
-  }catch(e){if(err){err.style.display='flex';err.textContent='❌ '+e.message;}if(btn){btn.disabled=false;btn.innerHTML='🎯 ক্যাম্পেইন তৈরি করুন';}}
-};
-window.openCampaign=async(id)=>{
-  $('campDetailMod').innerHTML='<div class="mB" style="text-align:center;padding:40px"><div class="spin" style="margin:0 auto"></div></div>';
-  $('campDetailOvl').classList.add('open');
-  try{
-    const cDoc=await getDoc(BDoc('campaigns',id));
-    if(!cDoc.exists()){$('campDetailMod').innerHTML='<div class="mB"><div class="al aE">পাওয়া যায়নি</div></div>';return;}
-    const c={id,...cDoc.data()};
-    const orders=window._campOrders||(await getDocs(query(BCol('orders'),orderBy('createdAt','desc')))).docs.map(d=>({id:d.id,...d.data()}));
-    const stats=computeCampaignStats(c,orders);
-    const maxU=stats.best?.units||1;
-    $('campDetailMod').innerHTML=`
-    <div class="mH"><h3>📊 ${esc(c.name)}</h3><button class="btn bS bIco" onclick="closeMov('campDetailOvl')">✕</button></div>
-    <div class="mB" style="max-height:76vh;overflow-y:auto">
-      <div style="font-size:12px;color:var(--t3);margin-bottom:14px">📅 ${c.startDate} → ${c.endDate||'চলমান'}</div>
-      <div class="gridStack2" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px">
-        <div style="text-align:center;padding:12px;background:rgba(99,102,241,.08);border-radius:10px"><div style="font-size:22px;font-weight:800;color:var(--acc2)">${stats.totalUnits}</div><div style="font-size:11px;color:var(--t2)">মোট বিক্রি</div></div>
-        <div style="text-align:center;padding:12px;background:rgba(16,185,129,.08);border-radius:10px"><div style="font-size:22px;font-weight:800;color:var(--green)">${cur(stats.totalRevenue)}</div><div style="font-size:11px;color:var(--t2)">মোট আয়</div></div>
-        <div style="text-align:center;padding:12px;background:rgba(245,158,11,.08);border-radius:10px"><div style="font-size:22px;font-weight:800;color:var(--yellow)">${stats.totalOrders}</div><div style="font-size:11px;color:var(--t2)">অর্ডার</div></div>
-      </div>
-      ${stats.perProduct.length===0?'<div class="al aI" style="font-size:13px">এখনো এই ক্যাম্পেইনের সময়ে কোনো বিক্রি হয়নি।</div>':`
-        <div style="font-size:13px;font-weight:700;margin-bottom:10px">📊 ডিজাইন/কালার অনুযায়ী বিক্রি</div>
-        ${stats.perProduct.map((p,i)=>{
-          const pct=Math.round(p.units/maxU*100);
-          const isBest=i===0,isWorst=i===stats.perProduct.length-1&&stats.perProduct.length>1;
-          const clr=isBest?'var(--green)':isWorst?'var(--red)':'var(--acc2)';
-          return `<div style="margin-bottom:12px">
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-              <span>${isBest?'🔥 ':isWorst?'📉 ':''}<b>${esc(p.name)}</b></span>
-              <span style="color:${clr};font-weight:700">${p.units} পিস · ${cur(p.revenue)}</span>
-            </div>
-            <div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${clr};border-radius:6px;transition:width .5s"></div></div>
-          </div>`;
-        }).join('')}
-        <div style="margin-top:16px;padding:12px;background:var(--card);border-radius:10px;font-size:12px;line-height:1.8;color:var(--t2)">
-          ${stats.best?`🔥 <b>সেরা বিক্রি:</b> ${esc(stats.best.name)} (${stats.best.units} পিস)<br>`:''}
-          ${stats.worst?`📉 <b>কম বিক্রি:</b> ${esc(stats.worst.name)} (${stats.worst.units} পিস) — এই ডিজাইন কম চলছে, পরের বার কম তুলতে পারেন।`:''}
-        </div>`}
-    </div>
-    <div class="mF"><button class="btn bP bFull" onclick="closeMov('campDetailOvl')">বন্ধ করুন</button></div>`;
-  }catch(e){$('campDetailMod').innerHTML=`<div class="mB"><div class="al aE">❌ ${e.message}</div></div>`;}
-};
-window.delCampaign=async(id)=>{
-  if(!confirm('এই ক্যাম্পেইনটি মুছবেন? (বিক্রির তথ্য মুছবে না, শুধু ক্যাম্পেইন)'))return;
-  try{await deleteDoc(BDoc('campaigns',id));toast('মুছে ফেলা হয়েছে');pgCampaigns();}
-  catch(e){toast(e.message,'err');}
-};
 
 // ══ REPORTS & ANALYTICS ══
 async function pgReports(){
@@ -6894,9 +6347,6 @@ window.openAddMod=()=>{
           <input type="checkbox" id="perm_reports" style="width:16px;height:16px;accent-color:var(--acc)"/> 📊 Reports & Analytics দেখা
         </label>
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="perm_campaigns" style="width:16px;height:16px;accent-color:var(--acc)"/> 🎯 Campaigns দেখা
-        </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
           <input type="checkbox" id="perm_orderLink" style="width:16px;height:16px;accent-color:var(--acc)"/> 🔗 কাস্টম অর্ডার লিংক তৈরি
         </label>
       </div>
@@ -6919,7 +6369,7 @@ window.saveMod=async()=>{
   if(!ex.empty){err.style.display='flex';err.textContent='❌ Username already taken.';return;}
   btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Creating...';
   const autoEmail=`mod.${username}.${G.bizId.slice(0,8)}@drystan.app`;
-  const perms={orders:true,products:!!$('perm_products')?.checked,customers:!!$('perm_customers')?.checked,reports:!!$('perm_reports')?.checked,campaigns:!!$('perm_campaigns')?.checked,orderLink:!!$('perm_orderLink')?.checked};
+  const perms={orders:true,products:!!$('perm_products')?.checked,customers:!!$('perm_customers')?.checked,reports:!!$('perm_reports')?.checked,orderLink:!!$('perm_orderLink')?.checked};
   try{
     // Use secondary Firebase app to avoid signing out current admin
     const {initializeApp:initApp2,getApp} = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js');
@@ -6966,9 +6416,6 @@ window.openEditMod=(docId)=>{
           <input type="checkbox" id="eperm_reports" ${p.reports?'checked':''} style="width:16px;height:16px;accent-color:var(--acc)"/> 📊 Reports & Analytics দেখা
         </label>
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="eperm_campaigns" ${p.campaigns?'checked':''} style="width:16px;height:16px;accent-color:var(--acc)"/> 🎯 Campaigns দেখা
-        </label>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px">
           <input type="checkbox" id="eperm_orderLink" ${p.orderLink?'checked':''} style="width:16px;height:16px;accent-color:var(--acc)"/> 🔗 কাস্টম অর্ডার লিংক তৈরি
         </label>
       </div>
@@ -6983,7 +6430,7 @@ window.openEditMod=(docId)=>{
 };
 window.saveModPerms=async(docId)=>{
   const btn=$('emBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';}
-  const perms={orders:true,products:!!$('eperm_products')?.checked,customers:!!$('eperm_customers')?.checked,reports:!!$('eperm_reports')?.checked,campaigns:!!$('eperm_campaigns')?.checked,orderLink:!!$('eperm_orderLink')?.checked};
+  const perms={orders:true,products:!!$('eperm_products')?.checked,customers:!!$('eperm_customers')?.checked,reports:!!$('eperm_reports')?.checked,orderLink:!!$('eperm_orderLink')?.checked};
   try{
     await updateDoc(Doc('users',docId),{permissions:perms});
     toast('✅ Permissions updated!');
@@ -6997,17 +6444,9 @@ async function delMod(docId,username){if(!confirm(`Remove moderator "@${username
 window.delMod=delMod;
 
 async function resetModPw(docId,username,bizId){
-  const newPw=prompt(`Set new password for @${username}:\n(Min 6 characters)`);
-  if(!newPw||newPw.length<6){toast('Password too short or cancelled','err');return;}
-  try{
-    // We need to use Admin SDK for this — instead show instructions
-    // Since we only have client SDK, we'll update a resetRequest in Firestore
-    // The moderator will see the new password on next login
-    await updateDoc(Doc('users',docId),{tempPassword:newPw,pwReset:true,pwResetAt:serverTimestamp()});
-    toast(`✅ Password reset request saved for @${username}. Note: Full password reset requires Firebase Admin SDK. For now, use Firebase Console → Authentication to reset.`,'info');
-    // Better approach: show the password to admin
-    alert(`New password for @${username}: ${newPw}\n\nNote: You need to go to Firebase Console → Authentication → find the user → send password reset email.\n\nOr share this password directly with the moderator.`);
-  }catch(e){toast(e.message,'err');}
+  alert(`@${username} এর password Drystan থেকে plaintext হিসেবে reset করা হবে না।
+
+Firebase Console → Authentication থেকে user password reset করুন।`);
 }
 window.resetModPw=resetModPw;
 
