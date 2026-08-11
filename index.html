@@ -10,7 +10,7 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff"/>
 <meta name="referrer" content="strict-origin-when-cross-origin"/>
 <meta http-equiv="X-Frame-Options" content="DENY"/>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.googleapis.com https://apis.google.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasestorage.app https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://api.anthropic.com https://api.emailjs.com https://*.steadfast.com.bd https://fraudbd.com https://*.fraudbd.com https://api.imgbb.com https://drystan-api.mulhakiol632.workers.dev; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://www.recaptcha.net https://recaptcha.net; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://www.googleapis.com https://apis.google.com https://www.google.com https://www.recaptcha.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://*.firebasestorage.app https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://api.emailjs.com https://*.steadfast.com.bd https://fraudbd.com https://*.fraudbd.com https://api.imgbb.com https://drystan-api.mulhakiol632.workers.dev; frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://apis.google.com https://www.google.com https://www.recaptcha.net https://recaptcha.net; frame-ancestors 'none'; base-uri 'self'; object-src 'none'"/>
 <title>Drystan – Business Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
@@ -962,10 +962,9 @@ img{max-width:100%}
           <div class="afG"><label class="afL">Template ID</label><input class="afI" id="ow_ejt" placeholder="template_XXXX"/></div>
         </div>
         <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:12px">
-          <div style="font-size:12px;font-weight:700;color:#A855F7;margin-bottom:10px">🤖 AI Features (Claude API)</div>
-          <div style="font-size:11px;color:var(--t2);margin-bottom:8px;line-height:1.6">AI Business Advisor, Product Description Writer ও Order Risk Analysis চালু করতে Anthropic API key দিন। key পাবেন: console.anthropic.com</div>
-          <div class="afG"><label class="afL">Anthropic API Key</label><input class="afI" id="ow_aikey" type="password" placeholder="sk-ant-..."/></div>
-          <div class="afG"><label class="afL">🖼️ ImgBB API Key <span style="font-size:10px;color:var(--t3)">(ছবি আপলোডের জন্য — api.imgbb.com থেকে ফ্রি নিন)</span></label><input class="afI" id="ow_imgbbkey" type="password" placeholder="ImgBB API key"/></div>
+          <div style="font-size:12px;font-weight:700;color:#A855F7;margin-bottom:10px">🤖 Secure AI</div>
+          <div style="font-size:11px;color:var(--t2);margin-bottom:10px;line-height:1.7;padding:10px 12px;background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.18);border-radius:10px">Gemini API key আর Global Config/HTML-এ রাখা হয় না। প্রতিটি business-এর Admin <b>Settings → AI & Smart Paste</b> থেকে key securely save করবে। Browser কখনো saved key পড়তে পারবে না।</div>
+          <div class="afG"><label class="afL">🖼️ ImgBB API Key <span style="font-size:10px;color:var(--t3)">(ছবি আপলোডের জন্য)</span></label><input class="afI" id="ow_imgbbkey" type="password" placeholder="ImgBB API key"/></div>
           <div class="afG"><label class="afL">📍 জেলা/থানা ভাষা <span style="font-size:10px;color:var(--t3)">(অর্ডার লিংকে গ্রাহক কোন ভাষায় দেখবে)</span></label>
             <select class="afI" id="ow_distLang">
               <option value="both">বাংলা + English (দুটোই)</option>
@@ -1526,6 +1525,7 @@ const G={
   lang:localStorage.getItem('dry_lang')||'en',
   theme:localStorage.getItem('dry_theme')||'dark',
   user:null, role:null, bizId:null, cfg:{}, gcfg:{},
+  aiConfigured:false, aiActive:false, aiModel:'gemini-3.6-flash', aiStatusLoaded:false,
   page:'dash', lastOrder:null,
   oItems:[], oForm:null,
 };
@@ -1590,32 +1590,26 @@ window.closeSB=()=>{$('sidebar').classList.remove('open');$('sOverlay').classLis
 window.togglePw=id=>{const i=$(id);if(i)i.type=i.type==='password'?'text':'password';};
 window.closeMov=id=>{$(id)?.classList.remove('open');};
 
-// ── AI HELPER (Anthropic API) ──
-function aiEnabled(){return !!(G.gcfg?.aiApiKey);}
+// ── AI HELPER (Google Gemini via secure Cloudflare Worker) ──
+function aiEnabled(){return G.aiConfigured===true&&G.aiActive===true;}
+async function refreshAIStatus(){
+  if(!auth.currentUser||!G.bizId){G.aiConfigured=false;G.aiActive=false;G.aiStatusLoaded=true;return {ok:false,configured:false};}
+  try{
+    const resp=await secureApiFetch('/v1/ai/status',{method:'GET'});
+    const data=await resp.json().catch(()=>({}));
+    G.aiConfigured=!!(resp.ok&&data.configured);
+    G.aiActive=!!(resp.ok&&data.configured&&data.enabled!==false);
+    G.aiModel=data.model||'gemini-3.6-flash';
+    G.aiStatusLoaded=true;
+    return {ok:resp.ok,...data};
+  }catch(e){G.aiConfigured=false;G.aiActive=false;G.aiStatusLoaded=true;return {ok:false,configured:false,error:e.message||String(e)};}
+}
+window.refreshAIStatus=refreshAIStatus;
 async function callAI(systemPrompt,userPrompt,maxTokens=1024){
-  const key=G.gcfg?.aiApiKey;
-  if(!key)throw new Error('AI feature বন্ধ আছে। Owner panel-এ API key যোগ করুন।');
-  const resp=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key':key,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
-    body:JSON.stringify({
-      model:'claude-sonnet-4-6',
-      max_tokens:maxTokens,
-      system:systemPrompt,
-      messages:[{role:'user',content:userPrompt}]
-    })
-  });
-  if(!resp.ok){
-    const err=await resp.text();
-    throw new Error('API error '+resp.status+': '+err.slice(0,120));
-  }
-  const data=await resp.json();
-  return (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+  const resp=await secureApiFetch('/v1/ai/chat',{method:'POST',body:JSON.stringify({systemPrompt:String(systemPrompt||'').slice(0,5000),userPrompt:String(userPrompt||'').slice(0,12000),maxTokens:Math.min(2048,Math.max(64,Number(maxTokens)||1024))})});
+  const data=await resp.json().catch(()=>({}));
+  if(!resp.ok||!data.ok)throw new Error(data.error||'AI request failed');
+  return String(data.text||'').trim();
 }
 
 // ── GLOBAL SEARCH (orders + products + customers) ──
@@ -2483,7 +2477,6 @@ async function loadOwnerData(){
     if($('ow_support'))$('ow_support').value=cfg.supportPhone||'01315899751';
     if($('ow_supportEmail'))$('ow_supportEmail').value=cfg.supportEmail||'';
     if($('ow_whatsapp'))$('ow_whatsapp').value=cfg.supportWhatsapp||'';
-    if($('ow_aikey'))$('ow_aikey').value=cfg.aiApiKey||'';
     if($('ow_imgbbkey'))$('ow_imgbbkey').value=cfg.imgbbKey||'';
     if($('ow_distLang'))$('ow_distLang').value=cfg.districtLangMode||'both';
   }catch{}
@@ -2940,10 +2933,10 @@ window.saveBroadcast=async()=>{
 };
 window.ownerSave=async()=>{
   try{
-    const data={siteName:$('ow_sitename').value.trim(),ejsKey:$('ow_ejk').value.trim(),ejsService:$('ow_ejs').value.trim(),ejsTemplate:$('ow_ejt').value.trim(),siteTheme:$('ow_theme').value,supportPhone:$('ow_support')?.value.trim()||'',supportEmail:$('ow_supportEmail')?.value.trim()||'',supportWhatsapp:$('ow_whatsapp')?.value.trim()||'',aiApiKey:$('ow_aikey')?.value.trim()||'',imgbbKey:$('ow_imgbbkey')?.value.trim()||'',districtLangMode:$('ow_distLang')?.value||'both',updatedAt:serverTimestamp()};
-    await setDoc(GCfg(),data,{merge:true});
+    const data={siteName:$('ow_sitename').value.trim(),ejsKey:$('ow_ejk').value.trim(),ejsService:$('ow_ejs').value.trim(),ejsTemplate:$('ow_ejt').value.trim(),siteTheme:$('ow_theme').value,supportPhone:$('ow_support')?.value.trim()||'',supportEmail:$('ow_supportEmail')?.value.trim()||'',supportWhatsapp:$('ow_whatsapp')?.value.trim()||'',imgbbKey:$('ow_imgbbkey')?.value.trim()||'',districtLangMode:$('ow_distLang')?.value||'both',updatedAt:serverTimestamp()};
+    await setDoc(GCfg(),{...data,aiApiKey:deleteField()},{merge:true});
     localStorage.removeItem('dry_colortheme'); // let the new global theme take effect
-    G.gcfg={...G.gcfg,...data}; // refresh ALL fields in memory immediately (fixes stale imgbbKey/aiApiKey without needing relogin)
+    G.gcfg={...G.gcfg,...data};delete G.gcfg.aiApiKey; // legacy public AI key removed
     toast('✅ Global settings saved!');
   }catch(e){toast(e.message,'err');}
 };
@@ -3380,6 +3373,8 @@ onAuthStateChanged(auth,async user=>{
         // Load business config (using admin's bizId)
         try{const cd=await getDoc(BCfg());if(cd.exists())G.cfg=cd.data();}catch{}
         try{const gd=await getDoc(GCfg());if(gd.exists())G.gcfg=gd.data();}catch{}
+        if(user.uid===OWNER_AUTH_UID&&G.gcfg?.aiApiKey){try{await setDoc(GCfg(),{aiApiKey:deleteField()},{merge:true});delete G.gcfg.aiApiKey;}catch{}}
+        await refreshAIStatus().catch(()=>{});
         // TOTP check (Google Authenticator) — only if admin has it enabled
         // AND this device hasn't already been trusted (remembered after a prior verify).
         const trustedKey='dry_trusted_'+user.uid;
@@ -3401,6 +3396,7 @@ onAuthStateChanged(auth,async user=>{
         G.role='admin';G.bizId=user.uid;
         await setDoc(Doc('users',user.uid),{displayName:'Admin',username:'admin',email:user.email,role:'admin',authUid:user.uid,bizId:user.uid,createdAt:serverTimestamp()},{merge:true});
         try{const gd=await getDoc(GCfg());if(gd.exists())G.gcfg=gd.data();}catch{}
+        await refreshAIStatus().catch(()=>{});
       }
     }catch(e){console.error(e);}
     // One-time diagnostic route for Phase 2 backend auth testing.
@@ -3433,7 +3429,7 @@ onAuthStateChanged(auth,async user=>{
     loadApp();
   }else{
     _appReady=false;_tfaPending=null;_tfaCode='';_tfaSent=false;
-    G.user=null;G.role=null;G.bizId=null;G.cfg={};G.gcfg=G.gcfg||{};
+    G.user=null;G.role=null;G.bizId=null;G.cfg={};G.gcfg=G.gcfg||{};G.aiConfigured=false;G.aiActive=false;G.aiStatusLoaded=false;
     // Clear cached business data so the next user (on the same browser) never sees
     // the previous user's orders/products/customers for even a moment.
     _orderCache=null;_custCache=null;_prodCache=null;_gSearchData=null;
@@ -4664,7 +4660,37 @@ window.syncCreatePaymentUI=()=>{const f=G.oForm||{},wrap=$('of_paidWrap'),extra=
 window.onCreatePaymentMethodChange=v=>{G.oForm.paymentMethod=v;if(v==='cod'&&G.oForm.payStatus==='paid')G.oForm.payStatus='pending';const s=$('of_payStatus');if(s)s.value=G.oForm.payStatus;syncCreatePaymentUI();};
 window.onCreatePayStatusChange=v=>{G.oForm.payStatus=v;if(v==='pending')G.oForm.paidAmount=0;syncCreatePaymentUI();};
 window.updDel=()=>applyCreateDeliveryCharge();
-window.updTotal=()=>{const t=createOrderTotals();const tr=$('totRow');if(tr)tr.innerHTML=`<span>Total</span><span style="color:var(--acc2)">${cur(t.total)}</span>`;const sr=$('subRow');if(sr)sr.innerHTML=`<span>Subtotal</span><span>${cur(t.sub)}</span>`;const dr=$('delRow');if(dr)dr.innerHTML=`<span>Delivery</span><span>${cur(t.del)}</span>`;const dcr=$('discRow');if(dcr)dcr.innerHTML=`<span>Discount</span><span>${t.disc?'- '+cur(t.disc):cur(0)}</span>`;const pr=$('paidRow');if(pr)pr.textContent=cur(t.paid);const due=$('dueRow');if(due){due.textContent=cur(t.due);due.style.color=t.due?'var(--yellow)':'var(--green)';}syncCreateOrderReady();};
+// Keep the form model and the visible numeric inputs in lock-step. This prevents
+// the Live Order Summary from showing a stale delivery/discount/paid value when
+// the admin manually edits a number field.
+function syncCreateNumericInputsFromDom(){
+  if(!G.oForm)return;
+  const delEl=$('of_del');
+  const discEl=$('of_disc');
+  const paidEl=$('of_paidAmount');
+  if(delEl)G.oForm.delivery=Math.max(0,Number(delEl.value||0));
+  if(discEl)G.oForm.discount=Math.max(0,Number(discEl.value||0));
+  if(paidEl&&G.oForm.payStatus==='partial')G.oForm.paidAmount=Math.max(0,Number(paidEl.value||0));
+}
+window.onCreateDeliveryInput=el=>{
+  if(!G.oForm)return;
+  G.oForm.delivery=Math.max(0,Number(el?.value||0));
+  G.oForm.deliveryZone='custom';
+  const zone=$('of_zone');if(zone)zone.value='custom';
+  updTotal();
+  saveCreateDraft();
+};
+window.updTotal=()=>{
+  syncCreateNumericInputsFromDom();
+  const t=createOrderTotals();
+  const tr=$('totRow');if(tr)tr.innerHTML=`<span>Total</span><span style="color:var(--acc2)">${cur(t.total)}</span>`;
+  const sr=$('subRow');if(sr)sr.innerHTML=`<span>Subtotal</span><span>${cur(t.sub)}</span>`;
+  const dr=$('delRow');if(dr)dr.innerHTML=`<span>Delivery</span><span>${cur(t.del)}</span>`;
+  const dcr=$('discRow');if(dcr)dcr.innerHTML=`<span>Discount</span><span>${t.disc?'- '+cur(t.disc):cur(0)}</span>`;
+  const pr=$('paidRow');if(pr)pr.textContent=cur(t.paid);
+  const due=$('dueRow');if(due){due.textContent=cur(t.due);due.style.color=t.due?'var(--yellow)':'var(--green)';}
+  syncCreateOrderReady();
+};
 
 window.lookupCreateCustomer=phone=>{clearTimeout(_createCustTimer);_createCustTimer=setTimeout(()=>lookupCreateCustomerNow(phone),350);};
 async function lookupCreateCustomerNow(phone){
@@ -4676,7 +4702,11 @@ window.applyCreateCustomer=()=>{const c=window._createCustomerMatch;if(!c||!G.oF
 
 function findDistrictInText(text){const lo=String(text||'').toLowerCase();for(const [en,d] of Object.entries(BD_DISTRICTS)){if(lo.includes(en.toLowerCase())||String(text).includes(d.bn))return en;}return'';}
 function findThanaInText(text,district){if(!district||!BD_DISTRICTS[district])return'';const lo=String(text||'').toLowerCase();for(const [en,bn] of BD_DISTRICTS[district].t){if(lo.includes(en.toLowerCase())||String(text).includes(bn))return en;}return'';}
-window.doSmartPaste=()=>{const raw=$('smartPasteBox')?.value.trim();if(!raw){toast('Paste করার পর Auto Fill ক্লিক করুন','warn');return;}const lines=raw.split(/\n+/).map(x=>x.trim()).filter(Boolean);const phones=[];let name='',addr=[];for(const line of lines){const clean=line.replace(/\D/g,'');const ph=clean.startsWith('8801')?clean.slice(-11):clean;if(/^01[3-9]\d{8}$/.test(ph)){if(!phones.includes(ph))phones.push(ph);continue;}if(!name&&line.length>1&&line.length<70&&!/\d{4,}/.test(line)){name=line;continue;}addr.push(line);}const district=findDistrictInText(raw),thana=findThanaInText(raw,district);const preview=`নাম: ${name||'-'}\nOrderer: ${phones[0]||'-'}${phones[1]?`\nReceiver: ${phones[1]}`:''}\nDistrict: ${district||'-'}${thana?`\nThana: ${thana}`:''}\nAddress: ${addr.join(', ')||'-'}`;if(!confirm(`Auto Fill preview:\n\n${preview}\n\nApply করবেন?`))return;if(name)G.oForm.cName=name;if(phones[0])G.oForm.ordererPhone=phones[0];if(phones[1])G.oForm.recvPhone=phones[1];if(addr.length)G.oForm.cAddr=addr.join(', ');if(district)G.oForm.district=district;if(thana)G.oForm.thana=thana;if($('of_cn'))$('of_cn').value=G.oForm.cName;if($('of_op'))$('of_op').value=G.oForm.ordererPhone;if($('of_rph'))$('of_rph').value=G.oForm.recvPhone||'';if($('of_addr'))$('of_addr').value=G.oForm.cAddr;if($('smartPasteBox'))$('smartPasteBox').value='';syncCreateLocationUI();applyCreateDeliveryCharge();lookupCreateCustomer(G.oForm.ordererPhone);saveCreateDraft();syncCreateOrderReady();toast('✅ Auto Fill applied','ok');};
+function normalizeCreateDistrict(v){const q=String(v||'').trim().toLowerCase();if(!q)return'';for(const [en,obj] of Object.entries(BD_DISTRICTS)){if(en.toLowerCase()===q||String(obj.bn||'').toLowerCase()===q)return en;}for(const [en,obj] of Object.entries(BD_DISTRICTS)){if(en.toLowerCase().includes(q)||q.includes(en.toLowerCase())||String(obj.bn||'').includes(String(v||'').trim()))return en;}return'';}
+function normalizeCreateThana(v,district){const q=String(v||'').trim().toLowerCase();if(!q||!district||!BD_DISTRICTS[district])return'';for(const [en,bn] of BD_DISTRICTS[district].t||[]){if(en.toLowerCase()===q||String(bn||'').toLowerCase()===q)return en;}for(const [en,bn] of BD_DISTRICTS[district].t||[]){if(en.toLowerCase().includes(q)||q.includes(en.toLowerCase())||String(bn||'').includes(String(v||'').trim()))return en;}return'';}
+function parseSmartPasteLocal(raw){const lines=String(raw||'').split(/\n+/).map(x=>x.trim()).filter(Boolean),phones=[];let name='',addr=[];for(const line of lines){const clean=line.replace(/\D/g,''),ph=clean.startsWith('8801')?clean.slice(-11):clean;if(/^01[3-9]\d{8}$/.test(ph)){if(!phones.includes(ph))phones.push(ph);continue;}if(!name&&line.length>1&&line.length<70&&!/\d{4,}/.test(line)){name=line;continue;}addr.push(line);}const district=findDistrictInText(raw),thana=findThanaInText(raw,district);return{name,ordererPhone:phones[0]||'',receiverPhone:phones[1]||'',receiverName:'',district:district||'',thana:thana||'',address:addr.join(', '),notes:'',confidence:district||phones[0]?0.7:0.45,source:'local'};}
+function applySmartPasteResult(data){const d=data||{},district=normalizeCreateDistrict(d.district)||String(d.district||''),safeDistrict=BD_DISTRICTS[district]?district:'',thana=normalizeCreateThana(d.thana,safeDistrict);if(d.name)G.oForm.cName=String(d.name).trim();if(/^01[3-9]\d{8}$/.test(String(d.ordererPhone||'')))G.oForm.ordererPhone=String(d.ordererPhone);if(/^01[3-9]\d{8}$/.test(String(d.receiverPhone||'')))G.oForm.recvPhone=String(d.receiverPhone);if(d.receiverName)G.oForm.recvName=String(d.receiverName).trim();if(d.address)G.oForm.cAddr=String(d.address).trim();if(safeDistrict)G.oForm.district=safeDistrict;if(thana)G.oForm.thana=thana;if(d.notes&&!G.oForm.notes)G.oForm.notes=String(d.notes).slice(0,1000);if($('of_cn'))$('of_cn').value=G.oForm.cName||'';if($('of_op'))$('of_op').value=G.oForm.ordererPhone||'';if($('of_rph'))$('of_rph').value=G.oForm.recvPhone||'';if($('of_rv'))$('of_rv').value=G.oForm.recvName||'';if($('of_addr'))$('of_addr').value=G.oForm.cAddr||'';syncCreateLocationUI();applyCreateDeliveryCharge();if(G.oForm.ordererPhone)lookupCreateCustomer(G.oForm.ordererPhone);saveCreateDraft();syncCreateOrderReady();}
+window.doSmartPaste=async()=>{const raw=$('smartPasteBox')?.value.trim();if(!raw){toast('Customer info paste করুন','warn');return;}const btn=$('smartPasteBtn');if(btn){btn.disabled=true;btn.innerHTML='<div class=\"spin spinSm\"></div> Understanding...';}let parsed=null,usedAI=false,aiError='';try{if(aiEnabled()){const r=await secureApiFetch('/v1/ai/smart-paste',{method:'POST',body:JSON.stringify({text:raw})}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||'AI parser failed');parsed=d.data||{};usedAI=true;}}catch(e){aiError=e.message||String(e);}if(!parsed)parsed=parseSmartPasteLocal(raw);const preview=`${usedAI?'✨ Gemini AI':'⚙️ Local fallback'}\n\nName: ${parsed.name||'-'}\nOrderer: ${parsed.ordererPhone||'-'}${parsed.receiverPhone?`\nReceiver phone: ${parsed.receiverPhone}`:''}${parsed.receiverName?`\nReceiver name: ${parsed.receiverName}`:''}\nDistrict: ${parsed.district||'-'}${parsed.thana?`\nThana: ${parsed.thana}`:''}\nAddress: ${parsed.address||'-'}${parsed.notes?`\nNote: ${parsed.notes}`:''}${aiError?`\n\nAI note: ${aiError}\nLocal parser used.`:''}`;if(confirm(`Smart Paste preview:\n\n${preview}\n\nApply করবেন?`)){applySmartPasteResult(parsed);if($('smartPasteBox'))$('smartPasteBox').value='';toast(usedAI?'✨ Gemini AI Auto Fill applied':'✅ Local Auto Fill applied',usedAI?'ok':'info');}if(btn){btn.disabled=false;btn.innerHTML=aiEnabled()?'✨ AI Preview & Auto Fill':'⚡ Preview & Auto Fill';}};
 
 async function pgNewOrder(){
   if(G.lastOrder){showReceipt(G.lastOrder);return;}loading();
@@ -4689,14 +4719,14 @@ async function pgNewOrder(){
     ${restored?`<div class="coDraftNotice"><div><strong>💾 Draft restored</strong><div style="margin-top:2px">গত ২৪ ঘণ্টার অসম্পূর্ণ order আবার চালু হয়েছে।</div></div><button class="btn bS bSm" onclick="resetCreateOrder()">Discard draft</button></div>`:''}
     <div class="ordCreateLayout">
       <div class="ordCreateMain">
-        <div class="ordCreateSection" style="border-color:rgba(99,102,241,.26)"><div class="ordCreateSectionTitle">✨ Smart Paste V2</div><div style="font-size:11.5px;color:var(--t2);margin-bottom:9px">Name, one/two phone, district, thana ও address paste করুন — apply করার আগে preview দেখাবে।</div><textarea class="afI" id="smartPasteBox" rows="3" placeholder="Md Rahim&#10;01711234567&#10;Mirpur, Dhaka&#10;House 10, Road 5"></textarea><button class="btn bP bSm" style="margin-top:8px" onclick="doSmartPaste()">⚡ Preview & Auto Fill</button></div>
+        <div class="ordCreateSection" style="border-color:rgba(99,102,241,.26)"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px"><div class="ordCreateSectionTitle" style="margin:0">✨ Smart Paste V2</div><span style="font-size:10px;font-weight:800;padding:5px 9px;border-radius:999px;background:${aiEnabled()?'rgba(16,185,129,.12)':'rgba(107,114,128,.12)'};color:${aiEnabled()?'var(--green)':'var(--t3)'}">${aiEnabled()?'● Gemini AI Active':'● Local Parser'}</span></div><div style="font-size:11.5px;color:var(--t2);margin-bottom:9px">Customer message যেমন আছে তেমন paste করুন। ${aiEnabled()?'Gemini নাম, এক/দুই ফোন, receiver, district, thana, address ও note বুঝে structured preview দেবে।':'AI configure না থাকলেও local parser কাজ করবে। Settings → AI & Smart Paste থেকে Gemini চালু করতে পারবেন।'}</div><textarea class="afI" id="smartPasteBox" rows="4" maxlength="5000" placeholder="Md Rahim&#10;01711234567&#10;Receiver: 018XXXXXXXX&#10;Mirpur, Dhaka&#10;House 10, Road 5"></textarea><button class="btn bP bSm" id="smartPasteBtn" style="margin-top:8px" onclick="doSmartPaste()">${aiEnabled()?'✨ AI Preview & Auto Fill':'⚡ Preview & Auto Fill'}</button></div>
         <div class="ordCreateSection"><div class="ordCreateSectionTitle">👤 Customer</div><div class="afG"><label class="afL">Customer Name *</label><input class="afI" id="of_cn" value="${esc(f.cName)}" maxlength="100" placeholder="Full name" oninput="G.oForm.cName=this.value;createOrderDraftTouch()"/></div><div class="afRow"><div class="afG"><label class="afL">Orderer Phone *</label><input class="afI" id="of_op" inputmode="numeric" maxlength="11" value="${esc(f.ordererPhone)}" placeholder="01XXXXXXXXX" oninput="G.oForm.ordererPhone=this.value;createOrderDraftTouch();lookupCreateCustomer(this.value)"/></div><div class="afG"><label class="afL">Receiver Phone <span style="font-size:10px;color:var(--t3)">(blank = same)</span></label><input class="afI" id="of_rph" inputmode="numeric" maxlength="11" value="${esc(f.recvPhone)}" placeholder="01XXXXXXXXX" oninput="G.oForm.recvPhone=this.value;createOrderDraftTouch()"/></div></div><div id="coCustomerHit" class="coCustomerHit"></div><div class="afG"><label class="afL">Receiver Name <span style="font-size:10px;color:var(--t3)">(if different)</span></label><input class="afI" id="of_rv" value="${esc(f.recvName)}" maxlength="100" placeholder="Blank = same" oninput="G.oForm.recvName=this.value;createOrderDraftTouch()"/></div></div>
         <div class="ordCreateSection"><div class="ordCreateSectionTitle">📍 Delivery Location</div><div class="coLocationGrid">${renderDistrictPicker('of')}</div><div class="afG"><label class="afL">Detailed Address *</label><textarea class="afI" id="of_addr" rows="3" maxlength="500" placeholder="House / Road / Area / Landmark" oninput="G.oForm.cAddr=this.value;createOrderDraftTouch()">${esc(f.cAddr)}</textarea></div><div class="afG"><label class="afL">Delivery Zone</label><select class="afI" id="of_zone" onchange="onCreateDeliveryZone(this.value)"><option value="auto" ${f.deliveryZone==='auto'?'selected':''}>✨ Auto from district</option><option value="inside" ${f.deliveryZone==='inside'?'selected':''}>🏙️ Inside Dhaka</option><option value="outside" ${f.deliveryZone==='outside'?'selected':''}>🚚 Outside Dhaka</option><option value="custom" ${f.deliveryZone==='custom'?'selected':''}>✍️ Custom charge</option></select></div><div class="coDeliveryHint">Auto mode: Dhaka district → Inside Dhaka charge; অন্য district → Outside Dhaka charge. চাইলে Custom নির্বাচন করুন।</div></div>
         <div class="ordCreateSection"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px"><div class="ordCreateSectionTitle" style="margin:0">📦 Products</div><button class="btn bP bSm" onclick="opShowProductGrid()" id="opAddMoreBtn" style="display:none">➕ Add More</button></div><div id="opBrowseArea"><input class="afI" id="opSearchBox" placeholder="🔍 Search name / বাংলা নাম / SKU / variant..." oninput="filterProductPicker(this.value)" style="margin-bottom:12px"/><div id="productPickerGrid" class="coProductGrid"></div></div><div id="opSelectedItems" style="margin-top:8px"></div><div class="coInventoryWarn">ℹ️ Pending order stock reserve করে না। Confirmed হলে stock atomically reserve হবে। Stock কম থাকলে Pending order Backorder হিসেবে save হবে এবং stock replenishment না হওয়া পর্যন্ত Confirm করা যাবে না।</div></div>
       </div>
       <div class="ordCreateSide">
         <div class="ordCreateSection"><div class="ordCreateSectionTitle">⚙️ Order Settings</div><div class="coSourceGrid"><div class="afG"><label class="afL">Order Source</label><select class="afI" onchange="G.oForm.source=this.value;createOrderDraftTouch()"><option value="manual" ${f.source==='manual'?'selected':''}>✍️ Manual</option><option value="facebook" ${f.source==='facebook'?'selected':''}>📘 Facebook</option><option value="messenger" ${f.source==='messenger'?'selected':''}>💬 Messenger</option><option value="whatsapp" ${f.source==='whatsapp'?'selected':''}>🟢 WhatsApp</option><option value="phone" ${f.source==='phone'?'selected':''}>📞 Phone</option><option value="walkin" ${f.source==='walkin'?'selected':''}>🏪 Walk-in</option></select></div><div class="afG"><label class="afL">Start Status</label><select class="afI" onchange="onCreateInitialStatus(this.value)"><option value="pending" ${f.initialStatus!=='confirmed'?'selected':''}>⏳ Pending</option><option value="confirmed" ${f.initialStatus==='confirmed'?'selected':''}>✅ Confirmed (reserve stock)</option></select></div></div><label style="display:flex;align-items:flex-start;gap:9px;padding:9px 10px;margin-bottom:10px;border:1px solid var(--border);border-radius:11px;background:rgba(245,158,11,.04);cursor:pointer"><input id="of_backorder" type="checkbox" ${f.allowBackorder&&f.initialStatus!=='confirmed'?'checked':''} ${f.initialStatus==='confirmed'?'disabled':''} onchange="G.oForm.allowBackorder=this.checked;createOrderDraftTouch();renderProductPickerGrid($('opSearchBox')?.value||'');renderSelectedItems()" style="margin-top:2px;accent-color:var(--yellow)"/><span style="font-size:10.5px;line-height:1.55;color:var(--t2)"><b style="color:var(--yellow)">Allow Backorder</b><br>Pending order-এ stock-এর চেয়ে বেশি quantity নেওয়া যাবে। কোনো stock আংশিক deduct হবে না; Confirm করার সময় full stock available থাকা বাধ্যতামূলক।</span></label><div class="afRow"><div class="afG"><label class="afL">Order Date</label><input class="afI" type="date" value="${esc(f.orderDate)}" oninput="G.oForm.orderDate=this.value;createOrderDraftTouch()"/></div><div class="afG"><label class="afL">Delivery By</label><input class="afI" type="date" value="${esc(f.delivDate)}" oninput="G.oForm.delivDate=this.value;createOrderDraftTouch()"/></div></div><div class="afG"><label class="afL">Receipt Language</label><select class="afI" onchange="G.oForm.rLang=this.value;createOrderDraftTouch()"><option value="en" ${f.rLang==='en'?'selected':''}>🇬🇧 English</option><option value="bn" ${f.rLang==='bn'?'selected':''}>🇧🇩 বাংলা</option></select></div></div>
-        <div class="ordCreateSection"><div class="ordCreateSectionTitle">💳 Payment</div><div class="afG"><label class="afL">Payment Method</label><select class="afI" id="of_paymentMethod" onchange="onCreatePaymentMethodChange(this.value)"><option value="cod" ${f.paymentMethod==='cod'?'selected':''}>🚚 Cash on Delivery</option><option value="bkash" ${f.paymentMethod==='bkash'?'selected':''}>📱 bKash</option><option value="nagad" ${f.paymentMethod==='nagad'?'selected':''}>📱 Nagad</option><option value="bank" ${f.paymentMethod==='bank'?'selected':''}>🏦 Bank Transfer</option><option value="cash" ${f.paymentMethod==='cash'?'selected':''}>💵 Cash / Manual</option></select></div><div class="afG"><label class="afL">Payment Status</label><select class="afI" id="of_payStatus" onchange="onCreatePayStatusChange(this.value)"><option value="pending" ${f.payStatus==='pending'?'selected':''}>⏳ Unpaid</option><option value="partial" ${f.payStatus==='partial'?'selected':''}>◐ Partial</option><option value="paid" ${f.payStatus==='paid'?'selected':''}>✅ Paid</option></select></div><div class="afG" id="of_paidWrap" style="display:${f.payStatus==='partial'?'block':'none'}"><label class="afL">Paid Amount (৳)</label><input class="afI" id="of_paidAmount" type="number" min="0" value="${Number(f.paidAmount)||0}" oninput="G.oForm.paidAmount=this.value;createOrderDraftTouch();updTotal()"/></div><div class="coPaymentExtra" id="coPaymentExtra" style="display:${paymentExtraVisible()?'grid':'none'}"><div class="afG" style="margin:0"><label class="afL">Transaction ID</label><input class="afI" maxlength="100" value="${esc(f.paymentTxnId)}" placeholder="Txn / reference" oninput="G.oForm.paymentTxnId=this.value;createOrderDraftTouch()"/></div><div class="afG" style="margin:0"><label class="afL">Payment Phone / Account</label><input class="afI" maxlength="100" value="${esc(f.paymentPhone)}" placeholder="Optional" oninput="G.oForm.paymentPhone=this.value;createOrderDraftTouch()"/></div><div class="afG" style="margin:0"><label class="afL">Payment Note</label><input class="afI" maxlength="250" value="${esc(f.paymentNote)}" placeholder="Optional verification note" oninput="G.oForm.paymentNote=this.value;createOrderDraftTouch()"/></div></div><div class="afRow"><div class="afG"><label class="afL">Delivery Charge</label><input class="afI" type="number" id="of_del" value="${Number(f.delivery)||0}" min="0" oninput="G.oForm.delivery=this.value;G.oForm.deliveryZone='custom';if($('of_zone'))$('of_zone').value='custom';createOrderDraftTouch();updTotal()"/></div><div class="afG"><label class="afL">Discount</label><input class="afI" type="number" id="of_disc" value="${Number(f.discount)||0}" min="0" oninput="G.oForm.discount=this.value;G.oForm.appliedCoupon=null;const w=$('coDiscountReason');if(w)w.style.display=Number(this.value)>0?'block':'none';createOrderDraftTouch();updTotal()"/></div></div><div class="afG" id="coDiscountReason" style="display:${Number(f.discount)>0&&!f.appliedCoupon?'block':'none'}"><label class="afL">Manual Discount Reason *</label><input class="afI" maxlength="200" value="${esc(f.discountReason||'')}" placeholder="Why is this discount being given?" oninput="G.oForm.discountReason=this.value;createOrderDraftTouch()"/></div><div class="afG"><label class="afL">🏷️ Coupon</label><div style="display:flex;gap:6px"><input class="afI" id="of_coupon" value="${esc(f.appliedCoupon?.code||'')}" placeholder="EID20" style="flex:1" oninput="this.value=this.value.toUpperCase()"/><button class="btn bS bSm" type="button" onclick="applyCoupon()">Apply</button>${f.appliedCoupon?'<button class="btn bD bSm" type="button" onclick="clearCreateCoupon()">✕</button>':''}</div><div id="couponMsg" class="coCouponApplied">${f.appliedCoupon?`✅ ${esc(f.appliedCoupon.code)} · ${cur(f.appliedCoupon.discount||0)} discount`:''}</div></div><div class="afG"><label class="afL">Notes</label><textarea class="afI" rows="2" maxlength="1000" oninput="G.oForm.notes=this.value;createOrderDraftTouch()">${esc(f.notes)}</textarea></div></div>
+        <div class="ordCreateSection"><div class="ordCreateSectionTitle">💳 Payment</div><div class="afG"><label class="afL">Payment Method</label><select class="afI" id="of_paymentMethod" onchange="onCreatePaymentMethodChange(this.value)"><option value="cod" ${f.paymentMethod==='cod'?'selected':''}>🚚 Cash on Delivery</option><option value="bkash" ${f.paymentMethod==='bkash'?'selected':''}>📱 bKash</option><option value="nagad" ${f.paymentMethod==='nagad'?'selected':''}>📱 Nagad</option><option value="bank" ${f.paymentMethod==='bank'?'selected':''}>🏦 Bank Transfer</option><option value="cash" ${f.paymentMethod==='cash'?'selected':''}>💵 Cash / Manual</option></select></div><div class="afG"><label class="afL">Payment Status</label><select class="afI" id="of_payStatus" onchange="onCreatePayStatusChange(this.value)"><option value="pending" ${f.payStatus==='pending'?'selected':''}>⏳ Unpaid</option><option value="partial" ${f.payStatus==='partial'?'selected':''}>◐ Partial</option><option value="paid" ${f.payStatus==='paid'?'selected':''}>✅ Paid</option></select></div><div class="afG" id="of_paidWrap" style="display:${f.payStatus==='partial'?'block':'none'}"><label class="afL">Paid Amount (৳)</label><input class="afI" id="of_paidAmount" type="number" min="0" value="${Number(f.paidAmount)||0}" oninput="G.oForm.paidAmount=this.value;updTotal();saveCreateDraft()"/></div><div class="coPaymentExtra" id="coPaymentExtra" style="display:${paymentExtraVisible()?'grid':'none'}"><div class="afG" style="margin:0"><label class="afL">Transaction ID</label><input class="afI" maxlength="100" value="${esc(f.paymentTxnId)}" placeholder="Txn / reference" oninput="G.oForm.paymentTxnId=this.value;createOrderDraftTouch()"/></div><div class="afG" style="margin:0"><label class="afL">Payment Phone / Account</label><input class="afI" maxlength="100" value="${esc(f.paymentPhone)}" placeholder="Optional" oninput="G.oForm.paymentPhone=this.value;createOrderDraftTouch()"/></div><div class="afG" style="margin:0"><label class="afL">Payment Note</label><input class="afI" maxlength="250" value="${esc(f.paymentNote)}" placeholder="Optional verification note" oninput="G.oForm.paymentNote=this.value;createOrderDraftTouch()"/></div></div><div class="afRow"><div class="afG"><label class="afL">Delivery Charge</label><input class="afI" type="number" id="of_del" value="${Number(f.delivery)||0}" min="0" oninput="onCreateDeliveryInput(this)" onchange="onCreateDeliveryInput(this)"/></div><div class="afG"><label class="afL">Discount</label><input class="afI" type="number" id="of_disc" value="${Number(f.discount)||0}" min="0" oninput="G.oForm.discount=this.value;G.oForm.appliedCoupon=null;const w=$('coDiscountReason');if(w)w.style.display=Number(this.value)>0?'block':'none';updTotal();saveCreateDraft()"/></div></div><div class="afG" id="coDiscountReason" style="display:${Number(f.discount)>0&&!f.appliedCoupon?'block':'none'}"><label class="afL">Manual Discount Reason *</label><input class="afI" maxlength="200" value="${esc(f.discountReason||'')}" placeholder="Why is this discount being given?" oninput="G.oForm.discountReason=this.value;createOrderDraftTouch()"/></div><div class="afG"><label class="afL">🏷️ Coupon</label><div style="display:flex;gap:6px"><input class="afI" id="of_coupon" value="${esc(f.appliedCoupon?.code||'')}" placeholder="EID20" style="flex:1" oninput="this.value=this.value.toUpperCase()"/><button class="btn bS bSm" type="button" onclick="applyCoupon()">Apply</button>${f.appliedCoupon?'<button class="btn bD bSm" type="button" onclick="clearCreateCoupon()">✕</button>':''}</div><div id="couponMsg" class="coCouponApplied">${f.appliedCoupon?`✅ ${esc(f.appliedCoupon.code)} · ${cur(f.appliedCoupon.discount||0)} discount`:''}</div></div><div class="afG"><label class="afL">Notes</label><textarea class="afI" rows="2" maxlength="1000" oninput="G.oForm.notes=this.value;createOrderDraftTouch()">${esc(f.notes)}</textarea></div></div>
         <div class="ordCreateSummary"><div class="ordCreateSectionTitle">🧾 Live Order Summary</div><div class="ordCreateSummaryLine" id="subRow"><span>Subtotal</span><span>${cur(t.sub)}</span></div><div class="ordCreateSummaryLine" id="discRow"><span>Discount</span><span>${t.disc?'- '+cur(t.disc):cur(0)}</span></div><div class="ordCreateSummaryLine" id="delRow"><span>Delivery</span><span>${cur(t.del)}</span></div><div class="ordCreateSummaryLine"><span>Paid</span><span id="paidRow">${cur(t.paid)}</span></div><div class="ordCreateSummaryLine"><span>Due</span><span id="dueRow" style="color:${t.due?'var(--yellow)':'var(--green)'};font-weight:800">${cur(t.due)}</span></div><div class="ordCreateSummaryLine total" id="totRow"><span>Total</span><span style="color:var(--acc2)">${cur(t.total)}</span></div><div id="coChecklist" class="coChecklist"></div><div class="ordCreateBottom"><button class="btn bS" onclick="resetCreateOrder()">🔄 Reset</button><button class="btn bP coSummaryTotalBtn" id="subOBtn" onclick="submitOrder()">✅ Create Order · ${cur(t.total)}</button></div></div>
       </div>
     </div>`);
@@ -5229,6 +5259,7 @@ window.toolsGoTo=(key)=>{
   const back=$('toolsBackBtn');if(back)back.style.display='inline-flex';
   TOOL_SECTION_IDS.forEach(id=>{const el=$(id);if(el)el.style.display='none';});
   target.style.display='block';
+  if(key==='ai')loadSecureAISettingsPanel();
   target.scrollIntoView({behavior:'smooth',block:'start'});
 };
 window.toolsBackToHub=()=>{
@@ -6989,6 +7020,7 @@ async function pgCfg(){
         {id:'bizinfo',ico:'🏢',label:'Business Information',clr:'99,102,241'},
         {id:'summary',ico:'📊',label:'Business Summary',clr:'99,102,241'},
         {id:'prefs',ico:'🔔',label:'Notifications & Preferences',clr:'16,185,129'},
+        {id:'ai',ico:'✨',label:'AI & Smart Paste',clr:'168,85,247'},
         {id:'receipt',ico:'🎨',label:'Receipt Theme',clr:'168,85,247'},
       ].map(t=>`
         <div onclick="cfgGoTo('${t.id}')" style="cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 10px;text-align:center;transition:all .2s" onmouseover="this.style.borderColor='rgba(${t.clr},.5)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
@@ -7070,6 +7102,17 @@ async function pgCfg(){
           <button class="btn bS bFull" style="margin-top:12px" onclick="savePref()">💾 Save Preferences</button>
         </div>
 
+        <div class="card" id="cfgSec_ai" style="border-color:rgba(168,85,247,.28)">
+          <div class="cardTitle">✨ AI & Smart Paste <span style="font-size:10px;color:var(--t3);font-weight:500">Google Gemini · secure backend</span></div>
+          <div id="aiCfgStatus" style="padding:10px 12px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);font-size:12px;color:var(--t2);margin-bottom:12px">Checking secure AI status...</div>
+          <div style="font-size:11px;color:var(--t2);line-height:1.7;margin-bottom:12px">Gemini key Cloudflare Worker-এর encrypted KV storage-এ থাকবে। Saved key এই page, Firestore বা Page Source-এ ফেরত দেখানো হবে না। AI fail করলে Create Order-এর local Smart Paste parser fallback হিসেবে কাজ করবে।</div>
+          <div class="afG"><label class="afL">Google Gemini API Key</label><input class="afI" id="ai_cfg_key" type="password" autocomplete="new-password" placeholder="Saved key দেখা যাবে না — নতুন/replace key লিখুন"/></div>
+          <div class="afG"><label class="afL">Model</label><select class="afI" id="ai_cfg_model"><option value="gemini-3.6-flash">Gemini 3.6 Flash — Recommended</option><option value="gemini-3.5-flash">Gemini 3.5 Flash</option><option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite</option></select></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:12px"><div><div style="font-size:12px;font-weight:700">Enable AI features</div><div style="font-size:10px;color:var(--t3);margin-top:2px">Smart Paste, AI Advisor, Description, Risk Check</div></div><label class="toggle"><input type="checkbox" id="ai_cfg_enabled" checked/><span class="toggleSlider"></span></label></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn bP" onclick="saveSecureAIConfig(this)">🔐 Save Securely</button><button class="btn bS" onclick="testSecureAI(this)">🧪 Test Connection</button></div>
+          <button class="btn bD bFull bSm" style="margin-top:8px" onclick="removeSecureAIConfig(this)">🗑️ Remove AI Key</button>
+        </div>
+
         <div class="card" id="cfgSec_receipt" style="border-color:rgba(168,85,247,.25)">
           <div class="cardTitle">🎨 Receipt Theme <span style="font-size:11px;color:var(--t3);font-weight:400">— রসিদের ডিজাইন বাছুন</span></div>
           <div style="font-size:12px;color:var(--t2);margin-bottom:14px">আপনার পছন্দমতো একটি রসিদ ডিজাইন বেছে নিন। অর্ডার তৈরির পর এই ডিজাইনে রসিদ তৈরি হবে।</div>
@@ -7083,7 +7126,7 @@ async function pgCfg(){
     cfgBackToHub(); // start on the hub menu — sections open only when a tile is clicked
   }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
 }
-const CFG_SECTION_IDS=['cfgSec_bizinfo','cfgSec_summary','cfgSec_prefs','cfgSec_receipt'];
+const CFG_SECTION_IDS=['cfgSec_bizinfo','cfgSec_summary','cfgSec_prefs','cfgSec_ai','cfgSec_receipt'];
 window.cfgGoTo=(key)=>{
   const target=$('cfgSec_'+key);
   if(!target)return;
@@ -7098,6 +7141,16 @@ window.cfgBackToHub=()=>{
   const back=$('cfgBackBtn');if(back)back.style.display='none';
   CFG_SECTION_IDS.forEach(id=>{const el=$(id);if(el)el.style.display='none';});
 };
+async function loadSecureAISettingsPanel(){
+  const box=$('aiCfgStatus');if(box)box.innerHTML='<span class="spin spinSm" style="display:inline-block;vertical-align:middle;margin-right:7px"></span> Checking secure backend...';
+  const st=await refreshAIStatus();const model=$('ai_cfg_model');if(model&&G.aiModel)model.value=G.aiModel;const en=$('ai_cfg_enabled');if(en)en.checked=st.enabled!==false;
+  if(box){if(st.ok&&st.configured)box.innerHTML=`<span style="color:var(--green);font-weight:800">● AI configured</span> · ${esc(st.model||G.aiModel)} · ${st.enabled===false?'<span style="color:var(--yellow)">Disabled</span>':'<span style="color:var(--green)">Active</span>'}<div style="font-size:10px;color:var(--t3);margin-top:4px">API key encrypted অবস্থায় Worker KV-তে আছে; key value এখানে ফেরত আসে না।</div>`;else box.innerHTML='<span style="color:var(--yellow);font-weight:800">● AI not configured</span><div style="font-size:10px;color:var(--t3);margin-top:4px">Gemini key লিখে Save Securely চাপুন।</div>';}
+}
+window.loadSecureAISettingsPanel=loadSecureAISettingsPanel;
+window.saveSecureAIConfig=async btn=>{const key=String($('ai_cfg_key')?.value||'').trim(),model=$('ai_cfg_model')?.value||'gemini-3.6-flash',enabled=$('ai_cfg_enabled')?.checked!==false;if(!key&&!G.aiConfigured){toast('Gemini API key দিন','err');return;}if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Saving...';}try{const r=await secureApiFetch('/v1/ai/config',{method:'POST',body:JSON.stringify({apiKey:key,model,enabled})}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||'AI config save failed');$('ai_cfg_key').value='';await refreshAIStatus();await loadSecureAISettingsPanel();toast('🔐 Gemini key encrypted অবস্থায় save হয়েছে','ok');}catch(e){toast(e.message,'err');}finally{if(btn){btn.disabled=false;btn.innerHTML='🔐 Save Securely';}}};
+window.testSecureAI=async btn=>{if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Testing...';}try{const r=await secureApiFetch('/v1/ai/test',{method:'POST'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||'Gemini test failed');await refreshAIStatus();await loadSecureAISettingsPanel();toast('✅ Gemini connection successful','ok');}catch(e){toast(e.message,'err');}finally{if(btn){btn.disabled=false;btn.innerHTML='🧪 Test Connection';}}};
+window.removeSecureAIConfig=async btn=>{if(!confirm('Saved Gemini API key remove করবেন? Smart Paste local fallback-এ চলবে।'))return;if(btn)btn.disabled=true;try{const r=await secureApiFetch('/v1/ai/config',{method:'DELETE'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||'Remove failed');G.aiConfigured=false;G.aiActive=false;G.aiStatusLoaded=true;if($('ai_cfg_key'))$('ai_cfg_key').value='';await loadSecureAISettingsPanel();toast('AI key removed','info');}catch(e){toast(e.message,'err');}finally{if(btn)btn.disabled=false;}};
+
 let _selectedPreset='classic';
 function renderReceiptPresets(){
   const grid=$('rcptPresetGrid');if(!grid)return;
