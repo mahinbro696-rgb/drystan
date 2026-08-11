@@ -4998,13 +4998,16 @@ window.downloadRcptImg=async()=>{
 
 // ══ BUSINESS TOOLS PAGE ══
 async function pgTools(){
-  let stConfigured=false;
+  let stConfigured=false,stVerified=false,stProvider='';
   try{
     const r=await secureApiFetch('/v1/steadfast/config-status',{method:'GET'});
     const d=await r.json().catch(()=>({}));
     stConfigured=!!(r.ok&&d.configured);
+    stVerified=!!(r.ok&&d.verified);
+    stProvider=d.providerHost||'';
   }catch{}
   G.steadfastConfigured=stConfigured;
+  G.steadfastVerified=stVerified;
   const stKey='';const stSecret='';
   setC(`
   <div class="pH"><div><h1>🛠️ Business Tools</h1><p>Useful tools for your business</p></div></div>
@@ -5109,12 +5112,12 @@ async function pgTools(){
     <div class="card" id="toolSec_steadfast" style="border-color:rgba(16,185,129,.25)">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px">
         <div class="cardTitle" style="margin:0">🚚 Steadfast Courier</div>
-        <span style="font-size:11px;font-weight:800;padding:6px 10px;border-radius:999px;background:${stConfigured?'rgba(16,185,129,.12)':'rgba(245,158,11,.12)'};color:${stConfigured?'var(--green)':'var(--yellow)'}">${stConfigured?'● Connected':'● Not configured'}</span>
+        <span style="font-size:11px;font-weight:800;padding:6px 10px;border-radius:999px;background:${stVerified?'rgba(16,185,129,.12)':stConfigured?'rgba(245,158,11,.12)':'rgba(107,114,128,.12)'};color:${stVerified?'var(--green)':stConfigured?'var(--yellow)':'var(--t3)'}">${stVerified?'● Connected':stConfigured?'● Saved — verify required':'● Not configured'}</span>
       </div>
-      <div class="afG"><label class="afL">Steadfast API Key</label><input class="afI" id="sf_key" autocomplete="off" spellcheck="false" placeholder="${stConfigured?'Stored securely — enter only to replace':'Enter API Key'}"/></div>
-      <div class="afG"><label class="afL">Steadfast Secret Key</label><input class="afI" id="sf_secret" type="password" autocomplete="new-password" spellcheck="false" placeholder="${stConfigured?'Stored securely — enter only to replace':'Enter Secret Key'}"/></div>
+      <div class="afG"><label class="afL">Steadfast API Key</label><input class="afI" id="sf_key" type="password" autocomplete="new-password" spellcheck="false" placeholder="${stConfigured?'Enter new API Key to verify/replace':'Enter API Key'}"/></div>
+      <div class="afG"><label class="afL">Steadfast Secret Key</label><input class="afI" id="sf_secret" type="password" autocomplete="new-password" spellcheck="false" placeholder="${stConfigured?'Enter new Secret Key to verify/replace':'Enter Secret Key'}"/></div>
       <button class="btn bG bFull" id="sfSaveBtn" onclick="saveSteadfastConfig()">💾 Save & Verify</button>
-      <div id="sfConfigMsg" style="font-size:11px;color:var(--t3);margin-top:8px;line-height:1.6">Credentials are stored encrypted on the secure backend.</div>
+      <div id="sfConfigMsg" style="font-size:11px;color:var(--t3);margin-top:8px;line-height:1.6">${stVerified?`✅ Verified${stProvider?' via '+esc(stProvider):''}. Credentials are encrypted.`:stConfigured?'Credentials are saved, but current connection has not been verified. Enter fresh credentials and Save & Verify.':'Enter API Key + Secret Key. They will be verified before being saved.'}</div>
     </div>
 
     <!-- REDX COURIER -->
@@ -5826,7 +5829,7 @@ window.saveSteadfastConfig=async()=>{
   const secret=$('sf_secret')?.value.trim()||'';
   const btn=$('sfSaveBtn');
   const msg=$('sfConfigMsg');
-  if(!key&&!secret&&G.steadfastConfigured){toast('Steadfast already connected. নতুন key দিলে দুটো field পূরণ করুন।','info');return;}
+  if(!key&&!secret&&G.steadfastConfigured){toast(G.steadfastVerified?'Steadfast already verified. নতুন credentials দিলে দুটো field পূরণ করুন।':'Verification-এর জন্য API Key এবং Secret Key আবার দিন।','info');return;}
   if(!key||!secret){toast('Steadfast API Key এবং Secret Key দুটোই দিন','err');return;}
   if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Verifying...';}
   if(msg){msg.style.color='var(--t2)';msg.textContent='Steadfast credentials verify করা হচ্ছে...';}
@@ -5837,7 +5840,7 @@ window.saveSteadfastConfig=async()=>{
     });
     const data=await resp.json().catch(()=>({}));
     if(!resp.ok||!data.ok)throw new Error(data.error||'Steadfast credential verification failed');
-    G.steadfastConfigured=true;
+    G.steadfastConfigured=true;G.steadfastVerified=true;
     try{
       await updateDoc(BCfg(),{
         steadfastKey:deleteField(),
@@ -5849,7 +5852,7 @@ window.saveSteadfastConfig=async()=>{
     }catch{}
     if($('sf_key'))$('sf_key').value='';
     if($('sf_secret'))$('sf_secret').value='';
-    if(msg){msg.style.color='var(--green)';msg.textContent='✅ Connected. Credentials verified and saved securely.';}
+    if(msg){msg.style.color='var(--green)';msg.textContent='✅ Connected. '+(data.providerHost?('Verified via '+data.providerHost+'. '):'')+'Credentials saved securely.';}
     toast('✅ Steadfast connected successfully!','ok');
     setTimeout(()=>pgTools(),600);
   }catch(e){
