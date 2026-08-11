@@ -784,6 +784,84 @@ img{max-width:100%}
 }
 @media(max-width:480px){.coProductGrid{gap:8px}.coProdBody{padding:8px}.coProdName{font-size:11px}.coQty button{width:42px;height:42px}.ordCreateBottom{left:10px;flex-direction:row}.ordCreateBottom .btn{width:auto}.ordCreateBottom .bS{flex:0 0 82px}.ordCreateBottom .bP{flex:1}}
 
+
+/* ═══════════════════════════════════════════════════════════════
+   PROFESSIONAL PRODUCT CONTROL CENTER
+   ═══════════════════════════════════════════════════════════════ */
+.prodHead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.prodHead h1{font-size:24px;font-weight:850;letter-spacing:-.02em}
+.prodHead p{font-size:12.5px;color:var(--t2);margin-top:4px}
+.prodHeadActions{display:flex;gap:8px;flex-wrap:wrap}
+.prodKpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.prodKpi{background:linear-gradient(180deg,var(--card),rgba(255,255,255,.012));border:1px solid var(--border);border-radius:14px;padding:13px;min-width:0;position:relative;overflow:hidden}
+.prodKpi:after{content:"";position:absolute;inset:auto -28px -36px auto;width:88px;height:88px;border-radius:50%;background:var(--kpiGlow,rgba(99,102,241,.08));pointer-events:none}
+.prodKpiLabel{font-size:10.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.055em;font-weight:750}
+.prodKpiValue{font-size:20px;font-weight:850;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prodKpiSub{font-size:10px;color:var(--t2);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prodToolbar{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:11px;margin-bottom:12px}
+.prodToolbarTop{display:grid;grid-template-columns:minmax(220px,1.5fr) repeat(3,minmax(125px,.65fr)) minmax(150px,.8fr);gap:8px;align-items:center}
+.prodToolbarBottom{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:9px;padding-top:9px;border-top:1px solid var(--border)}
+.prodQuickFilters{display:flex;gap:6px;flex-wrap:wrap}
+.prodQuickChip{border:1px solid var(--border);background:var(--bg2);color:var(--t2);font:inherit;font-size:11px;font-weight:700;padding:6px 9px;border-radius:999px;cursor:pointer;transition:.15s ease}
+.prodQuickChip:hover,.prodQuickChip.active{border-color:rgba(168,85,247,.5);color:var(--acc2);background:rgba(168,85,247,.09)}
+.prodViewToggle{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);padding:3px;border-radius:9px}
+.prodViewToggle button{border:0;background:transparent;color:var(--t3);width:30px;height:28px;border-radius:7px;cursor:pointer;font-size:14px}
+.prodViewToggle button.active{background:var(--card2);color:var(--t1);box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.prodTableShell{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.prodTable{width:100%;border-collapse:collapse}
+.prodTable th{font-size:9.5px;text-transform:uppercase;letter-spacing:.055em;color:var(--t3);font-weight:800;text-align:left;padding:10px 11px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.012);white-space:nowrap}
+.prodTable td{padding:10px 11px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:12px}
+.prodTable tbody tr:last-child td{border-bottom:none}
+.prodTable tbody tr{transition:background .14s ease}
+.prodTable tbody tr:hover{background:rgba(168,85,247,.025)}
+.prodIdentity{display:flex;align-items:center;gap:9px;min-width:205px}
+.prodThumb{width:42px;height:42px;border-radius:10px;object-fit:cover;background:#fff;border:1px solid var(--border);flex-shrink:0}
+.prodThumbPh{width:42px;height:42px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.prodName{font-size:12.5px;font-weight:780;line-height:1.3;max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prodMeta{font-size:9.5px;color:var(--t3);margin-top:3px;max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prodPriceMain{font-size:12.5px;font-weight:800}
+.prodPriceOld{font-size:9.5px;color:var(--t3);text-decoration:line-through;margin-left:4px}
+.prodProfit{display:inline-flex;align-items:center;gap:3px;background:rgba(16,185,129,.09);color:var(--green);font-weight:800;font-size:10.5px;padding:4px 7px;border-radius:7px}
+.prodStockBadge,.prodStatusBadge{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border-radius:999px;font-size:9.5px;font-weight:800;white-space:nowrap}
+.prodStockBadge.in{background:rgba(16,185,129,.09);color:var(--green)}
+.prodStockBadge.low{background:rgba(245,158,11,.10);color:var(--yellow)}
+.prodStockBadge.out{background:rgba(239,68,68,.10);color:var(--red)}
+.prodStatusBadge.active{background:rgba(16,185,129,.09);color:var(--green)}
+.prodStatusBadge.archived{background:rgba(148,163,184,.10);color:var(--t2)}
+.prodActions{display:flex;gap:5px;justify-content:flex-end}
+.prodActions .btn{min-width:34px}
+.prodCards{display:none;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:10px}
+.prodCard{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.16s ease;min-width:0}
+.prodCard:hover{border-color:rgba(168,85,247,.28);transform:translateY(-1px)}
+.prodCardTop{display:flex;gap:10px;padding:11px;border-bottom:1px solid var(--border)}
+.prodCardImg{width:58px;height:58px;border-radius:11px;object-fit:cover;background:#fff;border:1px solid var(--border);flex-shrink:0}
+.prodCardImgPh{width:58px;height:58px;border-radius:11px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:23px;flex-shrink:0}
+.prodCardBody{padding:10px 11px}
+.prodCardGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.prodCardStat{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:7px}
+.prodCardStat small{display:block;color:var(--t3);font-size:8.5px;text-transform:uppercase;letter-spacing:.04em}
+.prodCardStat b{display:block;font-size:11.5px;margin-top:2px}
+.prodCardActions{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:9px}
+.prodCardActions .btn{width:100%;min-width:0;padding:7px 5px}
+.prodPager{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 2px 2px;color:var(--t2);font-size:10.5px;flex-wrap:wrap}
+.prodPagerBtns{display:flex;gap:5px;align-items:center}
+.prodPagerBtns button{min-width:32px;height:30px;border:1px solid var(--border);background:var(--card);color:var(--t2);border-radius:8px;cursor:pointer;font:inherit;font-size:10.5px;font-weight:700}
+.prodPagerBtns button.active{background:var(--acc);color:#fff;border-color:transparent}
+.prodPagerBtns button:disabled{opacity:.4;cursor:not-allowed}
+.prodEmpty{background:var(--card);border:1px dashed var(--border);border-radius:14px;padding:40px 20px;text-align:center;color:var(--t2)}
+.prodFormSection{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:11px}
+.prodFormSectionTitle{font-size:11.5px;font-weight:800;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.prodLiveMetrics{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:8px}
+.prodLiveMetric{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px}
+.prodLiveMetric small{display:block;font-size:8.5px;color:var(--t3);text-transform:uppercase}
+.prodLiveMetric b{display:block;font-size:11.5px;margin-top:2px}
+.prodStockModeTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.prodStockModeTabs button{border:1px solid var(--border);background:var(--bg2);color:var(--t2);border-radius:9px;padding:8px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.prodStockModeTabs button.active{background:rgba(168,85,247,.11);border-color:rgba(168,85,247,.4);color:var(--acc2)}
+@media(max-width:1180px){.prodKpis{grid-template-columns:repeat(3,minmax(0,1fr))}.prodToolbarTop{grid-template-columns:1fr 1fr 1fr}.prodToolbarTop .sBar{grid-column:1/-1}.prodToolbarTop .prodSortSel{grid-column:span 2}}
+@media(max-width:860px){.prodKpis{grid-template-columns:repeat(2,minmax(0,1fr))}.prodTableShell{display:none!important}.prodCards{display:grid!important}.prodViewToggle{display:none}.prodToolbarTop{grid-template-columns:1fr 1fr}.prodToolbarTop .sBar,.prodToolbarTop .prodSortSel{grid-column:1/-1}.prodLiveMetrics{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.prodHeadActions{width:100%}.prodHeadActions .btn{flex:1}.prodKpis{grid-template-columns:1fr 1fr;gap:7px}.prodKpi{padding:10px}.prodKpiValue{font-size:16px}.prodToolbarTop{grid-template-columns:1fr}.prodToolbarTop .sBar,.prodToolbarTop .prodSortSel{grid-column:auto}.prodCards{grid-template-columns:1fr}.prodCardActions{grid-template-columns:repeat(2,1fr)}.prodLiveMetrics{grid-template-columns:1fr 1fr}}
+
 </style>
 </head>
 <body>
@@ -2165,7 +2243,7 @@ function renderPublicShop(){
       ${_pubProds.length===0?`<div style="text-align:center;padding:40px;color:var(--t2)">এই মুহূর্তে কোনো পণ্য নেই</div>`:`
       <div class="pubGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">
         ${_pubProds.map((p,i)=>{
-          const price=p.variants?.length?p.variants[0].sellPrice:p.sellPrice;
+          const price=p.variants?.length?prodEffectivePrice(p.variants[0]):prodEffectivePrice(p);
           const imgs=(p.images&&p.images.length)?p.images:(p.imageUrl?[p.imageUrl]:[]);
           const mainImg=imgs[0]||'';
           return`<div style="background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden">
@@ -2233,7 +2311,7 @@ window.pubAddToCart=(idx)=>{
   if(hasVar){
     pubPickVariant(idx);return;
   }
-  const price=Number(p.sellPrice||0);
+  const price=prodEffectivePrice(p);
   const existing=_pubCart.find(i=>i.pid===p.id&&!i.variantName);
   if(existing)existing.qty++;
   else _pubCart.push({pid:p.id,name:p.name,price,qty:1,variantName:'',maxStock:Number(p.stock||99)});
@@ -2252,7 +2330,7 @@ window.pubPickVariant=(idx)=>{
       return `<button class="btn bS bFull" style="justify-content:flex-start;gap:10px;margin-bottom:8px;padding:10px;text-align:left" onclick="pubAddVariant(${idx},${vi})">
         ${img?`<img loading="lazy" src="${esc(img)}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;flex-shrink:0"/>`:'<div style="width:40px;height:40px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0">📦</div>'}
         <span style="flex:1">${esc(v.name)} ${Number(v.stock)<=0?'<span style=\"color:var(--red)\">(স্টক নেই)</span>':''}</span>
-        <strong style="color:var(--green)">${cur(v.sellPrice)}</strong>
+        <strong style="color:var(--green)">${cur(prodEffectivePrice(v))}</strong>
       </button>`;
     }).join('')}
   </div>`;
@@ -2265,7 +2343,7 @@ window.pubAddVariant=(idx,vi)=>{
   const img=(v.images&&v.images[0])||v.image||(p.images&&p.images[0])||p.imageUrl||'';
   const existing=_pubCart.find(i=>i.pid===p.id&&i.variantName===v.name);
   if(existing)existing.qty++;
-  else _pubCart.push({pid:p.id,name:p.name,price:Number(v.sellPrice||0),qty:1,variantName:v.name,maxStock:Number(v.stock||99),image:img});
+  else _pubCart.push({pid:p.id,name:p.name,price:prodEffectivePrice(v),qty:1,variantName:v.name,maxStock:Number(v.stock||99),image:img});
   closeMov('pubCartOvl');
   toast('✅ কার্টে যোগ হয়েছে');
   renderPublicShop();
@@ -3961,118 +4039,270 @@ window.aiAdvisor=async(data)=>{
 };
 
 
-// ══ PRODUCTS ══
+// ══ PRODUCTS — PROFESSIONAL CONTROL CENTER ══
 let pSrch='';
-let _prodCache=null; // cached product list — avoids a Firestore read on every search keystroke
-async function pgProds(){
-  loading();
-  try{
-    const snap=await getDocs(query(BCol('products'),where('active','==',true)));
-    _prodCache=snap.docs.map(d=>({id:d.id,...d.data()}));
-    // Sort newest-first client-side (avoids needing a Firestore composite index)
-    _prodCache.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    renderProdsView();
-  }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
+let pCatFilter='all';
+let pStockFilter='all';
+let pStatusFilter='active';
+let pSort='newest';
+let pView='table';
+let pPage=1;
+const PROD_PAGE_SIZE=20;
+let _prodSearchTimer=null;
+let _prodCache=null; // one Firestore read; search/filter/sort/pagination are local
+
+function prodTotalStock(p){
+  return Array.isArray(p?.variants)&&p.variants.length
+    ? p.variants.reduce((s,v)=>s+Number(v.stock||0),0)
+    : Number(p?.stock||0);
 }
-window.searchProds=(val)=>{pSrch=val;reRenderPreservingFocus(renderProdsView);};
-function renderProdsView(){
-  try{
-    let prods=_prodCache||[];
-    if(pSrch)prods=prods.filter(p=>p.name?.toLowerCase().includes(pSrch.toLowerCase())||p.nameBn?.includes(pSrch));
-    const totalVal=prods.reduce((s,p)=>s+(Number(p.sellPrice||0)*Number(p.stock||0)),0);
-    const lowStock=prods.filter(p=>Number(p.stock)<=Number(p.alertAt||5)).length;
-    setC(`
-    <div class="pH"><div><h1>Products</h1><p>${prods.length} products · Stock value: <strong style="color:var(--green)">${cur(totalVal)}</strong></p></div>
-      <button class="btn bP" onclick="openProdMod()">➕ Add Product</button>
-    </div>
-    ${lowStock?`<div class="al aW" style="margin-bottom:14px">⚠️ ${lowStock} product(s) are running low on stock!</div>`:''}
-    <div class="card">
-      <div style="display:flex;gap:10px;margin-bottom:14px">
-        <div class="sBar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input id="prodSearchInp" placeholder="Search products..." value="${esc(pSrch)}" oninput="searchProds(this.value)"/>
-        </div>
-      </div>
-      ${prods.length===0?`<div class="empty"><h3>No products yet</h3><p>Click "Add Product" to get started</p></div>`:`
-      <div class="tWrap"><table>
-        <thead><tr><th>Product</th><th>Buy Price</th><th>Sell Price</th><th>Profit/unit</th><th>Stock</th><th>Category</th><th>Stock Value</th><th>Actions</th></tr></thead>
-        <tbody>${prods.map(p=>`<tr>
-          <td><div style="font-weight:600">${esc(p.name)}</div>${p.nameBn?`<div style="font-size:11px;color:var(--t2)">${esc(p.nameBn)}</div>`:''}</td>
-          <td style="color:var(--t2)">${cur(p.buyPrice)}</td>
-          <td style="font-weight:700">${cur(p.sellPrice)}</td>
-          <td><span style="color:var(--green);font-weight:700;background:rgba(16,185,129,.1);padding:3px 8px;border-radius:6px;font-size:12px">${cur((p.sellPrice||0)-(p.buyPrice||0))}</span></td>
-          <td><span style="${Number(p.stock)<=Number(p.alertAt||5)?'color:var(--red);font-weight:700':''}"> ${Number(p.stock)<=Number(p.alertAt||5)?'⚠️ ':''} ${Number(p.stock||0)}</span></td>
-          <td><span class="badge bCat">${esc(p.cat||'General')}</span></td>
-          <td style="font-size:12px;color:var(--t2)">${cur((p.sellPrice||0)*Number(p.stock||0))}</td>
-          <td><div style="display:flex;gap:5px">
-            <button class="btn bG bSm bIco" title="Restock" onclick="openRestock('${p.id}',${jsArg(p.name)},${Number(p.stock||0)},${Number(p.buyPrice||0)})">📥</button>
-            <button class="btn bS bSm bIco" onclick="openProdMod('${p.id}')">✏️</button>
-            <button class="btn bD bSm bIco" onclick="delProd('${p.id}',${jsArg(p.name)})">🗑️</button>
-          </div></td>
-        </tr>`).join('')}</tbody>
-      </table></div>`}
-    </div>
-    <div class="mOvl" id="prodMOvl"><div class="modal" id="prodMod"></div></div>
-    <div class="mOvl" id="variantEditOvl" style="z-index:600"><div class="modal" id="variantEditMod"></div></div>
-    <div class="mOvl" id="restockOvl"><div class="modal" id="restockMod"></div></div>`);
-  }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
+function prodEffectivePrice(x){
+  const sell=Number(x?.sellPrice??x?.price??0),offer=Number(x?.offerPrice||0);
+  return offer>0&&offer<sell?offer:sell;
+}
+function prodMainImage(p){
+  const imgs=Array.isArray(p?.images)?p.images:[];
+  if(imgs[0])return imgs[0];
+  if(p?.imageUrl)return p.imageUrl;
+  const variants=Array.isArray(p?.variants)?p.variants:[];
+  for(const v of variants){const vi=(Array.isArray(v.images)&&v.images[0])||v.image;if(vi)return vi;}
+  return '';
+}
+function prodCostValue(p){
+  return Array.isArray(p?.variants)&&p.variants.length
+    ? p.variants.reduce((s,v)=>s+Number(v.buyPrice||0)*Number(v.stock||0),0)
+    : Number(p?.buyPrice||0)*Number(p?.stock||0);
+}
+function prodRetailValue(p){
+  return Array.isArray(p?.variants)&&p.variants.length
+    ? p.variants.reduce((s,v)=>s+prodEffectivePrice(v)*Number(v.stock||0),0)
+    : prodEffectivePrice(p)*Number(p?.stock||0);
+}
+function prodPotentialProfit(p){return prodRetailValue(p)-prodCostValue(p);}
+function prodStockState(p){
+  const stock=prodTotalStock(p),alertAt=Math.max(0,Number(p?.alertAt??5));
+  if(stock<=0)return 'out';
+  if(stock<=alertAt)return 'low';
+  return 'in';
+}
+function prodStockLabel(p){const s=prodStockState(p);return s==='out'?'Out of stock':s==='low'?'Low stock':'In stock';}
+function prodSearchHay(p){return [p?.name,p?.nameBn,p?.sku,p?.brand,p?.cat,p?.code,...(p?.variants||[]).flatMap(v=>[v.name,v.sku,v.code])].filter(Boolean).join(' ').toLowerCase();}
+function prodPriceRange(p,key='sell'){
+  const variants=Array.isArray(p?.variants)&&p.variants.length?p.variants:null;
+  if(!variants){
+    const val=key==='buy'?Number(p.buyPrice||0):prodEffectivePrice(p);
+    return {min:val,max:val,text:cur(val)};
+  }
+  const vals=variants.map(v=>key==='buy'?Number(v.buyPrice||0):prodEffectivePrice(v)).filter(v=>Number.isFinite(v));
+  const clean=vals.length?vals:[0];const min=Math.min(...clean),max=Math.max(...clean);
+  return {min,max,text:min===max?cur(min):`${cur(min)} – ${cur(max)}`};
+}
+function prodProfitRange(p){
+  const variants=Array.isArray(p?.variants)&&p.variants.length?p.variants:[p];
+  const vals=variants.map(v=>prodEffectivePrice(v)-Number(v.buyPrice||0));
+  const min=Math.min(...vals),max=Math.max(...vals);
+  const avg=vals.reduce((a,b)=>a+b,0)/Math.max(1,vals.length);
+  const sellAvg=variants.reduce((s,v)=>s+prodEffectivePrice(v),0)/Math.max(1,variants.length);
+  return {min,max,avg,margin:sellAvg>0?(avg/sellAvg*100):0,text:min===max?cur(min):`${cur(min)} – ${cur(max)}`};
+}
+function productSummary(){
+  const active=(_prodCache||[]).filter(p=>p.active!==false);
+  const low=active.filter(p=>prodStockState(p)==='low').length;
+  const out=active.filter(p=>prodStockState(p)==='out').length;
+  const cost=active.reduce((s,p)=>s+prodCostValue(p),0);
+  const retail=active.reduce((s,p)=>s+prodRetailValue(p),0);
+  const variants=active.reduce((s,p)=>s+(Array.isArray(p.variants)?p.variants.length:0),0);
+  return {active:active.length,low,out,cost,retail,profit:retail-cost,variants};
+}
+function productCategories(){return [...new Set((_prodCache||[]).map(p=>(p.cat||'General').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));}
+function filteredProducts(){
+  let rows=[...(_prodCache||[])];
+  const q=pSrch.trim().toLowerCase();
+  if(q)rows=rows.filter(p=>prodSearchHay(p).includes(q));
+  if(pCatFilter!=='all')rows=rows.filter(p=>(p.cat||'General')===pCatFilter);
+  if(pStockFilter!=='all')rows=rows.filter(p=>prodStockState(p)===pStockFilter);
+  if(pStatusFilter==='active')rows=rows.filter(p=>p.active!==false);
+  else if(pStatusFilter==='archived')rows=rows.filter(p=>p.active===false);
+  rows.sort((a,b)=>{
+    if(pSort==='name')return String(a.name||'').localeCompare(String(b.name||''));
+    if(pSort==='stock_low')return prodTotalStock(a)-prodTotalStock(b);
+    if(pSort==='stock_high')return prodTotalStock(b)-prodTotalStock(a);
+    if(pSort==='price_high')return prodPriceRange(b).min-prodPriceRange(a).min;
+    if(pSort==='price_low')return prodPriceRange(a).min-prodPriceRange(b).min;
+    if(pSort==='profit_high')return prodPotentialProfit(b)-prodPotentialProfit(a);
+    return (b.createdAt?.seconds||b.updatedAt?.seconds||0)-(a.createdAt?.seconds||a.updatedAt?.seconds||0);
+  });
+  return rows;
 }
 
-// ── PURCHASE / RESTOCK ──
-window.openRestock=(pid,name,curStock,curBuy)=>{
-  $('restockMod').innerHTML=`
-  <div class="mH"><h3>📥 স্টক যোগ করুন</h3><button class="btn bS bIco" onclick="closeMov('restockOvl')">✕</button></div>
-  <div class="mB">
-    <div style="padding:12px;background:var(--card);border-radius:10px;margin-bottom:14px;font-size:13px">
-      <div style="font-weight:700">${esc(name)}</div>
-      <div style="color:var(--t2);font-size:12px;margin-top:3px">বর্তমান স্টক: <strong>${curStock}</strong> · ক্রয়মূল্য: <strong>${cur(curBuy)}</strong></div>
-    </div>
-    <div class="gridStack2" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="afG" style="margin:0"><label class="afL">কত পিস কিনলেন? *</label><input class="afI" type="number" id="rs_qty" placeholder="0" min="1"/></div>
-      <div class="afG" style="margin:0"><label class="afL">প্রতি পিস ক্রয়মূল্য (৳)</label><input class="afI" type="number" id="rs_buy" value="${curBuy||''}" placeholder="${curBuy||0}" min="0"/></div>
-    </div>
-    <div class="afG"><label class="afL">সরবরাহকারী / নোট (ঐচ্ছিক)</label><input class="afI" id="rs_note" placeholder="যেমন: ঢাকা হোলসেল মার্কেট"/></div>
-    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--t2);cursor:pointer;margin-top:4px">
-      <input type="checkbox" id="rs_expense" checked style="width:15px;height:15px;accent-color:var(--acc)"/>
-      এই কেনাকাটা খরচ হিসেবে যোগ করুন (Expense log-এ)
-    </label>
-    <div id="rsErr" class="al aE" style="display:none;margin-top:10px"></div>
-  </div>
-  <div class="mF">
-    <button class="btn bS" onclick="closeMov('restockOvl')">বাতিল</button>
-    <button class="btn bP" id="rsBtn" onclick="saveRestock('${pid}',${curStock})">📥 স্টক যোগ করুন</button>
-  </div>`;
-  $('restockOvl').classList.add('open');
-};
-window.saveRestock=async(pid,curStock)=>{
-  const qty=Number($('rs_qty')?.value);
-  const buy=Number($('rs_buy')?.value)||0;
-  const note=$('rs_note')?.value.trim()||'';
-  const asExpense=$('rs_expense')?.checked;
-  const err=$('rsErr');const btn=$('rsBtn');
-  if(!qty||qty<=0){if(err){err.style.display='flex';err.textContent='সঠিক পরিমাণ দিন';}return;}
-  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div>';}
+async function pgProds(force=true){
+  loading();
   try{
-    const newStock=Number(curStock)+qty;
-    const upd={stock:newStock};
-    if(buy>0)upd.buyPrice=buy; // update buy price to latest
-    await updateDoc(BDoc('products',pid),upd);
-    // Log the purchase
-    await addDoc(BCol('purchases'),{pid,qty,buyPrice:buy,total:buy*qty,note,date:today(),createdAt:serverTimestamp()});
-    // Optionally add to expenses
-    if(asExpense&&buy>0){
-      await addDoc(BCol('expenses'),{cat:'stock',amount:buy*qty,note:`স্টক কেনা: ${qty} পিস${note?' ('+note+')':''}`,date:today(),createdAt:serverTimestamp()});
+    if(force||!_prodCache){
+      const snap=await getDocs(BCol('products'));
+      _prodCache=snap.docs.map(d=>({id:d.id,...d.data()}));
     }
-    toast(`✅ ${qty} পিস যোগ হয়েছে! নতুন স্টক: ${newStock}`);
-    closeMov('restockOvl');pgProds();
-  }catch(e){if(err){err.style.display='flex';err.textContent='❌ '+e.message;}if(btn){btn.disabled=false;btn.innerHTML='📥 স্টক যোগ করুন';}}
+    renderProdsView();
+  }catch(e){setC(`<div class="al aE">❌ ${esc(e.message)}</div>`);}
+}
+
+function renderProdsView(){
+  const S=productSummary(),cats=productCategories();
+  setC(`
+  <div class="prodHead">
+    <div><h1>📦 Product Control Center</h1><p>Manage catalog, pricing, inventory, variants and product status from one place.</p></div>
+    <div class="prodHeadActions">
+      <button class="btn bS" onclick="exportProductCSV()">⬇️ Export CSV</button>
+      <button class="btn bP" onclick="openProdMod()">➕ Add Product</button>
+    </div>
+  </div>
+  <div class="prodKpis">
+    <div class="prodKpi" style="--kpiGlow:rgba(99,102,241,.12)"><div class="prodKpiLabel">Active Products</div><div class="prodKpiValue">${S.active}</div><div class="prodKpiSub">${S.variants} variants across catalog</div></div>
+    <div class="prodKpi" style="--kpiGlow:rgba(59,130,246,.12)"><div class="prodKpiLabel">Inventory Cost</div><div class="prodKpiValue">${cur(S.cost)}</div><div class="prodKpiSub">Buy price × current stock</div></div>
+    <div class="prodKpi" style="--kpiGlow:rgba(16,185,129,.12)"><div class="prodKpiLabel">Retail Stock Value</div><div class="prodKpiValue" style="color:var(--green)">${cur(S.retail)}</div><div class="prodKpiSub">Potential sales value</div></div>
+    <div class="prodKpi" style="--kpiGlow:rgba(168,85,247,.12)"><div class="prodKpiLabel">Potential Profit</div><div class="prodKpiValue" style="color:var(--acc2)">${cur(S.profit)}</div><div class="prodKpiSub">Retail value − inventory cost</div></div>
+    <div class="prodKpi" style="--kpiGlow:rgba(239,68,68,.12)"><div class="prodKpiLabel">Stock Attention</div><div class="prodKpiValue" style="color:${S.out?'var(--red)':S.low?'var(--yellow)':'var(--green)'}">${S.low+S.out}</div><div class="prodKpiSub">${S.low} low · ${S.out} out of stock</div></div>
+  </div>
+  <div class="prodToolbar">
+    <div class="prodToolbarTop">
+      <div class="sBar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input id="prodSearchInp" placeholder="Search name, Bangla name, SKU, category, variant..." value="${esc(pSrch)}" oninput="searchProds(this.value)"/></div>
+      <select class="afI" onchange="prodSetCategory(this.value)"><option value="all">All categories</option>${cats.map(c=>`<option value="${esc(c)}" ${pCatFilter===c?'selected':''}>${esc(c)}</option>`).join('')}</select>
+      <select class="afI" onchange="prodSetStock(this.value)"><option value="all" ${pStockFilter==='all'?'selected':''}>All stock</option><option value="in" ${pStockFilter==='in'?'selected':''}>✅ In stock</option><option value="low" ${pStockFilter==='low'?'selected':''}>⚠️ Low stock</option><option value="out" ${pStockFilter==='out'?'selected':''}>⛔ Out of stock</option></select>
+      <select class="afI" onchange="prodSetStatus(this.value)"><option value="active" ${pStatusFilter==='active'?'selected':''}>Active only</option><option value="archived" ${pStatusFilter==='archived'?'selected':''}>Archived only</option><option value="all" ${pStatusFilter==='all'?'selected':''}>All status</option></select>
+      <select class="afI prodSortSel" onchange="prodSetSort(this.value)"><option value="newest" ${pSort==='newest'?'selected':''}>Newest first</option><option value="name" ${pSort==='name'?'selected':''}>Name A–Z</option><option value="stock_low" ${pSort==='stock_low'?'selected':''}>Stock: low first</option><option value="stock_high" ${pSort==='stock_high'?'selected':''}>Stock: high first</option><option value="price_low" ${pSort==='price_low'?'selected':''}>Price: low first</option><option value="price_high" ${pSort==='price_high'?'selected':''}>Price: high first</option><option value="profit_high" ${pSort==='profit_high'?'selected':''}>Profit value: high first</option></select>
+    </div>
+    <div class="prodToolbarBottom">
+      <div class="prodQuickFilters"><button data-stock="all" class="prodQuickChip ${pStockFilter==='all'?'active':''}" onclick="prodSetStock('all')">All</button><button data-stock="low" class="prodQuickChip ${pStockFilter==='low'?'active':''}" onclick="prodSetStock('low')">⚠️ Low stock</button><button data-stock="out" class="prodQuickChip ${pStockFilter==='out'?'active':''}" onclick="prodSetStock('out')">⛔ Out of stock</button><button class="prodQuickChip" onclick="clearProductFilters()">✕ Clear filters</button></div>
+      <div style="display:flex;align-items:center;gap:8px"><span id="prodResultCount" style="font-size:10.5px;color:var(--t3)"></span><div class="prodViewToggle"><button id="prodViewTable" onclick="prodSetView('table')" class="${pView==='table'?'active':''}" title="Table view">☷</button><button id="prodViewGrid" onclick="prodSetView('grid')" class="${pView==='grid'?'active':''}" title="Card view">▦</button></div></div>
+    </div>
+  </div>
+  <div id="prodResults"></div>
+  <div class="mOvl" id="prodMOvl"><div class="modal mLg" id="prodMod"></div></div>
+  <div class="mOvl" id="variantEditOvl" style="z-index:600"><div class="modal" id="variantEditMod"></div></div>
+  <div class="mOvl" id="restockOvl"><div class="modal" id="restockMod"></div></div>`);
+  renderProdResultsOnly();
+}
+
+window.searchProds=(val)=>{pSrch=val;pPage=1;clearTimeout(_prodSearchTimer);_prodSearchTimer=setTimeout(renderProdResultsOnly,90);};
+window.prodSetCategory=(v)=>{pCatFilter=v;pPage=1;renderProdResultsOnly();};
+window.prodSetStock=(v)=>{pStockFilter=v;pPage=1;const sel=[...document.querySelectorAll('.prodToolbar select')].find(x=>[...x.options].some(o=>o.value==='out')&&[...x.options].some(o=>o.value==='low'));if(sel)sel.value=v;renderProdResultsOnly();};
+window.prodSetStatus=(v)=>{pStatusFilter=v;pPage=1;renderProdResultsOnly();};
+window.prodSetSort=(v)=>{pSort=v;pPage=1;renderProdResultsOnly();};
+window.prodSetView=(v)=>{pView=v==='grid'?'grid':'table';$('prodViewTable')?.classList.toggle('active',pView==='table');$('prodViewGrid')?.classList.toggle('active',pView==='grid');renderProdResultsOnly();};
+window.clearProductFilters=()=>{pSrch='';pCatFilter='all';pStockFilter='all';pStatusFilter='active';pPage=1;renderProdsView();};
+window.prodGoPage=(n)=>{const max=Math.max(1,Math.ceil(filteredProducts().length/PROD_PAGE_SIZE));pPage=Math.min(max,Math.max(1,Number(n)||1));renderProdResultsOnly();window.scrollTo({top:0,behavior:'smooth'});};
+
+function productRowHTML(p){
+  const img=prodMainImage(p),stock=prodTotalStock(p),stockState=prodStockState(p),sell=prodPriceRange(p,'sell'),buy=prodPriceRange(p,'buy'),profit=prodProfitRange(p),hasVar=Array.isArray(p.variants)&&p.variants.length,offer=!hasVar&&Number(p.offerPrice||0)>0&&Number(p.offerPrice)<Number(p.sellPrice||0);
+  const meta=[p.sku?`SKU: ${esc(p.sku)}`:'',p.brand?esc(p.brand):'',hasVar?`${p.variants.length} variants`:''].filter(Boolean).join(' · ');
+  return `<tr style="${p.active===false?'opacity:.66':''}">
+    <td><div class="prodIdentity">${img?`<img class="prodThumb" loading="lazy" src="${esc(img)}" onerror="this.style.display='none'"/>`:'<div class="prodThumbPh">📦</div>'}<div style="min-width:0"><div class="prodName" title="${esc(p.name||'')}">${esc(p.name||'Unnamed')}</div>${p.nameBn?`<div class="prodMeta">${esc(p.nameBn)}</div>`:''}${meta?`<div class="prodMeta">${meta}</div>`:''}</div></div></td>
+    <td><span class="prodStatusBadge ${p.active===false?'archived':'active'}">${p.active===false?'○ Archived':'● Active'}</span></td>
+    <td><div class="prodPriceMain">${sell.text}${offer?`<span class="prodPriceOld">${cur(p.sellPrice)}</span>`:''}</div><div class="prodMeta">Buy ${buy.text}</div></td>
+    <td><span class="prodProfit" style="color:${profit.avg>=0?'var(--green)':'var(--red)'};background:${profit.avg>=0?'rgba(16,185,129,.09)':'rgba(239,68,68,.09)'}">${profit.avg>=0?'+':''} ${profit.text}</span><div class="prodMeta">${profit.margin.toFixed(1)}% margin</div></td>
+    <td><span class="prodStockBadge ${stockState}">${stockState==='in'?'●':stockState==='low'?'⚠':'⛔'} ${stock} · ${prodStockLabel(p)}</span><div class="prodMeta">Alert at ${Number(p.alertAt??5)}</div></td>
+    <td><span class="badge bCat">${esc(p.cat||'General')}</span></td>
+    <td><div class="prodPriceMain">${cur(prodRetailValue(p))}</div><div class="prodMeta">Cost ${cur(prodCostValue(p))}</div></td>
+    <td><div class="prodActions"><button class="btn bG bSm bIco" title="Stock manager" onclick="openStockManager('${p.id}')">📥</button><button class="btn bS bSm bIco" title="Edit" onclick="openProdMod('${p.id}')">✏️</button><button class="btn bS bSm bIco" title="Duplicate" onclick="duplicateProd('${p.id}')">⧉</button><button class="btn ${p.active===false?'bG':'bD'} bSm bIco" title="${p.active===false?'Restore':'Archive'}" onclick="toggleProductActive('${p.id}',${p.active===false?'true':'false'},${jsArg(p.name||'Product')})">${p.active===false?'↩':'🗄️'}</button></div></td>
+  </tr>`;
+}
+function productCardHTML(p){
+  const img=prodMainImage(p),stock=prodTotalStock(p),stockState=prodStockState(p),sell=prodPriceRange(p,'sell'),profit=prodProfitRange(p),hasVar=Array.isArray(p.variants)&&p.variants.length;
+  return `<div class="prodCard" style="${p.active===false?'opacity:.72':''}"><div class="prodCardTop">${img?`<img class="prodCardImg" loading="lazy" src="${esc(img)}" onerror="this.style.display='none'"/>`:'<div class="prodCardImgPh">📦</div>'}<div style="flex:1;min-width:0"><div class="prodName">${esc(p.name||'Unnamed')}</div>${p.nameBn?`<div class="prodMeta">${esc(p.nameBn)}</div>`:''}<div class="prodMeta">${p.sku?'SKU '+esc(p.sku)+' · ':''}${esc(p.cat||'General')}${hasVar?' · '+p.variants.length+' variants':''}</div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px"><span class="prodStatusBadge ${p.active===false?'archived':'active'}">${p.active===false?'Archived':'Active'}</span><span class="prodStockBadge ${stockState}">${stock} · ${prodStockLabel(p)}</span></div></div></div><div class="prodCardBody"><div class="prodCardGrid"><div class="prodCardStat"><small>Sell</small><b>${sell.text}</b></div><div class="prodCardStat"><small>Profit / unit</small><b style="color:var(--green)">${profit.text}</b></div><div class="prodCardStat"><small>Retail value</small><b>${cur(prodRetailValue(p))}</b></div><div class="prodCardStat"><small>Cost value</small><b>${cur(prodCostValue(p))}</b></div></div><div class="prodCardActions"><button class="btn bG bSm" onclick="openStockManager('${p.id}')">📥 Stock</button><button class="btn bS bSm" onclick="openProdMod('${p.id}')">✏️ Edit</button><button class="btn bS bSm" onclick="duplicateProd('${p.id}')">⧉ Copy</button><button class="btn ${p.active===false?'bG':'bD'} bSm" onclick="toggleProductActive('${p.id}',${p.active===false?'true':'false'},${jsArg(p.name||'Product')})">${p.active===false?'↩ Restore':'🗄️ Archive'}</button></div></div></div>`;
+}
+function renderProdResultsOnly(){
+  const host=$('prodResults');if(!host)return;
+  const all=filteredProducts(),pages=Math.max(1,Math.ceil(all.length/PROD_PAGE_SIZE));if(pPage>pages)pPage=pages;
+  const start=(pPage-1)*PROD_PAGE_SIZE,rows=all.slice(start,start+PROD_PAGE_SIZE);
+  const count=$('prodResultCount');if(count)count.textContent=`${all.length} result${all.length===1?'':'s'}${all.length?` · ${start+1}–${Math.min(start+rows.length,all.length)}`:''}`;
+  document.querySelectorAll('.prodQuickChip[data-stock]').forEach(btn=>btn.classList.toggle('active',btn.dataset.stock===pStockFilter));
+  if(!rows.length){host.innerHTML=`<div class="prodEmpty"><div style="font-size:30px;margin-bottom:8px">🔎</div><h3 style="font-size:15px;color:var(--t1);margin-bottom:4px">No matching products</h3><p style="font-size:11.5px">Try another search or clear the filters.</p></div>`;return;}
+  const pageBtns=[];for(let n=Math.max(1,pPage-2);n<=Math.min(pages,pPage+2);n++)pageBtns.push(`<button class="${n===pPage?'active':''}" onclick="prodGoPage(${n})">${n}</button>`);
+  host.innerHTML=`<div class="prodTableShell" style="display:${pView==='table'?'block':'none'}"><div class="tWrap"><table class="prodTable"><thead><tr><th>Product</th><th>Status</th><th>Pricing</th><th>Profit</th><th>Stock</th><th>Category</th><th>Inventory Value</th><th style="text-align:right">Actions</th></tr></thead><tbody>${rows.map(productRowHTML).join('')}</tbody></table></div></div><div class="prodCards" style="display:${pView==='grid'?'grid':'none'}">${rows.map(productCardHTML).join('')}</div><div class="prodPager"><span>Page ${pPage} of ${pages} · ${all.length} products</span><div class="prodPagerBtns"><button onclick="prodGoPage(${pPage-1})" ${pPage<=1?'disabled':''}>‹</button>${pageBtns.join('')}<button onclick="prodGoPage(${pPage+1})" ${pPage>=pages?'disabled':''}>›</button></div></div>`;
+}
+
+window.exportProductCSV=()=>{
+  const rows=filteredProducts();if(!rows.length){toast('No products to export','err');return;}
+  const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+  const csv=[['Name','Bangla Name','SKU','Brand','Category','Status','Variants','Buy Price','Sell Price','Offer Price','Stock','Low Stock Alert','Inventory Cost','Retail Value','Potential Profit'].map(q).join(',')];
+  rows.forEach(p=>csv.push([p.name,p.nameBn,p.sku,p.brand,p.cat,p.active===false?'Archived':'Active',(p.variants||[]).length,p.buyPrice,p.sellPrice,p.offerPrice,prodTotalStock(p),p.alertAt,prodCostValue(p),prodRetailValue(p),prodPotentialProfit(p)].map(q).join(',')));
+  const blob=new Blob(['\ufeff'+csv.join('\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`products-${today()}.csv`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);toast('✅ Product CSV downloaded');
 };
+
+window.toggleProductActive=async(id,next,name)=>{
+  const action=next?'restore':'archive';if(!confirm(`${action==='archive'?'Archive':'Restore'} “${name}”?`))return;
+  try{await updateDoc(BDoc('products',id),{active:!!next,updatedAt:serverTimestamp()});const p=(_prodCache||[]).find(x=>x.id===id);if(p){p.active=!!next;}toast(next?'✅ Product restored':'🗄️ Product archived');renderProdsView();}catch(e){toast(e.message,'err');}
+};
+window.duplicateProd=async(id)=>{
+  try{
+    const src=(_prodCache||[]).find(x=>x.id===id)||((await getDoc(BDoc('products',id))).data());if(!src)throw new Error('Product not found');
+    if(!(await enforcePlanLimit('product')))return;
+    const copy={...src,name:`${src.name||'Product'} — Copy`,nameBn:src.nameBn?`${src.nameBn} — কপি`:'',sku:'',active:true,createdAt:serverTimestamp(),updatedAt:serverTimestamp()};
+    delete copy.id;delete copy.createdAt;delete copy.updatedAt;
+    if(Array.isArray(copy.variants))copy.variants=copy.variants.map(v=>({...v,sku:''}));
+    await addDoc(BCol('products'),{...copy,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});toast('✅ Product duplicated');pgProds(true);
+  }catch(e){toast(e.message,'err');}
+};
+
+// ── ATOMIC STOCK MANAGER / RESTOCK ──
+let _stockMgrProduct=null;
+window.openStockManager=async(pid)=>{
+  try{
+    let p=(_prodCache||[]).find(x=>x.id===pid);
+    if(!p){const d=await getDoc(BDoc('products',pid));if(!d.exists())throw new Error('Product not found');p={id:d.id,...d.data()};}
+    _stockMgrProduct=JSON.parse(JSON.stringify(p));
+    const vars=Array.isArray(p.variants)?p.variants:[];
+    $('restockMod').innerHTML=`<div class="mH"><div><h3>📦 Stock Manager</h3><div style="font-size:10.5px;color:var(--t3);margin-top:2px">${esc(p.name||'Product')}</div></div><button class="btn bS bIco" onclick="closeMov('restockOvl')">✕</button></div><div class="mB"><div class="prodStockModeTabs"><button id="sm_add" class="active" onclick="stockMode('add')">➕ Add</button><button id="sm_remove" onclick="stockMode('remove')">➖ Remove</button><button id="sm_set" onclick="stockMode('set')">🎯 Set exact</button></div>${vars.length?`<div class="afG"><label class="afL">Variant *</label><select class="afI" id="sm_variant" onchange="stockVariantChanged()">${vars.map((v,i)=>`<option value="${i}">${esc(v.name||`Variant ${i+1}`)} · Current ${Number(v.stock||0)}</option>`).join('')}</select></div>`:''}<div id="smCurrent" style="padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;font-size:12px;margin-bottom:10px"></div><div class="afRow"><div class="afG"><label class="afL" id="smQtyLabel">Quantity to add *</label><input class="afI" type="number" id="sm_qty" min="1" step="1" placeholder="0"/></div><div class="afG" id="smBuyWrap"><label class="afL">Latest buy price / unit (৳)</label><input class="afI" type="number" id="sm_buy" min="0" value="${Number(vars[0]?.buyPrice??p.buyPrice??0)||''}" placeholder="0"/></div></div><div class="afG"><label class="afL">Supplier / reason / note</label><input class="afI" id="sm_note" maxlength="180" placeholder="e.g. New stock from supplier / damaged / correction"/></div><label id="smExpenseWrap" style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--t2);cursor:pointer"><input type="checkbox" id="sm_expense" checked style="accent-color:var(--acc)"/> Add purchase cost to Expense Log (admin only)</label><div id="smErr" class="al aE" style="display:none;margin-top:10px"></div></div><div class="mF"><button class="btn bS" onclick="closeMov('restockOvl')">Cancel</button><button class="btn bP" id="smSaveBtn" onclick="saveStockManager('${pid}')">💾 Apply Stock Change</button></div>`;
+    window._stockMgrMode='add';stockVariantChanged();$('restockOvl').classList.add('open');
+  }catch(e){toast(e.message,'err');}
+};
+window.openRestock=(pid)=>openStockManager(pid); // backward compatibility
+window.stockMode=(mode)=>{
+  window._stockMgrMode=['add','remove','set'].includes(mode)?mode:'add';
+  ['add','remove','set'].forEach(x=>$('sm_'+x)?.classList.toggle('active',x===window._stockMgrMode));
+  const lbl=$('smQtyLabel'),bw=$('smBuyWrap'),ew=$('smExpenseWrap');
+  if(lbl)lbl.textContent=mode==='add'?'Quantity to add *':mode==='remove'?'Quantity to remove *':'Set stock to *';
+  if(bw)bw.style.display=mode==='add'?'block':'none';if(ew)ew.style.display=mode==='add'?'flex':'none';
+};
+window.stockVariantChanged=()=>{
+  const p=_stockMgrProduct;if(!p)return;const vars=Array.isArray(p.variants)?p.variants:[],idx=Number($('sm_variant')?.value||0),v=vars[idx];
+  const stock=v?Number(v.stock||0):Number(p.stock||0),buy=v?Number(v.buyPrice||0):Number(p.buyPrice||0);const curBox=$('smCurrent');if(curBox)curBox.innerHTML=`Current stock: <b>${stock}</b>${v?` · Variant: <b>${esc(v.name||'')}</b>`:''} · Buy price: <b>${cur(buy)}</b>`;const bi=$('sm_buy');if(bi)bi.value=buy||'';
+};
+window.saveStockManager=async(pid)=>{
+  const mode=window._stockMgrMode||'add',rawQty=$('sm_qty')?.value??'',qty=Math.floor(Number(rawQty)),note=$('sm_note')?.value.trim()||'',buy=Math.max(0,Number($('sm_buy')?.value||0)),variantIndex=$('sm_variant')?Number($('sm_variant').value):null,btn=$('smSaveBtn'),err=$('smErr');
+  if(String(rawQty).trim()===''||!Number.isFinite(qty)||qty<0||(mode!=='set'&&qty<=0)){if(err){err.style.display='flex';err.textContent='❌ Enter a valid stock quantity';}return;}
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Saving...';}
+  let finalStock=0,selectedVariant='';
+  try{
+    await runTransaction(db,async tx=>{
+      const ref=BDoc('products',pid),snap=await tx.get(ref);if(!snap.exists())throw new Error('Product not found');
+      const data=snap.data(),vars=Array.isArray(data.variants)?data.variants.map(v=>({...v})):[];
+      if(vars.length){
+        const idx=Number.isInteger(variantIndex)?variantIndex:0;if(!vars[idx])throw new Error('Variant no longer exists');
+        const before=Number(vars[idx].stock||0);finalStock=mode==='add'?before+qty:mode==='remove'?before-qty:qty;if(finalStock<0)throw new Error(`Cannot remove more than current stock (${before})`);
+        vars[idx].stock=finalStock;if(mode==='add'&&buy>0)vars[idx].buyPrice=buy;selectedVariant=vars[idx].name||'';
+        tx.update(ref,{variants:vars,stock:vars.reduce((s,v)=>s+Number(v.stock||0),0),...(mode==='add'&&buy>0?{buyPrice:Number(vars[0]?.buyPrice||data.buyPrice||0)}:{}),lastStockAction:{mode,qty,variant:selectedVariant,note:note.slice(0,180),by:G.user?.uid||'',at:new Date().toISOString()},updatedAt:serverTimestamp()});
+      }else{
+        const before=Number(data.stock||0);finalStock=mode==='add'?before+qty:mode==='remove'?before-qty:qty;if(finalStock<0)throw new Error(`Cannot remove more than current stock (${before})`);
+        tx.update(ref,{stock:finalStock,...(mode==='add'&&buy>0?{buyPrice:buy}:{}),lastStockAction:{mode,qty,note:note.slice(0,180),by:G.user?.uid||'',at:new Date().toISOString()},updatedAt:serverTimestamp()});
+      }
+    });
+    // Purchase/expense logs are secondary. Stock update must not fail just because a moderator cannot write finance logs.
+    if(mode==='add'&&qty>0){
+      try{await addDoc(BCol('purchases'),{pid,variant:selectedVariant,qty,buyPrice:buy,total:buy*qty,note,date:today(),createdBy:G.user?.uid||'',createdAt:serverTimestamp()});}catch(e){console.warn('Purchase log skipped:',e.message);}
+      if($('sm_expense')?.checked&&buy>0){try{await addDoc(BCol('expenses'),{cat:'stock',amount:buy*qty,note:`Stock purchase: ${qty} pcs${selectedVariant?' · '+selectedVariant:''}${note?' ('+note+')':''}`,date:today(),createdAt:serverTimestamp()});}catch(e){console.warn('Expense log skipped:',e.message);}}
+    }
+    toast(`✅ Stock updated${selectedVariant?' · '+selectedVariant:''}: ${finalStock}`);closeMov('restockOvl');pgProds(true);
+  }catch(e){if(err){err.style.display='flex';err.textContent='❌ '+e.message;}if(btn){btn.disabled=false;btn.innerHTML='💾 Apply Stock Change';}}
+};
+
 // Global variant state for product form
 let _prodVariants=[];
 let _prodImages=[];
 
 async function openProdMod(id=null){
   let p=null;
-  if(id){const d=await getDoc(BDoc('products',id));if(d.exists())p={id,...d.data()};}
+  if(id){p=(_prodCache||[]).find(x=>x.id===id)||null;if(!p){const d=await getDoc(BDoc('products',id));if(d.exists())p={id,...d.data()};}}
   _prodVariants=p?.variants?JSON.parse(JSON.stringify(p.variants)):[];
   // Images: support new images[] array, fall back to legacy single imageUrl
   _prodImages=p?.images&&Array.isArray(p.images)&&p.images.length?[...p.images]:(p?.imageUrl?[p.imageUrl]:[]);
@@ -4085,6 +4315,8 @@ async function openProdMod(id=null){
     <div class="afRow" style="margin-bottom:0">
       <div class="afG"><label class="afL">Product Name (EN) *</label><input class="afI" id="p_n" value="${esc(p?.name||'')}" placeholder="Product name"/></div>
       <div class="afG"><label class="afL">নাম (BN)</label><input class="afI" id="p_nb" value="${esc(p?.nameBn||'')}" placeholder="বাংলা নাম"/></div>
+      <div class="afG"><label class="afL">SKU / Product Code</label><input class="afI" id="p_sku" maxlength="60" value="${esc(p?.sku||'')}" placeholder="e.g. CHADOR-BLK-01"/></div>
+      <div class="afG"><label class="afL">Brand <span style="font-size:10px;color:var(--t3)">(optional)</span></label><input class="afI" id="p_brand" maxlength="80" value="${esc(p?.brand||'')}" placeholder="Brand name"/></div>
       <div class="afG" style="grid-column:1/-1"><label class="afL">🖼️ Main Thumbnail <span style="color:var(--t3);font-size:10px">(শুধু ১টি মূল ছবি — variant-ভিত্তিক ছবি নিচে variant-এ যুক্ত হবে)</span></label>
         <div id="p_imgDropzone" ondrop="prodImgDrop(event)" ondragover="event.preventDefault();this.style.borderColor='var(--acc)';this.style.background='rgba(99,102,241,.06)'" ondragleave="this.style.borderColor='var(--border)';this.style.background='var(--card)'"
           style="border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;background:var(--card);transition:all .2s"
@@ -4105,8 +4337,9 @@ async function openProdMod(id=null){
         </details>
         <div id="p_imgGallery" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
       </div>
-      <div class="afG"><label class="afL">Category</label><input class="afI" id="p_cat" value="${esc(p?.cat||'General')}"/></div>
-      <div class="afG"><label class="afL">Alert at (low stock)</label><input class="afI" type="number" id="p_al" min="0" value="${p?.alertAt??5}"/></div>
+      <div class="afG"><label class="afL">Category</label><input class="afI" id="p_cat" list="prodCatList" value="${esc(p?.cat||'General')}" placeholder="General"/><datalist id="prodCatList">${productCategories().map(c=>`<option value="${esc(c)}"></option>`).join('')}</datalist></div>
+      <div class="afG"><label class="afL">Low stock alert at</label><input class="afI" type="number" id="p_al" min="0" value="${p?.alertAt??5}"/></div>
+      <div class="afG" style="grid-column:1/-1"><label style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;cursor:pointer"><span><b style="font-size:12px">Product status</b><small style="display:block;color:var(--t3);margin-top:2px">Inactive products stay archived and are hidden from the public shop.</small></span><span style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--t2)"><span id="p_active_lbl">${p?.active===false?'Archived':'Active'}</span><label class="toggle"><input type="checkbox" id="p_active" ${p?.active===false?'':'checked'} onchange="$('p_active_lbl').textContent=this.checked?'Active':'Archived'"/><span class="toggleSlider"></span></label></span></label></div>
       <div class="afG" style="grid-column:1/-1"><label class="afL" style="display:flex;justify-content:space-between;align-items:center">Description ${aiEnabled()?`<button type="button" onclick="aiWriteDesc()" style="background:linear-gradient(135deg,#A855F7,#7C3AED);color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:inherit">🤖 AI দিয়ে লিখুন</button>`:''}</label><textarea class="afI" id="p_desc" rows="2">${esc(p?.desc||'')}</textarea></div>
     </div>
 
@@ -4124,10 +4357,11 @@ async function openProdMod(id=null){
     <!-- Single price mode (no variants) -->
     <div id="p_singleMode" style="display:${hasVariants?'none':'block'}">
       <div class="afRow">
-        <div class="afG" style="margin:0"><label class="afL">Buy Price (৳) *</label><input class="afI" type="number" id="p_b" min="0" value="${p?.buyPrice||''}"/></div>
-        <div class="afG" style="margin:0"><label class="afL">Sell Price (৳) *</label><input class="afI" type="number" id="p_s" min="0" value="${p?.sellPrice||''}"/></div>
-        <div class="afG" style="margin:0"><label class="afL">Stock *</label><input class="afI" type="number" id="p_st" min="0" value="${p?.stock??''}" placeholder="0"/></div>
-      </div>
+        <div class="afG" style="margin:0"><label class="afL">Buy Price (৳)</label><input class="afI" type="number" id="p_b" min="0" value="${p?.buyPrice||''}" oninput="prodFormMetrics()"/></div>
+        <div class="afG" style="margin:0"><label class="afL">Regular Sell Price (৳) *</label><input class="afI" type="number" id="p_s" min="0" value="${p?.sellPrice||''}" oninput="prodFormMetrics()"/></div>
+        <div class="afG" style="margin:0"><label class="afL">Offer Price (৳) <span style="font-size:9px;color:var(--t3)">optional</span></label><input class="afI" type="number" id="p_offer" min="0" value="${p?.offerPrice||''}" oninput="prodFormMetrics()"/></div>
+        <div class="afG" style="margin:0"><label class="afL">Stock *</label><input class="afI" type="number" id="p_st" min="0" value="${p?.stock??''}" placeholder="0" oninput="prodFormMetrics()"/></div>
+      </div><div id="prodFormMetrics" class="prodLiveMetrics"></div><div id="pOfferErr" style="display:none;color:var(--red);font-size:10px;margin-top:6px">⚠️ Offer price must be lower than regular sell price.</div>
     </div>
 
     <!-- Variants mode -->
@@ -4149,6 +4383,7 @@ async function openProdMod(id=null){
   $('prodMOvl').classList.add('open');
   renderVariantsList();
   renderProdGallery();
+  prodFormMetrics();
 }
 window.openProdMod=openProdMod;
 
@@ -4235,9 +4470,12 @@ window.toggleProdVariants=(on)=>{
   $('p_variantMode').style.display=on?'block':'none';
   if(on&&_prodVariants.length===0)addVariant();
 };
+window.prodFormMetrics=()=>{
+  const box=$('prodFormMetrics');if(!box)return;const buy=Math.max(0,Number($('p_b')?.value||0)),sell=Math.max(0,Number($('p_s')?.value||0)),offer=Math.max(0,Number($('p_offer')?.value||0)),stock=Math.max(0,Number($('p_st')?.value||0)),effective=offer>0&&offer<sell?offer:sell,profit=effective-buy,margin=effective>0?profit/effective*100:0;const oe=$('pOfferErr');if(oe)oe.style.display=offer>0&&offer>=sell?'block':'none';box.innerHTML=`<div class="prodLiveMetric"><small>Effective Sell</small><b>${cur(effective)}</b></div><div class="prodLiveMetric"><small>Profit / Unit</small><b style="color:${profit>=0?'var(--green)':'var(--red)'}">${cur(profit)}</b></div><div class="prodLiveMetric"><small>Margin</small><b>${margin.toFixed(1)}%</b></div><div class="prodLiveMetric"><small>Retail Value</small><b>${cur(effective*stock)}</b></div>`;
+};
 
 window.addVariant=()=>{
-  _prodVariants.push({name:'',buyPrice:'',sellPrice:'',stock:'',images:[],desc:''});
+  _prodVariants.push({name:'',sku:'',buyPrice:'',sellPrice:'',offerPrice:0,stock:'',images:[],desc:''});
   renderVariantsList();
   // Immediately open the editor for the new variant so the admin fills it in one flow
   openVariantEditor(_prodVariants.length-1);
@@ -4293,7 +4531,7 @@ window.openVariantEditor=(i)=>{
   $('variantEditMod').innerHTML=`
   <div class="mH"><h3>🎨 ${v.name?esc(v.name):'নতুন ভ্যারিয়েন্ট'}</h3><button class="btn bS bIco" onclick="closeVariantEditor()">✕</button></div>
   <div class="mB" style="max-height:74vh;overflow-y:auto">
-    <div class="afG"><label class="afL">নাম (Color/Size/Design) *</label><input class="afI" id="ve_name" value="${esc(v.name||'')}" placeholder="যেমন: লাল, XL"/></div>
+    <div class="afRow"><div class="afG"><label class="afL">নাম (Color/Size/Design) *</label><input class="afI" id="ve_name" value="${esc(v.name||'')}" placeholder="যেমন: লাল, XL"/></div><div class="afG"><label class="afL">Variant SKU <span style="font-size:9px;color:var(--t3)">optional</span></label><input class="afI" id="ve_sku" maxlength="60" value="${esc(v.sku||'')}" placeholder="e.g. CHADOR-BLK"/></div></div>
     <div class="afG"><label class="afL">বিবরণ <span style="font-size:10px;color:var(--t3)">(ঐচ্ছিক — গ্রাহক দেখতে পাবে)</span></label><textarea class="afI" id="ve_desc" rows="2" placeholder="এই ভ্যারিয়েন্ট সম্পর্কে বিস্তারিত">${esc(v.desc||'')}</textarea></div>
     <div class="afRow">
       <div class="afG" style="margin:0"><label class="afL">Buy ৳</label><input class="afI" type="number" min="0" id="ve_buy" value="${v.buyPrice||''}" placeholder="0"/></div>
@@ -4389,6 +4627,7 @@ window.saveVariantEditor=()=>{
   if(offer>0&&offer>=Number(sell)){if(err){err.style.display='flex';err.textContent='❌ অফার দাম মূল দামের চেয়ে কম হতে হবে';}return;}
   _prodVariants[i]={
     name,
+    sku:$('ve_sku')?.value.trim().slice(0,60)||'',
     desc:$('ve_desc')?.value.trim()||'',
     buyPrice:Number($('ve_buy')?.value||0),
     sellPrice:Number(sell),
@@ -4408,12 +4647,19 @@ async function saveProd(id){
     const name=$('p_n')?.value.trim()||'';
     if(!name){toast('Product name required','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
     const useVariants=$('p_useVariants')?.checked&&_prodVariants.length>0;
+    const sku=$('p_sku')?.value.trim().slice(0,60)||'';
+    if(sku&&(_prodCache||[]).some(x=>x.id!==id&&(String(x.sku||'').toLowerCase()===sku.toLowerCase()||(x.variants||[]).some(v=>String(v.sku||'').toLowerCase()===sku.toLowerCase())))){toast('এই Product SKU ইতিমধ্যে ব্যবহার করা হয়েছে','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
     if(useVariants){
+      const seenSku=new Set();
       for(const v of _prodVariants){
         if(!v.name||!v.sellPrice){toast('All variants need name and sell price','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
+        if(v.offerPrice>0&&Number(v.offerPrice)>=Number(v.sellPrice)){toast(`${v.name}: offer price must be lower than sell price`,'err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
+        const vs=String(v.sku||'').trim().toLowerCase();if(vs&&(vs===sku.toLowerCase()||seenSku.has(vs)||(_prodCache||[]).some(x=>x.id!==id&&(String(x.sku||'').toLowerCase()===vs||(x.variants||[]).some(z=>String(z.sku||'').toLowerCase()===vs))))){toast(`Duplicate variant SKU: ${v.sku}`,'err');btn.disabled=false;btn.innerHTML='💾 Save';return;}if(vs)seenSku.add(vs);
       }
-    }else if(!Number($('p_s')?.value||0)){
-      toast('Sell price required','err');btn.disabled=false;btn.innerHTML='💾 Save';return;
+    }else{
+      const sell=Number($('p_s')?.value||0),offer=Number($('p_offer')?.value||0);
+      if(!sell){toast('Sell price required','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
+      if(offer>0&&offer>=sell){toast('Offer price must be lower than regular sell price','err');btn.disabled=false;btn.innerHTML='💾 Save';return;}
     }
 
     // ── Upload any pending (not-yet-uploaded) images NOW — only at the moment of actually saving.
@@ -4453,12 +4699,14 @@ async function saveProd(id){
     let data={
       name,
       nameBn:$('p_nb')?.value.trim()||'',
+      sku,
+      brand:$('p_brand')?.value.trim().slice(0,80)||'',
       images:[..._prodImages],
       imageUrl:_prodImages[0]||'',
       cat:$('p_cat')?.value.trim()||'General',
-      alertAt:Number($('p_al')?.value)||5,
+      alertAt:Math.max(0,Number($('p_al')?.value??5)),
       desc:$('p_desc')?.value.trim()||'',
-      active:true
+      active:$('p_active')?.checked!==false
     };
 
     if(useVariants){
@@ -4468,10 +4716,13 @@ async function saveProd(id){
       // Default prices from first variant
       data.buyPrice=Number(_prodVariants[0].buyPrice||0);
       data.sellPrice=Number(_prodVariants[0].sellPrice||0);
+      data.offerPrice=0;
     }else{
-      data.buyPrice=Number($('p_b')?.value||0);
-      data.sellPrice=Number($('p_s')?.value||0);
-      data.stock=Number($('p_st')?.value||0);
+      data.buyPrice=Math.max(0,Number($('p_b')?.value||0));
+      data.sellPrice=Math.max(0,Number($('p_s')?.value||0));
+      const offer=Math.max(0,Number($('p_offer')?.value||0));
+      data.offerPrice=offer>0?offer:0;
+      data.stock=Math.max(0,Number($('p_st')?.value||0));
       data.variants=[];
     }
 
@@ -4498,7 +4749,7 @@ window.aiWriteDesc=async()=>{
   }catch(e){toast(e.message,'err');}
   finally{if(lbl){lbl.disabled=false;lbl.innerHTML='🤖 AI দিয়ে লিখুন';}}
 };
-async function delProd(id,name){if(!confirm(`Delete "${name}"?`))return;await updateDoc(BDoc('products',id),{active:false});toast('Deleted');pgProds();}
+async function delProd(id,name){return toggleProductActive(id,false,name);}
 window.delProd=delProd;
 
 // ══ CREATE ORDER — FINAL PRODUCTION FLOW ══
@@ -7238,3 +7489,5 @@ setTimeout(()=>{
 </script>
 </body>
 </html>
+
+  
