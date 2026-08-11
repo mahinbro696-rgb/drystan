@@ -4781,7 +4781,10 @@ function showReceipt(o){
       </div>
     </div>
   </div>`;
-  $('rcptPrintArea').innerHTML=rHtml;
+  // Keep the hidden print copy on a UNIQUE id. Reusing "rcptContent" here made
+  // document.getElementById('rcptContent') select the hidden display:none copy,
+  // which has 0x0 dimensions and caused PNG export to fail as a blank canvas.
+  $('rcptPrintArea').innerHTML=rHtml.replace('id="rcptContent"','id="rcptPrintContent"');
   setC(`
   <div class="pH">
     <div><h1 style="color:var(--green)">✅ Order Created!</h1><p><strong>${esc(o.num)}</strong> | Receiver: ${esc(o.recvName||o.cName)} — ${esc(o.recvPhone||o.cPhone)}</p></div>
@@ -4859,8 +4862,14 @@ window.downloadRcptImg=async()=>{
   const btn=$('dlImgBtn');
   if(btn){btn.disabled=true;btn.innerHTML='⏳ তৈরি হচ্ছে...';}
   try{
-    const el=document.getElementById('rcptContent');
-    if(!el){toast('Receipt not found','err');return;}
+    // Always capture the VISIBLE receipt. The hidden print template is kept separately.
+    const el=document.querySelector('#pageContent #rcptContent') ||
+      [...document.querySelectorAll('#rcptContent')].find(node=>node.offsetWidth>0&&node.offsetHeight>0);
+    if(!el){
+      toast('Receipt not found','err');
+      if(btn){btn.disabled=false;btn.innerHTML='📥 Download PNG';}
+      return;
+    }
     // Load html2canvas
     const loadLib=()=>new Promise((res,rej)=>{
       if(window.html2canvas)return res();
@@ -4910,11 +4919,11 @@ window.downloadRcptImg=async()=>{
     },'image/png',1.0);
   }catch(e){
     console.warn('PNG error:',e);
-    // If an external image tainted the canvas, retry once without the logo
-    if(String(e).includes('taint')||String(e).includes('blank')||String(e).includes('SecurityError')){
-      toast('লোগো ছবির কারণে সমস্যা — লোগো ছাড়া চেষ্টা করুন বা Print ব্যবহার করুন','info');
+    const em=String(e||'');
+    if(em.includes('taint')||em.includes('SecurityError')){
+      toast('লোগো/বাহিরের ছবির CORS সমস্যায় PNG হয়নি — Print ব্যবহার করুন','info');
     }else{
-      toast('❌ PNG হয়নি — 🖨️ Print → Save as PDF ব্যবহার করুন','err');
+      toast('❌ PNG তৈরি হয়নি — আবার চেষ্টা করুন বা 🖨️ Print ব্যবহার করুন','err');
     }
     if(btn){btn.disabled=false;btn.innerHTML='📥 Download PNG';}
   }
