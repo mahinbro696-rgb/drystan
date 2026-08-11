@@ -3589,7 +3589,7 @@ function startOrderNotifListener(){
     if(Array.isArray(saved))_notifs=saved.slice(0,30);
   }catch{}
   // Ask for browser notification permission (once)
-  if('Notification' in window && Notification.permission==='default'){
+  if(G.cfg.browserNotifications!==false&&'Notification' in window && Notification.permission==='default'){
     setTimeout(()=>{try{Notification.requestPermission();}catch{}},3000);
   }
   try{
@@ -3625,9 +3625,9 @@ function addOrderNotif(o){
   // Toast
   toast(notif.title+' — '+(o.cName||''),'ok');
   // Sound (subtle)
-  try{playNotifSound();}catch{}
+  if(G.cfg.notificationSound!==false){try{playNotifSound();}catch{}}
   // Browser notification (works even if tab is in background)
-  if('Notification' in window && Notification.permission==='granted'){
+  if(G.cfg.browserNotifications!==false&&'Notification' in window && Notification.permission==='granted'){
     try{
       const n=new Notification(notif.title,{body:notif.body,icon:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2264%22 height=%2264%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%236366F1%22/%3E%3Ctext x=%2232%22 y=%2244%22 font-size=%2236%22 text-anchor=%22middle%22 fill=%22white%22%3E🔥%3C/text%3E%3C/svg%3E'});
       n.onclick=()=>{window.focus();nav('orders');n.close();};
@@ -3773,6 +3773,7 @@ window.approveModLogin=async(docId,approved)=>{
 // ══ NAVIGATION ══
 const pgTitles={dash:'Dashboard',prods:'Products',newOrder:'Create Order',orders:'Orders',custs:'Customers',team:'Team',reports:'Reports',account:'My Account',cfg:'Settings',tools:'🛠️ Business Tools'};
 window.nav=p=>{
+  if(G.page==='cfg'&&p!=='cfg'&&window.cfgCanLeave&&!window.cfgCanLeave())return;
   if(G.role==='moderator'){
     const perms=G.modPerms||{orders:true};
     const allowed=moderatorAllowedPages(perms);
@@ -3984,7 +3985,7 @@ function renderDashboard(D){
   const todayKey=dashDayKey(new Date()),todayOrders=D.periodOrders.filter(o=>o.orderDate===todayKey),todayCompleted=todayOrders.filter(o=>o.status==='completed');
   const todayRevenue=todayCompleted.reduce((s,o)=>s+Number(o.total||0),0);const todayExpenses=D.expenses.filter(e=>e.date===todayKey).reduce((s,e)=>s+Number(e.amount||0),0);const todayProfit=todayCompleted.reduce((s,o)=>s+dashOrderProfit(o),0)-todayExpenses;
   const inventory=D.products.reduce((a,p)=>{const v=dashProductStockValues(p);a.stock+=v.stock;a.cost+=v.cost;a.retail+=v.retail;return a;},{stock:0,cost:0,retail:0});
-  const lowStock=D.products.filter(p=>{const v=dashProductStockValues(p);return v.stock>0&&v.stock<=Number(p.alertAt||5);});const outStock=D.products.filter(p=>dashProductStockValues(p).stock<=0);
+  const lowStock=D.products.filter(p=>{const v=dashProductStockValues(p);return v.stock>0&&v.stock<=Number(p.alertAt??G.cfg.defaultLowStockAlert??G.cfg.alertAt??5);});const outStock=D.products.filter(p=>dashProductStockValues(p).stock<=0);
   const processing=[...D.pendingOrders,...D.confirmedOrders,...D.readyOrders];const stalePending=D.pendingOrders.filter(o=>Date.now()-dashOrderMs(o)>24*3600000);const overdueSent=D.sentOrders.filter(o=>o.expectedDate&&o.expectedDate<todayKey);
   const dueOrders=[...processing,...D.sentOrders].filter(o=>orderPaymentState(o).due>0);const dueAmount=dueOrders.reduce((s,o)=>s+orderPaymentState(o).due,0);
   const actionNeeded=processing.length+overdueSent.length+lowStock.length+outStock.length+(dueAmount>0?1:0)+Number(D.pendingLogins||0);
@@ -4144,7 +4145,7 @@ function prodRetailValue(p){
 }
 function prodPotentialProfit(p){return prodRetailValue(p)-prodCostValue(p);}
 function prodStockState(p){
-  const stock=prodTotalStock(p),alertAt=Math.max(0,Number(p?.alertAt??5));
+  const stock=prodTotalStock(p),alertAt=Math.max(0,Number(p?.alertAt??G.cfg.defaultLowStockAlert??G.cfg.alertAt??5));
   if(stock<=0)return 'out';
   if(stock<=alertAt)return 'low';
   return 'in';
@@ -4455,7 +4456,7 @@ async function openProdMod(id=null){
           <div id="peVariantPricingNotice" style="display:${hasVariants?'block':'none'}" class="al aI">ℹ️ Variant mode is active. Price and stock are managed inside each variant.</div>
           <div class="divider"></div>
           <div class="peTwo">
-            <div class="afG" style="margin-bottom:0"><label class="afL">Low stock alert at</label><input class="afI" type="number" id="p_al" min="0" value="${p?.alertAt??5}" oninput="prodEditorRefreshInventory();prodEditorMarkDirty()"/><div class="peHint">The product is marked low-stock at or below this quantity.</div></div>
+            <div class="afG" style="margin-bottom:0"><label class="afL">Low stock alert at</label><input class="afI" type="number" id="p_al" min="0" value="${p?.alertAt??G.cfg.defaultLowStockAlert??G.cfg.alertAt??5}" oninput="prodEditorRefreshInventory();prodEditorMarkDirty()"/><div class="peHint">The product is marked low-stock at or below this quantity.</div></div>
             <div class="afG" style="margin-bottom:0"><label class="afL">Inventory mode</label><div class="afI" style="display:flex;align-items:center;min-height:42px;color:var(--t2)"><span id="peInventoryMode">${hasVariants?'Variant-level stock':'Single product stock'}</span></div></div>
           </div>
         </div>
@@ -4929,7 +4930,7 @@ let _createCustTimer=null;
 function createDraftKey(){return `drystan:createOrderDraft:${G.bizId||'unknown'}`;}
 function createNewIdempotencyKey(){try{return crypto.randomUUID();}catch{return `${Date.now()}_${Math.random().toString(36).slice(2,12)}`;}}
 function defaultCreateOrderForm(){
-  return {cName:'',ordererPhone:'',recvPhone:'',recvName:'',cAddr:'',district:'',thana:'',source:'manual',initialStatus:(G.cfg.manualOrderStartStatus==='confirmed'?'confirmed':'pending'),allowBackorder:false,paymentMethod:'cod',payStatus:'pending',paidAmount:0,paymentTxnId:'',paymentPhone:'',paymentNote:'',deliveryZone:'auto',delivery:Number(G.cfg.delivIn??G.cfg.delCOD??60),rLang:G.lang,orderDate:today(),delivDate:plus3(),notes:'',discount:0,discountReason:'',appliedCoupon:null,idempotencyKey:createNewIdempotencyKey()};
+  const startStatus=G.cfg.manualOrderStartStatus==='confirmed'?'confirmed':'pending';const source=['manual','facebook','messenger','whatsapp','phone','walkin'].includes(G.cfg.defaultOrderSource)?G.cfg.defaultOrderSource:'manual';const payment=['cod','bkash','nagad','bank','cash'].includes(G.cfg.defaultPaymentMethod)?G.cfg.defaultPaymentMethod:'cod';const rLang=['en','bn'].includes(G.cfg.defaultReceiptLang)?G.cfg.defaultReceiptLang:G.lang;return {cName:'',ordererPhone:'',recvPhone:'',recvName:'',cAddr:'',district:'',thana:'',source,initialStatus:startStatus,allowBackorder:startStatus==='pending'&&G.cfg.manualOrderDefaultBackorder===true,paymentMethod:payment,payStatus:'pending',paidAmount:0,paymentTxnId:'',paymentPhone:'',paymentNote:'',deliveryZone:'auto',delivery:Number(G.cfg.delivIn??G.cfg.delCOD??60),rLang,orderDate:today(),delivDate:plusDays(Number(G.cfg.parcelDeadlineDays||3)),notes:'',discount:0,discountReason:'',appliedCoupon:null,idempotencyKey:createNewIdempotencyKey()};
 }
 function loadCreateDraft(){
   try{const raw=localStorage.getItem(createDraftKey());if(!raw)return null;const d=JSON.parse(raw);if(!d?.savedAt||Date.now()-d.savedAt>CREATE_DRAFT_MAX_AGE){localStorage.removeItem(createDraftKey());return null;}return d;}catch{return null;}
@@ -5149,7 +5150,7 @@ const RECEIPT_PRESETS={
 function showReceipt(o){
   const cfg=G.cfg;const isEn=o.rLang!=='bn';
   const bname=isEn?(cfg.bizName||'Drystan'):(cfg.bizNameBn||cfg.bizName||'Drystan');
-  const bphone=cfg.bizPhone||'';const baddr=cfg.bizAddr||'';
+  const bphone=cfg.receiptShowPhone===false?'':(cfg.bizPhone||'');const baddr=cfg.receiptShowAddress===false?'':(cfg.bizAddr||'');
   const logo=cfg.bizLogo||'';
   const P=RECEIPT_PRESETS[cfg.receiptPreset]||RECEIPT_PRESETS.classic;
   const headerTextDark=P.headerText==='#111111';
@@ -7015,321 +7016,228 @@ window.resetModPw=async(docId,username)=>{
 window.delMod=()=>toast('For security, use Suspend Access instead of deleting moderator identity records.','info');
 
 
-// ══ SETTINGS ══
+// ══ SETTINGS — PROFESSIONAL WORKSPACE ══
+let _cfgDirty=false;
+let _cfgActiveSection='business';
+let _selectedPreset='classic';
+let _bizLogoPending=null; // {file, preview} — uploaded only when Save Changes is clicked
+
+function cfgNum(id,fallback=0,min=0,max=99999999){
+  const el=$(id);let n=Number(el?.value);
+  if(!Number.isFinite(n))n=Number(fallback)||0;
+  return Math.min(max,Math.max(min,n));
+}
+function cfgBool(id,fallback=false){const el=$(id);return el?!!el.checked:!!fallback;}
+function cfgVal(id,fallback=''){const el=$(id);return el?String(el.value||'').trim():String(fallback||'');}
+function cfgMarkDirty(){
+  _cfgDirty=true;
+  const bar=$('cfgSaveBar');if(bar)bar.classList.add('show');
+  const status=$('cfgSaveStatus');if(status){status.textContent='Unsaved changes';status.className='cfgSaveStatus warn';}
+}
+function cfgMarkClean(label='All changes saved'){
+  _cfgDirty=false;
+  const bar=$('cfgSaveBar');if(bar)bar.classList.remove('show');
+  const status=$('cfgSaveStatus');if(status){status.textContent=label;status.className='cfgSaveStatus ok';}
+}
+window.cfgMarkDirty=cfgMarkDirty;
+
+function cfgSectionMeta(key){
+  return {
+    business:{title:'Business Profile',sub:'Identity, contact details and brand logo'},
+    orders:{title:'Order Defaults',sub:'Control how new manual orders start'},
+    delivery:{title:'Delivery',sub:'Location-based delivery charges and deadlines'},
+    receipt:{title:'Receipt & Invoice',sub:'Default language, footer and visual theme'},
+    notifications:{title:'Notifications',sub:'Browser alerts and Telegram order notifications'},
+    ai:{title:'AI & Smart Paste',sub:'Secure Gemini connection for AI-assisted workflows'},
+    security:{title:'Security',sub:'Account, access-control and backend health'},
+    data:{title:'Data & Backup',sub:'Export a portable copy of your business data'},
+    advanced:{title:'Advanced',sub:'Public shop identity and local workspace tools'}
+  }[key]||{title:'Settings',sub:''};
+}
+
+window.cfgOpenSection=(key)=>{
+  const target=$('cfgPanel_'+key);if(!target)return;
+  _cfgActiveSection=key;
+  document.querySelectorAll('.cfgPanel').forEach(el=>el.classList.toggle('active',el.id==='cfgPanel_'+key));
+  document.querySelectorAll('.cfgNavBtn').forEach(el=>el.classList.toggle('active',el.dataset.key===key));
+  const m=cfgSectionMeta(key),t=$('cfgSectionTitle'),s=$('cfgSectionSub');if(t)t.textContent=m.title;if(s)s.textContent=m.sub;
+  if(key==='notifications')loadTelegramSettingsPanel();
+  if(key==='ai')loadSecureAISettingsPanel();
+  if(key==='security')cfgRenderSecurityHealth();
+  if(matchMedia('(max-width:820px)').matches){const w=$('cfgWorkspaceMain');if(w)w.scrollIntoView({behavior:'smooth',block:'start'});}
+};
+window.cfgGoTo=(key,attempt=0)=>{if($('cfgPanel_'+key))return window.cfgOpenSection(key);if(attempt<15)setTimeout(()=>window.cfgGoTo(key,attempt+1),100);};
+window.cfgBackToHub=()=>window.cfgOpenSection('business');
+
 async function pgCfg(){
   loading();
   try{
-    const cfgDoc=await getDoc(BCfg());const cfg=cfgDoc.data()||{};
+    const cfgDoc=await getDoc(BCfg());const cfg=cfgDoc.data()||{};G.cfg={...G.cfg,...cfg};
+    _selectedPreset=cfg.receiptPreset||'classic';_cfgDirty=false;_bizLogoPending=null;
+    const defaultSource=['manual','facebook','messenger','whatsapp','phone','walkin'].includes(cfg.defaultOrderSource)?cfg.defaultOrderSource:'manual';
+    const defaultPay=['cod','bkash','nagad','bank','cash'].includes(cfg.defaultPaymentMethod)?cfg.defaultPaymentMethod:'cod';
+    const defaultLang=['en','bn'].includes(cfg.defaultReceiptLang)?cfg.defaultReceiptLang:(G.lang==='bn'?'bn':'en');
+    const inside=Number(cfg.delivIn??cfg.delCOD??60),outside=Number(cfg.delivOut??cfg.delCOD??120),linkDelivery=Number(cfg.delCOD??outside);
     setC(`
-    <div class="pH"><div><h1>⚙️ Settings</h1><p>Business configuration</p></div></div>
+    <style>
+      .cfgPage{max-width:1220px;margin:0 auto;padding-bottom:88px}.cfgHero{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}.cfgHero h1{font-size:24px;margin:0 0 5px}.cfgHero p{margin:0;color:var(--t2);font-size:12px}.cfgSaveStatus{font-size:11px;font-weight:800;padding:7px 10px;border-radius:999px;border:1px solid var(--border);white-space:nowrap}.cfgSaveStatus.ok{color:var(--green);background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.2)}.cfgSaveStatus.warn{color:var(--yellow);background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.22)}
+      .cfgWorkspace{display:grid;grid-template-columns:244px minmax(0,1fr);gap:16px;align-items:start}.cfgSidebar{position:sticky;top:76px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:10px}.cfgSideTitle{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--t3);padding:8px 10px 7px;text-transform:uppercase}.cfgNavBtn{width:100%;border:0;background:transparent;color:var(--t2);display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:10px;font:inherit;font-size:12px;font-weight:650;text-align:left;cursor:pointer;transition:.16s}.cfgNavBtn:hover{background:var(--card);color:var(--t1)}.cfgNavBtn.active{background:rgba(99,102,241,.12);color:var(--acc2);box-shadow:inset 0 0 0 1px rgba(99,102,241,.17)}.cfgNavBtn .ico{width:27px;height:27px;border-radius:8px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:14px;flex:0 0 27px}.cfgNavBtn.active .ico{background:rgba(99,102,241,.16)}
+      .cfgWorkspaceMain{min-width:0}.cfgSectionHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:0 2px 12px}.cfgSectionHead h2{font-size:18px;margin:0}.cfgSectionHead p{font-size:11px;color:var(--t3);margin:4px 0 0}.cfgPanel{display:none}.cfgPanel.active{display:block;animation:fadeUp .22s ease}.cfgCard{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:14px}.cfgCardTitle{font-size:13px;font-weight:800;margin-bottom:4px}.cfgCardSub{font-size:11px;color:var(--t3);line-height:1.55;margin-bottom:15px}.cfgGrid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cfgGrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.cfgMetric{padding:12px;border:1px solid var(--border);background:var(--card);border-radius:12px}.cfgMetric small{display:block;font-size:10px;color:var(--t3);margin-bottom:4px}.cfgMetric b{font-size:13px}.cfgSwitch{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:12px 13px;border:1px solid var(--border);background:var(--card);border-radius:12px;margin-bottom:9px}.cfgSwitch strong{font-size:12px}.cfgSwitch span.note{display:block;font-size:10.5px;color:var(--t3);margin-top:3px;line-height:1.45}.cfgInlineHint{font-size:10.5px;color:var(--t3);line-height:1.6;margin-top:5px}.cfgDanger{border-color:rgba(239,68,68,.25);background:linear-gradient(180deg,rgba(239,68,68,.035),transparent)}
+      .cfgLogoRow{display:grid;grid-template-columns:86px minmax(0,1fr);gap:14px;align-items:center}.cfgLogoPreview{width:86px;height:86px;border-radius:18px;overflow:hidden;background:var(--card);display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}.cfgLogoDrop{border:1.5px dashed var(--border);border-radius:13px;padding:17px;text-align:center;cursor:pointer;background:var(--card);transition:.2s}.cfgLogoDrop:hover{border-color:var(--acc);background:rgba(99,102,241,.05)}
+      .cfgReceiptPreviewGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}.cfgSaveBar{position:fixed;left:var(--sbw,0px);right:0;bottom:0;z-index:7000;display:flex;align-items:center;justify-content:center;pointer-events:none;transform:translateY(120%);transition:.22s}.cfgSaveBar.show{transform:translateY(0)}.cfgSaveInner{pointer-events:auto;width:min(850px,calc(100% - 28px));margin:0 auto 14px;background:rgba(15,18,29,.96);backdrop-filter:blur(16px);border:1px solid rgba(99,102,241,.3);box-shadow:0 12px 42px rgba(0,0,0,.36);border-radius:14px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}.cfgSaveInner .txt{font-size:11.5px;color:#cbd5e1}.cfgSaveInner .txt b{color:#fff}.cfgStatusGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.cfgHealth{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:12px}.cfgHealth .left{display:flex;align-items:center;gap:9px}.cfgHealth .dot{width:9px;height:9px;border-radius:50%}.cfgHealth b{font-size:12px}.cfgHealth small{display:block;color:var(--t3);font-size:10px;margin-top:2px}.cfgHealth .state{font-size:10.5px;font-weight:800}
+      @media(max-width:980px){.cfgWorkspace{grid-template-columns:210px minmax(0,1fr)}.cfgReceiptPreviewGrid{grid-template-columns:repeat(3,1fr)}.cfgGrid3{grid-template-columns:1fr 1fr}}
+      @media(max-width:820px){.cfgPage{padding-bottom:100px}.cfgHero{align-items:center}.cfgWorkspace{display:block}.cfgSidebar{position:static;display:flex;overflow-x:auto;gap:6px;padding:8px;margin-bottom:14px;scrollbar-width:none}.cfgSidebar::-webkit-scrollbar{display:none}.cfgSideTitle{display:none}.cfgNavBtn{width:auto;min-width:max-content;padding:8px 10px}.cfgNavBtn .ico{width:24px;height:24px;flex-basis:24px}.cfgSectionHead{margin-top:4px}.cfgSaveBar{left:0}.cfgGrid2,.cfgGrid3,.cfgStatusGrid{grid-template-columns:1fr}.cfgReceiptPreviewGrid{grid-template-columns:repeat(2,1fr)}}
+      @media(max-width:520px){.cfgHero h1{font-size:21px}.cfgHero p{display:none}.cfgCard{padding:14px;border-radius:14px}.cfgLogoRow{grid-template-columns:72px 1fr}.cfgLogoPreview{width:72px;height:72px;border-radius:15px}.cfgReceiptPreviewGrid{grid-template-columns:1fr 1fr}.cfgSaveInner{margin-bottom:8px}.cfgSaveInner .txt{display:none}}
+    </style>
+    <div class="cfgPage">
+      <div class="cfgHero"><div><h1>⚙️ Settings Workspace</h1><p>Business defaults, integrations, notifications, receipt and data controls.</p></div><span id="cfgSaveStatus" class="cfgSaveStatus ok">All changes saved</span></div>
+      <div class="cfgWorkspace">
+        <aside class="cfgSidebar">
+          <div class="cfgSideTitle">Configuration</div>
+          ${[
+            ['business','🏢','Business'],['orders','🧾','Orders'],['delivery','🚚','Delivery'],['receipt','🎨','Receipt'],['notifications','🔔','Notifications'],['ai','✨','AI & Smart Paste'],['security','🛡️','Security'],['data','💾','Data & Backup'],['advanced','⚙️','Advanced']
+          ].map(([k,i,l])=>`<button class="cfgNavBtn${k==='business'?' active':''}" data-key="${k}" onclick="cfgOpenSection('${k}')"><span class="ico">${i}</span>${l}</button>`).join('')}
+        </aside>
+        <main class="cfgWorkspaceMain" id="cfgWorkspaceMain">
+          <div class="cfgSectionHead"><div><h2 id="cfgSectionTitle">Business Profile</h2><p id="cfgSectionSub">Identity, contact details and brand logo</p></div></div>
 
-    <!-- SETTINGS HUB — click a tile to open only that section -->
-    <div id="cfgHub" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px">
-      ${[
-        {id:'bizinfo',ico:'🏢',label:'Business Information',clr:'99,102,241'},
-        {id:'summary',ico:'📊',label:'Business Summary',clr:'99,102,241'},
-        {id:'prefs',ico:'🔔',label:'Notifications & Preferences',clr:'16,185,129'},
-        {id:'ai',ico:'✨',label:'AI & Smart Paste',clr:'168,85,247'},
-        {id:'receipt',ico:'🎨',label:'Receipt Theme',clr:'168,85,247'},
-      ].map(t=>`
-        <div onclick="cfgGoTo('${t.id}')" style="cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 10px;text-align:center;transition:all .2s" onmouseover="this.style.borderColor='rgba(${t.clr},.5)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
-          <div style="font-size:28px;margin-bottom:8px">${t.ico}</div>
-          <div style="font-size:12px;font-weight:600;line-height:1.3">${t.label}</div>
-        </div>`).join('')}
-    </div>
-    <button id="cfgBackBtn" onclick="cfgBackToHub()" style="display:none;margin-bottom:16px" class="btn bS bSm">← Settings</button>
-    <div class="gridStack2" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-      <div style="display:flex;flex-direction:column;gap:14px">
-        <div class="card" id="cfgSec_bizinfo">
-          <div class="cardTitle">🏢 Business Information</div>
-          <div class="afG"><label class="afL">🖼️ ব্যবসার লোগো/থাম্বনেইল <span style="font-size:10px;color:var(--t3)">(অর্ডার রসিদ ও পাবলিক শপে দেখাবে — শুধু Admin বদলাতে পারবে)</span></label>
-            <div style="display:flex;gap:12px;align-items:center">
-              <div id="bizLogoPreview" style="width:70px;height:70px;border-radius:14px;overflow:hidden;flex-shrink:0;background:var(--bg3);display:flex;align-items:center;justify-content:center;border:1px solid var(--border)">
-                ${cfg.bizLogo?`<img src="${esc(cfg.bizLogo)}" style="width:100%;height:100%;object-fit:cover"/>`:'<span style="font-size:26px">🏪</span>'}
-              </div>
-              <div style="flex:1" id="bizLogoDropzone" ondrop="bizLogoDrop(event)" ondragover="event.preventDefault();this.style.borderColor='var(--acc)';this.style.background='rgba(99,102,241,.06)'" ondragleave="this.style.borderColor='var(--border)';this.style.background='var(--card)'"
-                style="border:2px dashed var(--border);border-radius:10px;padding:12px;text-align:center;cursor:pointer;background:var(--card);transition:all .2s"
-                onclick="$('bizLogoFile').click()">
-                <input type="file" id="bizLogoFile" accept="image/*" style="display:none" onchange="bizLogoFilesSelected(this.files)"/>
-                <div style="font-size:12px;font-weight:600">ছবি টানুন বা ক্লিক করুন</div>
-                <div style="font-size:10px;color:var(--t3);margin-top:2px">JPG, PNG · সর্বোচ্চ ১০MB</div>
-              </div>
+          <section class="cfgPanel active" id="cfgPanel_business">
+            <div class="cfgCard"><div class="cfgCardTitle">Business identity</div><div class="cfgCardSub">Used across the dashboard, public shop and customer receipts.</div>
+              <div class="cfgLogoRow"><div class="cfgLogoPreview" id="bizLogoPreview">${cfg.bizLogo?`<img src="${esc(cfg.bizLogo)}" style="width:100%;height:100%;object-fit:cover"/>`:'<span style="font-size:30px">🏪</span>'}</div><div class="cfgLogoDrop" id="bizLogoDropzone" onclick="$('bizLogoFile').click()" ondrop="bizLogoDrop(event)" ondragover="event.preventDefault();this.style.borderColor='var(--acc)'" ondragleave="this.style.borderColor='var(--border)'"><input type="file" id="bizLogoFile" accept="image/*" style="display:none" onchange="bizLogoFilesSelected(this.files)"/><div style="font-size:12px;font-weight:800">Replace business logo</div><div style="font-size:10px;color:var(--t3);margin-top:4px">JPG / PNG / WebP · max 10MB</div></div></div><div id="bizLogoErr" style="display:none;font-size:11px;color:var(--red);margin-top:7px"></div>
+              <div class="cfgGrid2" style="margin-top:15px"><div class="afG"><label class="afL">Business Name (EN) *</label><input class="afI" id="s_n" value="${esc(cfg.bizName||'')}" oninput="cfgMarkDirty()"/></div><div class="afG"><label class="afL">ব্যবসার নাম (BN)</label><input class="afI" id="s_nb" value="${esc(cfg.bizNameBn||'')}" oninput="cfgMarkDirty()"/></div></div>
+              <div class="cfgGrid2"><div class="afG"><label class="afL">Business Phone</label><input class="afI" id="s_ph" inputmode="tel" value="${esc(cfg.bizPhone||'')}" oninput="cfgMarkDirty()"/></div><div class="afG"><label class="afL">WhatsApp Number</label><input class="afI" id="s_wa" inputmode="tel" value="${esc(cfg.bizWhatsapp||'')}" placeholder="01XXXXXXXXX" oninput="cfgMarkDirty()"/></div></div>
+              <div class="afG"><label class="afL">Business Address</label><textarea class="afI" id="s_addr" rows="3" oninput="cfgMarkDirty()">${esc(cfg.bizAddr||'')}</textarea></div>
             </div>
-            <div id="bizLogoErr" style="display:none;font-size:11px;color:var(--red);margin-top:6px;background:rgba(239,68,68,.08);padding:6px 10px;border-radius:6px"></div>
-          </div>
-          <div class="afG"><label class="afL">Business Name (EN)</label><input class="afI" id="s_n" value="${esc(cfg.bizName||'')}"/></div>
-          <div class="afG"><label class="afL">ব্যবসার নাম (BN)</label><input class="afI" id="s_nb" value="${esc(cfg.bizNameBn||'')}"/></div>
-          <div class="afG"><label class="afL">Address</label><textarea class="afI" id="s_addr" rows="2">${esc(cfg.bizAddr||'')}</textarea></div>
-          <div class="afG"><label class="afL">Business Phone</label><input class="afI" id="s_ph" value="${esc(cfg.bizPhone||'')}"/></div>
-          <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
-            <div class="cardTitle" style="margin-bottom:12px;font-size:13px">💰 Delivery Charges</div>
-            <div class="afRow">
-              <div class="afG" style="margin:0"><label class="afL">COD Delivery (৳)</label><input class="afI" type="number" id="s_dc" value="${cfg.delCOD||150}"/></div>
-              <div class="afG" style="margin:0"><label class="afL">Paid Order Delivery (৳)</label><input class="afI" type="number" id="s_dp" value="${cfg.delPaid||0}"/></div>
+            <div class="cfgCard"><div class="cfgCardTitle">Workspace summary</div><div class="cfgGrid3"><div class="cfgMetric"><small>Business</small><b>${esc(cfg.bizName||'Not set')}</b></div><div class="cfgMetric"><small>Signed in as</small><b>${esc(G.user?.displayName||'Admin')}</b></div><div class="cfgMetric"><small>Access</small><b style="color:var(--green)">${G.role==='admin'?'Administrator':'Moderator'}</b></div></div></div>
+          </section>
+
+          <section class="cfgPanel" id="cfgPanel_orders">
+            <div class="cfgCard"><div class="cfgCardTitle">Manual order defaults</div><div class="cfgCardSub">These values pre-fill Create Order. Staff can still change them per order.</div>
+              <div class="cfgGrid2"><div class="afG"><label class="afL">Start status</label><select class="afI" id="s_orderStatus" onchange="cfgMarkDirty();cfgSyncBackorderToggle()"><option value="pending" ${cfg.manualOrderStartStatus!=='confirmed'?'selected':''}>⏳ Pending</option><option value="confirmed" ${cfg.manualOrderStartStatus==='confirmed'?'selected':''}>✅ Confirmed — reserve stock</option></select></div><div class="afG"><label class="afL">Default source</label><select class="afI" id="s_orderSource" onchange="cfgMarkDirty()"><option value="manual" ${defaultSource==='manual'?'selected':''}>✍️ Manual</option><option value="facebook" ${defaultSource==='facebook'?'selected':''}>📘 Facebook</option><option value="messenger" ${defaultSource==='messenger'?'selected':''}>💬 Messenger</option><option value="whatsapp" ${defaultSource==='whatsapp'?'selected':''}>🟢 WhatsApp</option><option value="phone" ${defaultSource==='phone'?'selected':''}>📞 Phone</option><option value="walkin" ${defaultSource==='walkin'?'selected':''}>🏪 Walk-in</option></select></div></div>
+              <div class="cfgGrid2"><div class="afG"><label class="afL">Default payment method</label><select class="afI" id="s_defaultPay" onchange="cfgMarkDirty()"><option value="cod" ${defaultPay==='cod'?'selected':''}>🚚 Cash on Delivery</option><option value="bkash" ${defaultPay==='bkash'?'selected':''}>📱 bKash</option><option value="nagad" ${defaultPay==='nagad'?'selected':''}>📱 Nagad</option><option value="bank" ${defaultPay==='bank'?'selected':''}>🏦 Bank Transfer</option><option value="cash" ${defaultPay==='cash'?'selected':''}>💵 Cash / Manual</option></select></div><div class="afG"><label class="afL">Default delivery deadline</label><select class="afI" id="s_parcelDays" onchange="cfgMarkDirty()"><option value="1" ${Number(cfg.parcelDeadlineDays)===1?'selected':''}>1 day</option><option value="2" ${Number(cfg.parcelDeadlineDays)===2?'selected':''}>2 days</option><option value="3" ${(!cfg.parcelDeadlineDays||Number(cfg.parcelDeadlineDays)===3)?'selected':''}>3 days</option><option value="5" ${Number(cfg.parcelDeadlineDays)===5?'selected':''}>5 days</option><option value="7" ${Number(cfg.parcelDeadlineDays)===7?'selected':''}>7 days</option></select></div></div>
+              <div class="cfgSwitch"><div><strong>Allow backorder by default</strong><span class="note">Only applies when the default start status is Pending. Confirmed orders always require enough stock.</span></div><label class="toggle"><input type="checkbox" id="s_defaultBackorder" ${cfg.manualOrderDefaultBackorder?'checked':''} onchange="cfgMarkDirty()"/><span class="toggleSlider"></span></label></div>
             </div>
-          </div>
-          <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
-            <div class="cardTitle" style="margin-bottom:12px;font-size:13px">🧾 Receipt Footer</div>
-            <div class="afG"><label class="afL">Footer (EN)</label><input class="afI" id="s_fe" value="${esc(cfg.footerEn||'Thank you for your order!')}"/></div>
-            <div class="afG"><label class="afL">Footer (BN)</label><input class="afI" id="s_fb" value="${esc(cfg.footerBn||'আপনার অর্ডারের জন্য ধন্যবাদ!')}"/></div>
-          </div>
-          <button class="btn bP bFull" onclick="saveCfg(this)">💾 Save Settings</button>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:14px">
-        <div class="card" id="cfgSec_summary" style="border-color:rgba(99,102,241,.25)">
-          <div class="cardTitle">📊 Business Summary</div>
-          <div style="font-size:13px;color:var(--t2);line-height:2.8">
-            <div>Business: <strong style="color:var(--t1)">${esc(cfg.bizName||'Not set')}</strong></div>
-            <div>Admin: <strong style="color:var(--t1)">${esc(G.user?.displayName||'You')}</strong></div>
-            <div>Role: <strong style="color:var(--acc2)">Administrator</strong></div>
-            <div>Dashboard: <strong style="color:var(--t1)">Drystan v4.0</strong></div>
-          </div>
-        </div>
-        <div class="card" id="cfgSec_prefs" style="border-color:rgba(16,185,129,.2)">
-          <div class="cardTitle">🔔 Notifications & Preferences</div>
-          <div class="afG"><label class="afL">Low Stock Alert Level</label><input class="afI" type="number" id="s_alert" value="${cfg.alertAt||5}" min="1"/></div>
-          <div class="afG"><label class="afL">📦 স্টক কখন কমবে?</label>
-            <select class="afI" id="s_stockTiming">
-              <option value="completion" ${(cfg.stockDeductTiming||'completion')==='completion'?'selected':''}>✅ অর্ডার সম্পন্ন (Completed) হলে স্টক কমবে</option>
-              <option value="creation" ${cfg.stockDeductTiming==='creation'?'selected':''}>🆕 অর্ডার তৈরির সাথে সাথে স্টক কমবে</option>
-            </select>
-            <div style="font-size:11px;color:var(--t3);margin-top:4px">যেকোনোটাই বাছুন — অর্ডার বাতিল/ফেরত হলে স্টক স্বয়ংক্রিয়ভাবে ফিরে আসবে।</div>
-          </div>
-          <div class="afG"><label class="afL">🚚 ডিফল্ট ডেলিভারি সময়সীমা</label>
-            <select class="afI" id="s_parcelDays">
-              <option value="1" ${Number(cfg.parcelDeadlineDays)===1?'selected':''}>১ দিন</option>
-              <option value="2" ${Number(cfg.parcelDeadlineDays)===2?'selected':''}>২ দিন</option>
-              <option value="3" ${(!cfg.parcelDeadlineDays||Number(cfg.parcelDeadlineDays)===3)?'selected':''}>৩ দিন (ডিফল্ট)</option>
-            </select>
-            <div style="font-size:11px;color:var(--t3);margin-top:4px">"Parcel Sent" করার সময় এই সংখ্যাটি ডিফল্ট হিসেবে দেখাবে। প্রয়োজনে অর্ডার-ভিত্তিক বদলানো যাবে।</div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--card);border-radius:10px">
-            <div><div style="font-size:13px;font-weight:600">Show profit on receipt</div><div style="font-size:11px;color:var(--t2)">Hidden from customers by default</div></div>
-            <label class="toggle"><input type="checkbox" id="s_showProfit" ${cfg.showProfit?'checked':''}/><span class="toggleSlider"></span></label>
-          </div>
-          <button class="btn bS bFull" style="margin-top:12px" onclick="savePref()">💾 Save Preferences</button>
-        </div>
+            <div class="cfgCard"><div class="cfgCardTitle">Inventory defaults</div><div class="cfgCardSub">Used for newly added products unless a product-specific threshold is entered.</div><div class="cfgGrid2"><div class="afG"><label class="afL">Low-stock alert threshold</label><input class="afI" type="number" id="s_alert" min="0" max="999999" value="${Number(cfg.defaultLowStockAlert??cfg.alertAt??5)}" oninput="cfgMarkDirty()"/></div><div class="cfgMetric"><small>Inventory workflow</small><b>Reserve on Confirmed</b><div class="cfgInlineHint">Pending orders remain unreserved; Confirmed orders reserve stock through the current transaction workflow.</div></div></div></div>
+          </section>
 
-        <div class="card" id="cfgSec_ai" style="border-color:rgba(168,85,247,.28)">
-          <div id="aiPanel">
-            <div style="display:flex;align-items:center;gap:10px;color:var(--t2);font-size:12px"><div class="spin spinSm"></div> AI status loading…</div>
-          </div>
-        </div>
+          <section class="cfgPanel" id="cfgPanel_delivery">
+            <div class="cfgCard"><div class="cfgCardTitle">Location-based charges</div><div class="cfgCardSub">Create Order auto mode uses Dhaka district as Inside Dhaka; other districts use Outside Dhaka.</div><div class="cfgGrid3"><div class="afG"><label class="afL">Inside Dhaka (৳)</label><input class="afI" type="number" min="0" id="s_din" value="${inside}" oninput="cfgMarkDirty()"/></div><div class="afG"><label class="afL">Outside Dhaka (৳)</label><input class="afI" type="number" min="0" id="s_dout" value="${outside}" oninput="cfgMarkDirty()"/></div><div class="afG"><label class="afL">Custom-link default (৳)</label><input class="afI" type="number" min="0" id="s_dlink" value="${linkDelivery}" oninput="cfgMarkDirty()"/></div></div><div class="cfgInlineHint">Public Shop uses Inside/Outside charges. Custom Order Link falls back to the custom-link default when a link does not define its own delivery charge.</div></div>
+          </section>
 
-        <div class="card" id="cfgSec_receipt" style="border-color:rgba(168,85,247,.25)">
-          <div class="cardTitle">🎨 Receipt Theme <span style="font-size:11px;color:var(--t3);font-weight:400">— রসিদের ডিজাইন বাছুন</span></div>
-          <div style="font-size:12px;color:var(--t2);margin-bottom:14px">আপনার পছন্দমতো একটি রসিদ ডিজাইন বেছে নিন। অর্ডার তৈরির পর এই ডিজাইনে রসিদ তৈরি হবে।</div>
-          <div id="rcptPresetGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px"></div>
-          <button class="btn bP bFull" style="margin-top:14px" onclick="saveReceiptPreset()">💾 Save Receipt Theme</button>
-        </div>
-      </div>
-    </div>`);
-    _selectedPreset=cfg.receiptPreset||'classic';
-    renderReceiptPresets();
-    cfgBackToHub(); // start on the hub menu — sections open only when a tile is clicked
-  }catch(e){setC(`<div class="al aE">❌ ${e.message}</div>`);}
-}
-const CFG_SECTION_IDS=['cfgSec_bizinfo','cfgSec_summary','cfgSec_prefs','cfgSec_ai','cfgSec_receipt'];
-window.cfgGoTo=(key)=>{
-  const target=$('cfgSec_'+key);
-  if(!target)return;
-  const hub=$('cfgHub');if(hub)hub.style.display='none';
-  const back=$('cfgBackBtn');if(back)back.style.display='inline-flex';
-  CFG_SECTION_IDS.forEach(id=>{const el=$(id);if(el)el.style.display='none';});
-  target.style.display='block';
-  target.scrollIntoView({behavior:'smooth',block:'start'});
-  if(key==='ai')loadSecureAISettingsPanel();
-};
-window.cfgBackToHub=()=>{
-  const hub=$('cfgHub');if(hub)hub.style.display='grid';
-  const back=$('cfgBackBtn');if(back)back.style.display='none';
-  CFG_SECTION_IDS.forEach(id=>{const el=$(id);if(el)el.style.display='none';});
-};
-function renderAIConfigPanel(state={}){
-  const el=$('aiPanel');if(!el)return;
-  const connected=!!(state.connected||state.configured);
-  G.aiConfigured=connected;
-  G.aiActive=connected&&state.enabled!==false;
-  G.aiModel=state.model||G.aiModel||'gemini-3.6-flash';
-  G.aiStatusLoaded=true;
+          <section class="cfgPanel" id="cfgPanel_receipt">
+            <div class="cfgCard"><div class="cfgCardTitle">Receipt defaults</div><div class="cfgGrid2"><div class="afG"><label class="afL">Default receipt language</label><select class="afI" id="s_receiptLang" onchange="cfgMarkDirty()"><option value="bn" ${defaultLang==='bn'?'selected':''}>🇧🇩 বাংলা</option><option value="en" ${defaultLang==='en'?'selected':''}>🇬🇧 English</option></select></div><div class="cfgMetric"><small>Current theme</small><b id="cfgThemeName">${esc(RECEIPT_PRESETS[_selectedPreset]?.name||'Classic')}</b></div></div><div class="cfgSwitch"><div><strong>Show business phone</strong><span class="note">Display the business phone in the receipt header.</span></div><label class="toggle"><input type="checkbox" id="s_rcptPhone" ${cfg.receiptShowPhone===false?'':'checked'} onchange="cfgMarkDirty()"/><span class="toggleSlider"></span></label></div><div class="cfgSwitch"><div><strong>Show business address</strong><span class="note">Display the business address in the receipt header.</span></div><label class="toggle"><input type="checkbox" id="s_rcptAddr" ${cfg.receiptShowAddress===false?'':'checked'} onchange="cfgMarkDirty()"/><span class="toggleSlider"></span></label></div></div>
+            <div class="cfgCard"><div class="cfgCardTitle">Receipt theme</div><div class="cfgCardSub">Click a style to preview/select it. The sticky Save Changes button stores the selection.</div><div id="rcptPresetGrid" class="cfgReceiptPreviewGrid"></div></div>
+            <div class="cfgCard"><div class="cfgCardTitle">Footer message</div><div class="cfgGrid2"><div class="afG"><label class="afL">Footer (EN)</label><input class="afI" id="s_fe" value="${esc(cfg.footerEn||'Thank you for your order!')}" oninput="cfgMarkDirty()"/></div><div class="afG"><label class="afL">Footer (BN)</label><input class="afI" id="s_fb" value="${esc(cfg.footerBn||'আপনার অর্ডারের জন্য ধন্যবাদ!')}" oninput="cfgMarkDirty()"/></div></div></div>
+          </section>
 
-  if(connected){
-    const connectedAt=state.connectedAt||state.updatedAt;
-    const when=connectedAt?new Date(connectedAt).toLocaleString():'';
-    el.innerHTML=`
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px">
-        <div>
-          <div class="cardTitle" style="margin:0 0 3px">✨ AI & Smart Paste</div>
-          <div style="font-size:11px;color:var(--t3)">Google Gemini · secure backend</div>
-        </div>
-        <span style="font-size:11px;font-weight:800;padding:7px 11px;border-radius:999px;background:rgba(16,185,129,.12);color:var(--green)">● Connected</span>
-      </div>
-      <div style="padding:14px;border:1px solid rgba(16,185,129,.22);background:rgba(16,185,129,.06);border-radius:12px;margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:38px;height:38px;border-radius:11px;background:rgba(168,85,247,.14);display:flex;align-items:center;justify-content:center;font-size:20px">✨</div>
-          <div style="min-width:0;flex:1">
-            <div style="font-size:13px;font-weight:800;color:var(--t1)">Google Gemini</div>
-            <div style="font-size:11px;color:var(--t2);margin-top:2px">Model: ${esc(state.model||G.aiModel)}</div>
-            ${when?`<div style="font-size:10px;color:var(--t3);margin-top:2px">Connected: ${esc(when)}</div>`:''}
-          </div>
-        </div>
-      </div>
-      <div class="al aO" style="font-size:11.5px;line-height:1.7;margin-bottom:12px">
-        ✅ Gemini এখন active। Smart Paste, AI Advisor, Description ও Risk Check secure Worker backend দিয়ে চলবে। API key browser, Firestore বা Page Source-এ দেখা যাবে না।
-      </div>
-      <div id="aiConfigMsg" style="font-size:11px;color:var(--t3);margin-bottom:10px;line-height:1.6"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" class="gridStack2">
-        <button class="btn bP bFull" id="aiTestBtn" onclick="testSecureAI(this)">🧪 Test Connection</button>
-        <button class="btn bD bFull" id="aiDisconnectBtn" onclick="removeSecureAIConfig(this)">🔌 Disconnect</button>
-      </div>`;
-    return;
-  }
+          <section class="cfgPanel" id="cfgPanel_notifications">
+            <div class="cfgCard"><div class="cfgCardTitle">Browser & in-app alerts</div><div class="cfgSwitch"><div><strong>Browser notifications</strong><span class="note">Show a system notification for new orders when permission is granted.</span></div><label class="toggle"><input type="checkbox" id="s_browserNotif" ${cfg.browserNotifications===false?'':'checked'} onchange="cfgMarkDirty()"/><span class="toggleSlider"></span></label></div><div class="cfgSwitch"><div><strong>Notification sound</strong><span class="note">Play the short Drystan sound when a new order is detected.</span></div><label class="toggle"><input type="checkbox" id="s_notifSound" ${cfg.notificationSound===false?'':'checked'} onchange="cfgMarkDirty()"/><span class="toggleSlider"></span></label></div><div class="cfgInlineHint">In-app notification history remains enabled so important order alerts are still visible inside Drystan.</div></div>
+            <div class="cfgCard" style="border-color:rgba(34,158,217,.24)"><div id="tgPanel"><div style="display:flex;align-items:center;gap:10px;color:var(--t2);font-size:12px"><div class="spin spinSm"></div> Telegram status loading…</div></div></div>
+          </section>
 
-  el.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px">
-      <div>
-        <div class="cardTitle" style="margin:0 0 3px">✨ AI & Smart Paste</div>
-        <div style="font-size:11px;color:var(--t3)">Google Gemini · secure backend</div>
+          <section class="cfgPanel" id="cfgPanel_ai"><div class="cfgCard" style="border-color:rgba(168,85,247,.25)"><div id="aiPanel"><div style="display:flex;align-items:center;gap:10px;color:var(--t2);font-size:12px"><div class="spin spinSm"></div> AI status loading…</div></div></div></section>
+
+          <section class="cfgPanel" id="cfgPanel_security">
+            <div class="cfgCard"><div class="cfgCardTitle">Security health</div><div class="cfgCardSub">Live checks never expose API keys, bot tokens or passwords.</div><div id="cfgSecurityHealth" class="cfgStatusGrid"><div class="cfgHealth"><div class="left"><span class="dot" style="background:var(--yellow)"></span><div><b>Loading checks…</b><small>Please wait</small></div></div></div></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:13px"><button class="btn bS bSm" onclick="cfgCheckBackendHealth(this)">↻ Check Worker</button><button class="btn bS bSm" onclick="nav('account')">🔐 My Account Security</button><button class="btn bS bSm" onclick="nav('team')">🛡️ Team Access</button></div></div>
+            <div class="cfgCard"><div class="cfgCardTitle">Recommended safeguards</div><div class="cfgCardSub">These are operational checks, not a claim that every security hardening item is complete.</div><div class="cfgInlineHint" style="font-size:11px;line-height:1.9">• Keep Telegram/Gemini credentials only in their secure Connect panels.<br>• Suspend moderator access immediately when a staff member leaves.<br>• Use HTTPS only and keep Firebase/Cloudflare account 2FA enabled.<br>• App Check is shown below as configured/not configured; enforcement must also be enabled in Firebase Console.</div></div>
+          </section>
+
+          <section class="cfgPanel" id="cfgPanel_data">
+            <div class="cfgCard"><div class="cfgCardTitle">Portable backup</div><div class="cfgCardSub">Downloads your core Firestore business data as JSON. Secure Gemini/Telegram secrets are intentionally excluded because they live encrypted in Cloudflare KV.</div><button class="btn bP" id="cfgBackupBtn" onclick="downloadBusinessBackup(this)">💾 Export Full JSON Backup</button><div id="cfgBackupMsg" class="cfgInlineHint" style="margin-top:9px"></div></div>
+            <div class="cfgCard"><div class="cfgCardTitle">Quick CSV exports</div><div class="cfgCardSub">Use these for spreadsheets or offline reporting.</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bS" onclick="exportOrders()">📋 Orders CSV</button><button class="btn bS" onclick="exportCustomers()">👥 Customers CSV</button><button class="btn bS" onclick="exportProducts()">📦 Products CSV</button></div></div>
+          </section>
+
+          <section class="cfgPanel" id="cfgPanel_advanced">
+            <div class="cfgCard"><div class="cfgCardTitle">Public shop identity</div><div class="cfgCardSub">Shared with the Public Online Shop and related customer-facing pages.</div><div class="cfgGrid2"><div class="afG"><label class="afL">Facebook Page Username</label><input class="afI" id="s_fbuser" value="${esc(cfg.fbPageUser||'')}" placeholder="yourpage" oninput="cfgMarkDirty()"/></div><div class="cfgMetric"><small>Shop URL</small><b style="font-size:11px;word-break:break-all">${esc(`${location.origin}${location.pathname}#shop/${G.bizId}`)}</b></div></div><div class="afG"><label class="afL">Public Shop Notice</label><textarea class="afI" id="s_publicNote" rows="3" maxlength="500" oninput="cfgMarkDirty()">${esc(cfg.publicNote||'')}</textarea></div></div>
+            <div class="cfgCard cfgDanger"><div class="cfgCardTitle">Local workspace tools</div><div class="cfgCardSub">These actions clear only this browser's temporary workspace. They do not delete Firestore orders, products or customers.</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bS" onclick="clearCreateDraft();toast('Create Order draft cleared','info')">🧹 Clear Create Order Draft</button><button class="btn bS" onclick="clearNotifs();toast('Local notification history cleared','info')">🔕 Clear Notification History</button></div></div>
+          </section>
+        </main>
       </div>
-      <span style="font-size:11px;font-weight:800;padding:7px 11px;border-radius:999px;background:rgba(107,114,128,.12);color:var(--t3)">● Not connected</span>
     </div>
-    <div class="al aI" style="font-size:11.5px;line-height:1.75;margin-bottom:14px">
-      Google AI Studio থেকে পাওয়া <b>Gemini API Key</b> দিন এবং model বাছুন। <b>Connect & Verify</b> চাপলে Worker প্রথমে Gemini-তে live test করবে; test successful হলেই key encrypted KV-তে save হবে।
-    </div>
-    <div class="afG"><label class="afL">Google Gemini API Key *</label><input class="afI" id="ai_cfg_key" type="password" autocomplete="new-password" placeholder="AIza..."/></div>
-    <div class="afG"><label class="afL">Model</label><select class="afI" id="ai_cfg_model"><option value="gemini-3.6-flash">Gemini 3.6 Flash — Recommended</option><option value="gemini-3.5-flash">Gemini 3.5 Flash</option><option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite</option></select></div>
-    <div style="font-size:10.5px;color:var(--t3);line-height:1.65;margin:-2px 0 12px">Connected হওয়ার পরে API key input আর দেখাবে না। Disconnect করলে নতুন key/model দিয়ে আবার connect করতে পারবেন। AI unavailable হলেও Create Order-এর local Smart Paste fallback চালু থাকবে।</div>
-    <div id="aiConfigMsg" style="font-size:11px;color:var(--t3);margin-bottom:10px;line-height:1.6"></div>
-    <button class="btn bP bFull" id="aiConnectBtn" onclick="saveSecureAIConfig(this)">🔗 Connect & Verify</button>`;
-  const model=$('ai_cfg_model');if(model&&G.aiModel)model.value=G.aiModel;
+    <div class="cfgSaveBar" id="cfgSaveBar"><div class="cfgSaveInner"><div class="txt"><b>Unsaved settings</b> — review and save your changes.</div><div style="display:flex;gap:7px"><button class="btn bS bSm" onclick="cfgDiscardChanges()">Discard</button><button class="btn bP bSm" id="cfgSaveBtn" onclick="saveCfgWorkspace(this)">💾 Save Changes</button></div></div></div>`);
+    renderReceiptPresets();cfgOpenSection('business');cfgMarkClean();
+  }catch(e){setC(`<div class="al aE">❌ ${esc(e.message)}</div>`);}
 }
 
-async function loadSecureAISettingsPanel(){
-  const el=$('aiPanel');if(!el)return;
-  el.innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--t2);font-size:12px"><div class="spin spinSm"></div> AI status loading…</div>';
-  try{
-    const st=await refreshAIStatus();
-    if(!st.ok&&st.error)throw new Error(st.error);
-    renderAIConfigPanel(st);
-  }catch(e){
-    renderAIConfigPanel({connected:false,configured:false});
-    const msg=$('aiConfigMsg');if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+(e.message||'AI status load failed');}
-  }
-}
-window.loadSecureAISettingsPanel=loadSecureAISettingsPanel;
+window.cfgSyncBackorderToggle=()=>{const cb=$('s_defaultBackorder'),st=$('s_orderStatus');if(!cb||!st)return;cb.disabled=st.value==='confirmed';if(cb.disabled)cb.checked=false;};
+window.cfgDiscardChanges=()=>{if(!_cfgDirty||confirm('Discard unsaved Settings changes?'))pgCfg();};
+window.cfgCanLeave=()=>!_cfgDirty||confirm('You have unsaved Settings changes. Discard them and leave this page?');
 
-window.saveSecureAIConfig=async btn=>{
-  const key=String($('ai_cfg_key')?.value||'').trim();
-  const model=$('ai_cfg_model')?.value||'gemini-3.6-flash';
-  const msg=$('aiConfigMsg');
-  if(!key){if(msg){msg.style.color='var(--red)';msg.textContent='❌ Gemini API key দিন।';}return;}
-  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Verifying…';}
-  if(msg){msg.style.color='var(--t2)';msg.textContent='Gemini connection live verify করা হচ্ছে…';}
-  try{
-    const r=await secureApiFetch('/v1/ai/config',{method:'POST',body:JSON.stringify({apiKey:key,model,enabled:true,verify:true})});
-    const d=await r.json().catch(()=>({}));
-    if(!r.ok||!d.ok)throw new Error(d.error||'Gemini connection failed');
-    G.aiConfigured=true;G.aiActive=true;G.aiModel=d.model||model;G.aiStatusLoaded=true;
-    toast('✅ Gemini connected successfully!','ok');
-    renderAIConfigPanel(d);
-  }catch(e){
-    if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}
-    toast(e.message,'err');
-    if(btn){btn.disabled=false;btn.innerHTML='🔗 Connect & Verify';}
-  }
-};
-
-window.testSecureAI=async btn=>{
-  const msg=$('aiConfigMsg');
-  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Testing…';}
-  try{
-    const r=await secureApiFetch('/v1/ai/test',{method:'POST'}),d=await r.json().catch(()=>({}));
-    if(!r.ok||!d.ok)throw new Error(d.error||'Gemini test failed');
-    if(msg){msg.style.color='var(--green)';msg.textContent='✅ Gemini connection live test successful.';}
-    toast('✅ Gemini connection successful','ok');
-  }catch(e){if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}toast(e.message,'err');}
-  finally{if(btn){btn.disabled=false;btn.innerHTML='🧪 Test Connection';}}
-};
-
-window.removeSecureAIConfig=async btn=>{
-  if(!confirm('Gemini disconnect করবেন? Smart Paste local fallback-এ চলবে।'))return;
-  const msg=$('aiConfigMsg');
-  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Disconnecting…';}
-  try{
-    const r=await secureApiFetch('/v1/ai/config',{method:'DELETE'}),d=await r.json().catch(()=>({}));
-    if(!r.ok||!d.ok)throw new Error(d.error||'Disconnect failed');
-    G.aiConfigured=false;G.aiActive=false;G.aiStatusLoaded=true;
-    toast('Gemini disconnected','info');
-    renderAIConfigPanel({connected:false,configured:false,model:G.aiModel});
-  }catch(e){if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='🔌 Disconnect';}}
-};
-
-let _selectedPreset='classic';
-function renderReceiptPresets(){
-  const grid=$('rcptPresetGrid');if(!grid)return;
-  grid.innerHTML=Object.entries(RECEIPT_PRESETS).map(([key,p])=>`
-    <div onclick="selectReceiptPreset('${key}')" style="cursor:pointer;border:2px solid ${_selectedPreset===key?'var(--acc)':'var(--border)'};border-radius:12px;overflow:hidden;transition:all .2s;${_selectedPreset===key?'box-shadow:0 4px 16px rgba(99,102,241,.25)':''}">
-      <div style="background:${p.headerBg};color:${p.headerText};padding:10px;text-align:center;font-size:11px;font-weight:800">${esc((G.cfg.bizName||'SHOP').slice(0,14))}</div>
-      <div style="padding:8px;background:#fff">
-        <div style="height:5px;background:${p.tableBg};border-radius:3px;margin-bottom:4px"></div>
-        <div style="height:4px;background:#eee;border-radius:3px;margin-bottom:3px;width:80%"></div>
-        <div style="height:4px;background:#eee;border-radius:3px;width:60%;margin-bottom:6px"></div>
-        <div style="background:${p.totalBg};color:${p.totalText};font-size:9px;font-weight:800;padding:4px 8px;border-radius:5px;text-align:center">৳ TOTAL</div>
-      </div>
-      <div style="padding:6px;text-align:center;font-size:11px;font-weight:600;background:var(--card);color:${_selectedPreset===key?'var(--acc2)':'var(--t2)'}">
-        ${p.name} ${_selectedPreset===key?'✓':''}
-      </div>
-    </div>`).join('');
-}
-window.selectReceiptPreset=(key)=>{_selectedPreset=key;renderReceiptPresets();};
-window.saveReceiptPreset=async()=>{
-  try{
-    await setDoc(BCfg(),{receiptPreset:_selectedPreset},{merge:true});
-    G.cfg.receiptPreset=_selectedPreset;
-    toast('✅ রসিদের ডিজাইন সেভ হয়েছে!');
-  }catch(e){toast(e.message,'err');}
-};
-let _bizLogoPending=null; // {file, preview} — uploaded only when Save Settings is clicked
 window.bizLogoDrop=(e)=>{
-  e.preventDefault();
-  e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.background='var(--card)';
-  const file=[...(e.dataTransfer?.files||[])].find(f=>f.type.startsWith('image/'));
-  if(file)bizLogoFilesSelected([file]);
+  e.preventDefault();e.currentTarget.style.borderColor='var(--border)';
+  const file=[...(e.dataTransfer?.files||[])].find(f=>f.type.startsWith('image/'));if(file)bizLogoFilesSelected([file]);
 };
 window.bizLogoFilesSelected=(files)=>{
   const file=[...files][0];if(!file)return;
   if(!file.type||!file.type.startsWith('image/')){toast('শুধু ছবি ফাইল আপলোড করা যাবে','err');return;}
   if(file.size>10*1024*1024){toast('ছবি ১০MB এর বেশি বড় হতে পারবে না','err');return;}
   if(_bizLogoPending?.preview){try{URL.revokeObjectURL(_bizLogoPending.preview);}catch{}}
-  _bizLogoPending={file,preview:URL.createObjectURL(file)};
-  const pv=$('bizLogoPreview');if(pv)pv.innerHTML=`<img src="${_bizLogoPending.preview}" style="width:100%;height:100%;object-fit:cover"/>`;
-  const err=$('bizLogoErr');if(err)err.style.display='none';
+  _bizLogoPending={file,preview:URL.createObjectURL(file)};const pv=$('bizLogoPreview');if(pv)pv.innerHTML=`<img src="${_bizLogoPending.preview}" style="width:100%;height:100%;object-fit:cover"/>`;const err=$('bizLogoErr');if(err)err.style.display='none';cfgMarkDirty();
 };
-window.saveCfg=async(btn)=>{
+
+function renderReceiptPresets(){
+  const grid=$('rcptPresetGrid');if(!grid)return;
+  grid.innerHTML=Object.entries(RECEIPT_PRESETS).map(([key,p])=>`
+    <div onclick="selectReceiptPreset('${key}')" style="cursor:pointer;border:2px solid ${_selectedPreset===key?'var(--acc)':'var(--border)'};border-radius:12px;overflow:hidden;transition:all .2s;${_selectedPreset===key?'box-shadow:0 4px 16px rgba(99,102,241,.22)':''}">
+      <div style="background:${p.headerBg};color:${p.headerText};padding:9px;text-align:center;font-size:10px;font-weight:800">${esc((G.cfg.bizName||'SHOP').slice(0,12))}</div><div style="padding:7px;background:#fff"><div style="height:5px;background:${p.tableBg};border-radius:3px;margin-bottom:4px"></div><div style="height:4px;background:#eee;border-radius:3px;margin-bottom:5px;width:75%"></div><div style="background:${p.totalBg};color:${p.totalText};font-size:8px;font-weight:800;padding:4px 7px;border-radius:5px;text-align:center">৳ TOTAL</div></div><div style="padding:6px;text-align:center;font-size:10px;font-weight:700;background:var(--card);color:${_selectedPreset===key?'var(--acc2)':'var(--t2)'}">${p.name} ${_selectedPreset===key?'✓':''}</div>
+    </div>`).join('');
+}
+window.selectReceiptPreset=(key)=>{if(!RECEIPT_PRESETS[key])return;_selectedPreset=key;renderReceiptPresets();const n=$('cfgThemeName');if(n)n.textContent=RECEIPT_PRESETS[key].name;cfgMarkDirty();};
+window.saveReceiptPreset=async()=>{cfgMarkDirty();await saveCfgWorkspace($('cfgSaveBtn'));};
+
+window.saveCfgWorkspace=async(btn)=>{
+  const status=$('cfgSaveStatus');
   try{
+    const bizName=cfgVal('s_n');if(!bizName){cfgOpenSection('business');$('s_n')?.focus();toast('Business name is required','err');return;}
+    const phone=cfgVal('s_ph');if(phone&&!/^01[3-9][0-9]{8}$/.test(phone)){cfgOpenSection('business');$('s_ph')?.focus();toast('Business phone must be a valid Bangladesh mobile number','err');return;}
+    const whatsapp=cfgVal('s_wa');if(whatsapp&&!/^01[3-9][0-9]{8}$/.test(whatsapp)){cfgOpenSection('business');$('s_wa')?.focus();toast('WhatsApp number must be a valid Bangladesh mobile number','err');return;}
+    if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Saving…';}if(status){status.textContent='Saving…';status.className='cfgSaveStatus warn';}
     let bizLogo=G.cfg.bizLogo||'';
     if(_bizLogoPending){
-      if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> লোগো আপলোড হচ্ছে...';}
-      try{
-        bizLogo=await uploadImageFile(_bizLogoPending.file);
-        try{URL.revokeObjectURL(_bizLogoPending.preview);}catch{}
-        _bizLogoPending=null;
-      }catch(err){
-        const errBox=$('bizLogoErr');
-        if(errBox){errBox.style.display='block';errBox.innerHTML='❌ '+esc(err.message||'লোগো আপলোড ব্যর্থ')+(err.message?.includes('সেটআপ')?'<br><b>সমাধান:</b> Owner Panel → Settings → ImgBB API Key সেভ করুন।':'');}
-        if(btn){btn.disabled=false;btn.innerHTML='💾 Save Settings';}
-        return; // Don't save other fields if logo upload failed — admin can retry
-      }
+      try{bizLogo=await uploadImageFile(_bizLogoPending.file);try{URL.revokeObjectURL(_bizLogoPending.preview);}catch{} _bizLogoPending=null;}
+      catch(err){const box=$('bizLogoErr');if(box){box.style.display='block';box.textContent='❌ '+(err.message||'Logo upload failed');}throw err;}
     }
-    const data={bizName:$('s_n').value.trim(),bizNameBn:$('s_nb').value.trim(),bizAddr:$('s_addr').value.trim(),bizPhone:$('s_ph').value.trim(),delCOD:Number($('s_dc').value)||150,delPaid:Number($('s_dp').value)||0,footerEn:$('s_fe').value.trim(),footerBn:$('s_fb').value.trim(),bizLogo};
-    await setDoc(BCfg(),data,{merge:true});G.cfg={...G.cfg,...data};$('bizNm').textContent=G.lang==='bn'?(data.bizNameBn||data.bizName):data.bizName;toast('Settings saved! ✅');
-    if(btn){btn.disabled=false;btn.innerHTML='💾 Save Settings';}
-  }catch(e){toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='💾 Save Settings';}}
+    const startStatus=cfgVal('s_orderStatus','pending')==='confirmed'?'confirmed':'pending';
+    const data={
+      bizName,bizNameBn:cfgVal('s_nb'),bizAddr:cfgVal('s_addr'),bizPhone:phone,bizWhatsapp:whatsapp,bizLogo,
+      manualOrderStartStatus:startStatus,defaultOrderSource:cfgVal('s_orderSource','manual'),defaultPaymentMethod:cfgVal('s_defaultPay','cod'),manualOrderDefaultBackorder:startStatus==='pending'&&cfgBool('s_defaultBackorder'),parcelDeadlineDays:cfgNum('s_parcelDays',3,1,30),defaultLowStockAlert:cfgNum('s_alert',5,0,999999),alertAt:cfgNum('s_alert',5,0,999999),
+      delivIn:cfgNum('s_din',60,0),delivOut:cfgNum('s_dout',120,0),delCOD:cfgNum('s_dlink',120,0),
+      defaultReceiptLang:cfgVal('s_receiptLang',G.lang==='bn'?'bn':'en'),receiptShowPhone:cfgBool('s_rcptPhone',true),receiptShowAddress:cfgBool('s_rcptAddr',true),receiptPreset:_selectedPreset,footerEn:cfgVal('s_fe','Thank you for your order!'),footerBn:cfgVal('s_fb','আপনার অর্ডারের জন্য ধন্যবাদ!'),
+      browserNotifications:cfgBool('s_browserNotif',true),notificationSound:cfgBool('s_notifSound',true),publicNote:cfgVal('s_publicNote'),fbPageUser:cfgVal('s_fbuser'),updatedAt:serverTimestamp()
+    };
+    await setDoc(BCfg(),data,{merge:true});G.cfg={...G.cfg,...data};$('bizNm').textContent=G.lang==='bn'?(data.bizNameBn||data.bizName):data.bizName;
+    cfgMarkClean('Saved just now');toast('✅ Settings saved','ok');
+    if(data.browserNotifications&&'Notification' in window&&Notification.permission==='default'){try{await Notification.requestPermission();}catch{}}
+  }catch(e){toast(e.message||'Settings save failed','err');if(status){status.textContent='Save failed';status.className='cfgSaveStatus warn';}}
+  finally{if(btn){btn.disabled=false;btn.innerHTML='💾 Save Changes';}}
 };
-window.savePref=async()=>{
-  try{const data={alertAt:Number($('s_alert').value)||5,showProfit:$('s_showProfit').checked,stockDeductTiming:$('s_stockTiming')?.value||'completion',parcelDeadlineDays:Number($('s_parcelDays')?.value)||3};await setDoc(BCfg(),data,{merge:true});G.cfg={...G.cfg,...data};toast('Preferences saved! ✅');}catch(e){toast(e.message,'err');}
+// Compatibility aliases for older buttons/functions.
+window.saveCfg=window.saveCfgWorkspace;window.savePref=window.saveCfgWorkspace;
+
+function renderAIConfigPanel(state={}){
+  const el=$('aiPanel');if(!el)return;const connected=!!(state.connected||state.configured);G.aiConfigured=connected;G.aiActive=connected&&state.enabled!==false;G.aiModel=state.model||G.aiModel||'gemini-3.6-flash';G.aiStatusLoaded=true;
+  if(connected){const connectedAt=state.connectedAt||state.updatedAt,when=connectedAt?new Date(connectedAt).toLocaleString():'';el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px"><div><div class="cfgCardTitle" style="margin:0 0 3px">✨ Google Gemini</div><div style="font-size:11px;color:var(--t3)">Secure backend connection</div></div><span style="font-size:11px;font-weight:800;padding:7px 11px;border-radius:999px;background:rgba(16,185,129,.12);color:var(--green)">● Connected</span></div><div style="padding:14px;border:1px solid rgba(16,185,129,.22);background:rgba(16,185,129,.06);border-radius:12px;margin-bottom:12px"><div style="font-size:13px;font-weight:800">${esc(state.model||G.aiModel)}</div>${when?`<div style="font-size:10px;color:var(--t3);margin-top:3px">Connected: ${esc(when)}</div>`:''}</div><div class="al aO" style="font-size:11.5px;line-height:1.7;margin-bottom:12px">✅ Smart Paste, AI Advisor and analytics use the secure Worker backend. Saved API keys are never returned to the browser.</div><div id="aiConfigMsg" style="font-size:11px;color:var(--t3);margin-bottom:10px"></div><div class="cfgGrid2"><button class="btn bP bFull" id="aiTestBtn" onclick="testSecureAI(this)">🧪 Test Connection</button><button class="btn bD bFull" id="aiDisconnectBtn" onclick="removeSecureAIConfig(this)">🔌 Disconnect</button></div>`;return;}
+  el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px"><div><div class="cfgCardTitle" style="margin:0 0 3px">✨ Google Gemini</div><div style="font-size:11px;color:var(--t3)">Secure backend connection</div></div><span style="font-size:11px;font-weight:800;padding:7px 11px;border-radius:999px;background:rgba(107,114,128,.12);color:var(--t3)">● Not connected</span></div><div class="al aI" style="font-size:11.5px;line-height:1.7;margin-bottom:14px">Enter your Gemini API key and choose a model. Connect & Verify tests it live before encrypted storage.</div><div class="afG"><label class="afL">Gemini API Key *</label><input class="afI" id="ai_cfg_key" type="password" autocomplete="new-password" placeholder="AIza…"/></div><div class="afG"><label class="afL">Model</label><select class="afI" id="ai_cfg_model"><option value="gemini-3.6-flash">Gemini 3.6 Flash — Recommended</option><option value="gemini-3.5-flash">Gemini 3.5 Flash</option><option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite</option></select></div><div id="aiConfigMsg" style="font-size:11px;color:var(--t3);margin-bottom:10px"></div><button class="btn bP bFull" id="aiConnectBtn" onclick="saveSecureAIConfig(this)">🔗 Connect & Verify</button>`;const model=$('ai_cfg_model');if(model&&G.aiModel)model.value=G.aiModel;
+}
+async function loadSecureAISettingsPanel(){const el=$('aiPanel');if(!el)return;el.innerHTML='<div style="display:flex;align-items:center;gap:10px;color:var(--t2);font-size:12px"><div class="spin spinSm"></div> AI status loading…</div>';try{const st=await refreshAIStatus();if(!st.ok&&st.error)throw new Error(st.error);renderAIConfigPanel(st);}catch(e){renderAIConfigPanel({connected:false,configured:false});const msg=$('aiConfigMsg');if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+(e.message||'AI status load failed');}}}
+window.loadSecureAISettingsPanel=loadSecureAISettingsPanel;
+window.saveSecureAIConfig=async btn=>{const key=String($('ai_cfg_key')?.value||'').trim(),model=$('ai_cfg_model')?.value||'gemini-3.6-flash',msg=$('aiConfigMsg');if(!key){if(msg){msg.style.color='var(--red)';msg.textContent='❌ Gemini API key দিন।';}return;}if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Verifying…';}if(msg){msg.style.color='var(--t2)';msg.textContent='Gemini connection live verify করা হচ্ছে…';}try{const r=await secureApiFetch('/v1/ai/config',{method:'POST',body:JSON.stringify({apiKey:key,model,enabled:true,verify:true})}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||'Gemini connection failed');G.aiConfigured=true;G.aiActive=true;G.aiModel=d.model||model;G.aiStatusLoaded=true;toast('✅ Gemini connected successfully!','ok');renderAIConfigPanel(d);}catch(e){if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='🔗 Connect & Verify';}}};
+window.testSecureAI=async btn=>{const msg=$('aiConfigMsg');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Testing…';}try{const r=await secureApiFetch('/v1/ai/test',{method:'POST'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||'Gemini test failed');if(msg){msg.style.color='var(--green)';msg.textContent='✅ Gemini connection live test successful.';}toast('✅ Gemini connection successful','ok');}catch(e){if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}toast(e.message,'err');}finally{if(btn){btn.disabled=false;btn.innerHTML='🧪 Test Connection';}}};
+window.removeSecureAIConfig=async btn=>{if(!confirm('Gemini disconnect করবেন? Smart Paste local fallback-এ চলবে।'))return;const msg=$('aiConfigMsg');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Disconnecting…';}try{const r=await secureApiFetch('/v1/ai/config',{method:'DELETE'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||'Disconnect failed');G.aiConfigured=false;G.aiActive=false;G.aiStatusLoaded=true;toast('Gemini disconnected','info');renderAIConfigPanel({connected:false,configured:false,model:G.aiModel});}catch(e){if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}toast(e.message,'err');if(btn){btn.disabled=false;btn.innerHTML='🔌 Disconnect';}}};
+
+window.cfgRenderSecurityHealth=async()=>{
+  const el=$('cfgSecurityHealth');if(!el)return;
+  let userData={};try{const d=await getDoc(Doc('users',G.user.uid));userData=d.data()||{};}catch{}
+  const secure=location.protocol==='https:'||['localhost','127.0.0.1'].includes(location.hostname),appCheck=!!APP_CHECK_SITE_KEY,tfa=!!userData.totpEnabled;
+  const item=(ok,ico,title,sub,state)=>`<div class="cfgHealth"><div class="left"><span class="dot" style="background:${ok?'var(--green)':'var(--yellow)'}"></span><div><b>${ico} ${title}</b><small>${sub}</small></div></div><span class="state" style="color:${ok?'var(--green)':'var(--yellow)'}">${state}</span></div>`;
+  el.innerHTML=item(secure,'🔒','HTTPS','Encrypted browser connection',secure?'Secure':'Check')+item(!!G.user,'👤','Firebase session','Authenticated user session',G.user?'Active':'Missing')+item(tfa,'🔐','Account 2FA','Current account two-factor status',tfa?'Enabled':'Off')+item(appCheck,'🧩','Firebase App Check','Client configuration status',appCheck?'Configured':'Not configured')+item(true,'🛡️','Team access control','Moderator suspend + permission workflow','Active')+`<div class="cfgHealth" id="cfgWorkerHealth"><div class="left"><span class="dot" style="background:var(--t3)"></span><div><b>☁️ Secure Worker</b><small>Telegram / AI backend</small></div></div><span class="state" style="color:var(--t3)">Not checked</span></div>`;
 };
+window.cfgCheckBackendHealth=async btn=>{const box=$('cfgWorkerHealth');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Checking…';}try{const r=await fetch(DRYSTAN_API_BASE+'/health',{cache:'no-store'}),d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||`HTTP ${r.status}`);if(box)box.innerHTML=`<div class="left"><span class="dot" style="background:var(--green)"></span><div><b>☁️ Secure Worker</b><small>${esc(d.service||'drystan-api')}</small></div></div><span class="state" style="color:var(--green)">Online</span>`;toast('✅ Secure Worker is online','ok');}catch(e){if(box)box.innerHTML=`<div class="left"><span class="dot" style="background:var(--red)"></span><div><b>☁️ Secure Worker</b><small>${esc(e.message)}</small></div></div><span class="state" style="color:var(--red)">Error</span>`;toast('Worker health check failed','err');}finally{if(btn){btn.disabled=false;btn.innerHTML='↻ Check Worker';}}};
+
+function backupSafe(v){if(v===null||v===undefined)return v;if(v?.toDate instanceof Function){try{return v.toDate().toISOString();}catch{}}if(Array.isArray(v))return v.map(backupSafe);if(typeof v==='object'){const o={};for(const [k,x] of Object.entries(v))o[k]=backupSafe(x);return o;}return v;}
+window.downloadBusinessBackup=async btn=>{const msg=$('cfgBackupMsg');if(btn){btn.disabled=true;btn.innerHTML='<div class="spin spinSm"></div> Preparing backup…';}if(msg)msg.textContent='Reading business collections…';try{const names=['orders','products','customers','expenses','coupons','orderLinks'];const snaps=await Promise.all(names.map(n=>getDocs(BCol(n)).catch(()=>({docs:[]}))));const cfg=(await getDoc(BCfg())).data()||{};const secretFields=new Set(['steadfastKey','steadfastSecret','fraudApiKey','geminiApiKey','aiApiKey','telegramBotToken','telegramChatId','apiKey','secretKey','password','token']);const safeCfg={};for(const [k,v] of Object.entries(cfg)){if(!secretFields.has(k))safeCfg[k]=v;}const payload={format:'drystan-business-backup-v1',exportedAt:new Date().toISOString(),businessId:G.bizId,businessName:G.cfg.bizName||'',note:'Secure credentials are intentionally excluded. Backup contains customer/order data; store it securely.',config:backupSafe(safeCfg),collections:{}};names.forEach((n,i)=>payload.collections[n]=snaps[i].docs.map(d=>({id:d.id,...backupSafe(d.data())})));const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`drystan-backup-${today()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);if(msg){msg.style.color='var(--green)';msg.textContent='✅ Backup downloaded. Keep it in a secure location.';}toast('✅ Full JSON backup downloaded','ok');}catch(e){if(msg){msg.style.color='var(--red)';msg.textContent='❌ '+e.message;}toast(e.message,'err');}finally{if(btn){btn.disabled=false;btn.innerHTML='💾 Export Full JSON Backup';}}};
+
+
 
 // ══ MY ACCOUNT ══
 async function pgAccount(){
